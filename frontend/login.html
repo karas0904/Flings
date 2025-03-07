@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - SRM Connect</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/auth.css" />
+  </head>
+  <body>
+    <div class="auth-container">
+      <div class="auth-card">
+        <h1>Welcome to SRM Connect</h1>
+        <p>Please sign in with your SRM email to continue</p>
+
+        <div class="auth-error" id="auth-error"></div>
+
+        <div class="auth-buttons">
+          <a href="http://localhost:3000/auth/google" class="google-btn">
+            <img src="assets/images/google-icon.png" alt="Google" />
+            Sign in with Google
+          </a>
+        </div>
+
+        <div class="auth-info">
+          <p>Only @srmist.edu.in email addresses are allowed</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+  </body>
+</html>

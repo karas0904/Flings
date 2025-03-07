@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Profile - SRM Connect</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <div class="logo">SRM Connect</div>
+        <nav>
+          <ul>
+            <li><a href="discover.html">Discover</a></li>
+            <li><a href="matches.html">Matches</a></li>
+            <li><a href="profile.html" class="active">Profile</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="profile-section">
+        <h1>Your Profile</h1>
+        <p>Complete your profile to start matching with other students</p>
+
+        <div class="profile-form">
+          <form id="profile-form">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender" required>
+                <option value="">Select your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bio">Bio</label>
+              <textarea
+                id="bio"
+                name="bio"
+                rows="4"
+                placeholder="Tell others about yourself..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Interests</label>
+              <div class="interests-container" id="interests-container">
+                <div class="interest-tag">
+                  Movies <span class="remove-tag">×</span>
+                </div>
+                <div class="interest-tag">
+                  Music <span class="remove-tag">×</span>
+                </div>
+                <input
+                  type="text"
+                  id="interest-input"
+                  placeholder="Add interest..."
+                />
+              </div>
+            </div>
+
+            <h2>Preferences</h2>
+
+            <div class="form-group">
+              <label for="pref-gender">Interested in</label>
+              <select id="pref-gender" name="preferences.gender" required>
+                <option value="">Select gender preference</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="everyone">Everyone</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Age Range</label>
+              <div class="age-range">
+                <input
+                  type="number"
+                  id="age-min"
+                  name="preferences.ageRange.min"
+                  min="18"
+                  max="30"
+                  value="18"
+                />
+                <span>to</span>
+                <input
+                  type="number"
+                  id="age-max"
+                  name="preferences.ageRange.max"
+                  min="18"
+                  max="30"
+                  value="30"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary">Save Profile</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
+  </body>
+</html>

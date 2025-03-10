@@ -3,31 +3,257 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - SRM Connect</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/auth.css" />
+    <title>Simple Navbar</title>
+    <link rel="stylesheet" href="css/navbar.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-image: url("background.jpeg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 100vh;
+        position: relative;
+      }
+
+      .text-container {
+        position: absolute;
+        bottom: 20%;
+        left: 5%;
+        color: white;
+        text-align: left;
+      }
+
+      .welcome-text {
+        font-size: 70px;
+        font-family: "DM Serif Text", serif;
+        font-weight: 400;
+        font-style: italic;
+        margin: 0;
+      }
+
+      .sub-text {
+        font-size: 18px;
+        font-family: "Raleway", sans-serif;
+        margin: 5px 0;
+      }
+
+      .sink-button {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 20px;
+        padding: 10px 20px;
+        text-decoration: none;
+        transition: background 0.3s;
+        font-size: 8px;
+        font-family: "Open Sans", sans-serif;
+        display: inline-block;
+        margin-top: 10px;
+        position: relative;
+      }
+
+      .sink-button:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .arrow {
+        margin-left: 8px;
+        font-size: 16px;
+      }
+
+      /* Modal Styles */
+      .modal {
+        display: block; /* Always block, but hidden via opacity/transform */
+        position: fixed;
+        z-index: 1000;
+        border-radius: 10px;
+        top: 20px; /* Position it near the top */
+        right: 20px; /* Align to the right */
+        width: auto; /* Adjust width dynamically */
+        max-width: 400px; /* Control max width */
+        background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        transform: translateX(100%); /* Start off-screen (right side) */
+        opacity: 0;
+        pointer-events: none; /* Prevent interaction when hidden */
+      }
+
+      .modal-content {
+        background: rgba(
+          255,
+          255,
+          255,
+          0.01
+        ); /* Increased transparency (lower alpha value) */
+        backdrop-filter: blur(10px); /* Stronger blur effect */
+        -webkit-backdrop-filter: blur(15px); /* For Safari */
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        color: white; /* Keep text readable */
+      }
+
+      /* Close Button */
+      .close-button {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close-button:hover,
+      .close-button:focus {
+        color: white;
+        text-decoration: none;
+        cursor: pointer;
+        transition: 1s;
+      }
+
+      /* OK Button */
+      #modalOkButton {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 20px;
+        border: none;
+        padding: 10px 20px;
+        text-decoration: none;
+        transition: background 0.3s;
+        font-size: 8px;
+        font-family: "Open Sans", sans-serif;
+        display: inline-block;
+        margin-top: 10px;
+        position: relative;
+        cursor: pointer;
+      }
+
+      #modalOkButton:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
+
+      #errorMessage {
+        font-family: "Raleway", sans-serif !important;
+      }
+
+      /* Show modal with animation */
+      .modal.show {
+        transform: translateX(0); /* Bring it into view */
+        opacity: 1;
+        pointer-events: auto; /* Enable interaction when visible */
+      }
+    </style>
   </head>
   <body>
-    <div class="auth-container">
-      <div class="auth-card">
-        <h1>Welcome to SRM Connect</h1>
-        <p>Please sign in with your SRM email to continue</p>
+    <header class="navbar">
+      <div class="container">
+        <nav class="left-nav">
+          <ul>
+            <li><div class="logo">Amourette</div></li>
+            <li><div class="vertical-line"></div></li>
+            <li><a href="#" class="nav-link">Safety</a></li>
+            <li><a href="#" class="nav-link">About</a></li>
+          </ul>
+        </nav>
+        <nav class="right-nav">
+          <ul>
+            <li>
+              <a href="http://localhost:3000/auth/google" class="login-button"
+                >Login</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
 
-        <div class="auth-error" id="auth-error"></div>
+    <div class="rectangle-box"></div>
 
-        <div class="auth-buttons">
-          <a href="http://localhost:3000/auth/google" class="google-btn">
-            <img src="assets/images/google-icon.png" alt="Google" />
-            Sign in with Google
-          </a>
-        </div>
+    <div class="text-container">
+      <p class="welcome-text">Welcome to<br />SRM Dating,</p>
+      <p class="sub-text">
+        Where the Wi-Fi drops faster than your GPA, but the love stories rise<br />
+        faster than the hostel fees!
+      </p>
+      <a href="#" class="sink-button">SINK IN<span class="arrow">→</span></a>
+    </div>
 
-        <div class="auth-info">
-          <p>Only @srmist.edu.in email addresses are allowed</p>
-        </div>
+    <!-- Custom Modal for Error Messages -->
+    <div id="errorModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" id="closeModal">×</span>
+        <p id="errorMessage">Only SRM email addresses are allowed.</p>
+        <button id="modalOkButton">OK</button>
       </div>
     </div>
 
-    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+    <script>
+      // Function to show the modal with animation
+      function showModal(message) {
+        const modal = document.getElementById("errorModal");
+        const errorMessage = document.getElementById("errorMessage");
+        errorMessage.textContent = message;
+        modal.classList.add("show");
+      }
+
+      // Function to hide the modal with animation
+      function hideModal() {
+        const modal = document.getElementById("errorModal");
+        modal.classList.remove("show");
+      }
+
+      // Function to clear URL parameters
+      function clearUrlParams() {
+        const url = new URL(window.location);
+        url.search = ""; // Clear all query parameters
+        window.history.replaceState({}, document.title, url);
+      }
+
+      // Check for URL parameters (e.g., error messages from auth)
+      function checkUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get("error");
+
+        if (error) {
+          if (error === "domain") {
+            showModal("Only SRM email addresses are allowed.");
+          } else {
+            showModal("Authentication failed. Please try again.");
+          }
+          // Clear URL parameters after showing the modal to prevent re-triggering
+          clearUrlParams();
+        }
+      }
+
+      // Close the modal when the user clicks on <span> (x)
+      document
+        .getElementById("closeModal")
+        .addEventListener("click", function () {
+          hideModal();
+        });
+
+      // Close the modal when the user clicks the OK button
+      document
+        .getElementById("modalOkButton")
+        .addEventListener("click", function () {
+          hideModal();
+        });
+
+      // Close the modal when the user clicks outside of it
+      window.addEventListener("click", function (event) {
+        const modal = document.getElementById("errorModal");
+        if (event.target === modal) {
+          hideModal();
+        }
+      });
+
+      // Call the function on page load
+      window.onload = checkUrlParams;
+    </script>
   </body>
 </html>

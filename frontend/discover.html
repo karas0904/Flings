@@ -3,39 +3,389 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Discover - SRM Connect</title>
+    <title>Amourette - Create Account</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       body {
+        background-color: white;
+        color: black;
         font-family: Arial, sans-serif;
         margin: 0;
-        padding: 20px;
-        text-align: center;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        position: relative; /* Added for positioning the Next button */
       }
-      header {
-        background-color: #ff4b6e;
-        color: white;
-        padding: 15px;
+      .header {
+        display: flex;
+        justify-content: space-between;
+        width: 90%;
+        padding: 20px;
+      }
+      .header h1 {
+        font-size: 35px;
+        color: black;
+        margin: 0;
+        font-family: "Bodoni Moda", serif;
+        font-optical-sizing: auto;
+        font-weight: 100;
+        font-style: normal;
+      }
+      .header .language {
+        color: #888;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .container {
+        width: 90%;
+        max-width: 800px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .form-section {
+        width: 45%;
+      }
+      .form-section h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        font-family: "Oswald", sans-serif;
+        font-style: normal;
+        font-weight: 100;
+        font-optical-sizing: auto;
+      }
+      .form-group {
         margin-bottom: 20px;
       }
-      .content {
-        max-width: 800px;
-        margin: 0 auto;
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 10px;
+        background-color: white;
+        border: 1px solid black;
+        color: white;
+        font-size: 16px;
+      }
+      .form-group input:focus {
+        border: 2px solid black;
+        outline: none;
+      }
+
+      .form-group input::placeholder {
+        color: #888;
+      }
+      .form-group .birthday {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .form-group .birthday input {
+        width: 30%;
+      }
+      .form-group .gender,
+      .form-group .interested-in,
+      .form-group .relationship-intent {
+        display: flex;
+        justify-content: space-around;
+        gap: 5px; /* Reduced gap for Man/Woman buttons */
+      }
+      .form-group .gender button,
+      .form-group .interested-in button,
+      .form-group .relationship-intent button {
+        padding: 10px;
+        background-color: white;
+        border: 1px solid black;
+        border-radius: 5px;
+        color: black;
+        font-size: 16px;
+        cursor: pointer;
+        transition: border 0.3s;
+        width: 45%; /* Adjusted width for Man/Woman */
+      }
+      .form-group .relationship-intent button {
+        width: 30%; /* Adjusted width for three buttons */
+      }
+      .form-group .gender button.selected,
+      .form-group .interested-in button.selected,
+      .form-group .relationship-intent button.selected {
+        background-color: black;
+        color: white;
+        transition: 1s;
+      }
+      .photo-section {
+        width: 45%;
+      }
+      .photo-section h3 {
+        font-size: 18px;
+        margin-bottom: 20px;
+        font-family: "Oswald", sans-serif;
+        font-style: normal;
+        font-weight: 100;
+        font-optical-sizing: auto;
+      }
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .photo-box {
+        background-color: black;
+        border: 2px dashed white;
+        border-radius: 5px;
+        height: 140px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
+      }
+      .photo-box .plus {
+        color: white;
+        font-size: 24px;
+      }
+      .photo-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 5px;
+      }
+      .photo-box input[type="file"] {
+        display: none;
+      }
+      .photo-section p {
+        color: #888;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+      .next-button {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 50px;
+        background-color: white;
+        border: 1px solid black;
+        border-radius: 5px;
+        color: black;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .next-button:hover {
+        background-color: black;
+        color: white;
+        transition: 1s;
       }
     </style>
   </head>
   <body>
-    <header>
-      <h1>SRM Connect</h1>
-    </header>
-
-    <div class="content">
-      <h2>Discover Page</h2>
-      <p>You have successfully logged in!</p>
-      <p>This is the discover page where you can find potential matches.</p>
-
-      <div style="margin-top: 30px">
-        <a href="login.html" style="color: #ff4b6e">Back to Login</a>
+    <div class="header">
+      <h1>Amourette</h1>
+      <div class="language">Language</div>
+    </div>
+    <div class="container">
+      <div class="form-section">
+        <h2>Create account</h2>
+        <div class="form-group">
+          <label for="first-name">First Name</label>
+          <input type="text" id="first-name" placeholder="First Name" />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="xyxy@srmist.edu.in" />
+        </div>
+        <div class="form-group">
+          <label>Birthday</label>
+          <div class="birthday">
+            <input type="text" id="month" placeholder="MM" />
+            <input type="text" id="day" placeholder="DD" />
+            <input type="text" id="year" placeholder="YYYY" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <div class="gender">
+            <button class="gender-option selected" onclick="selectGender(this)">
+              Man
+            </button>
+            <button class="gender-option" onclick="selectGender(this)">
+              Woman
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Interested in</label>
+          <div class="interested-in">
+            <button
+              class="interested-option selected"
+              onclick="selectInterest(this)"
+            >
+              Men
+            </button>
+            <button class="interested-option" onclick="selectInterest(this)">
+              Women
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Relationship intent</label>
+          <div class="relationship-intent">
+            <button class="relationship-option">Short Term</button>
+            <button class="relationship-option">Long Term</button>
+            <button class="relationship-option">Fling</button>
+          </div>
+        </div>
+      </div>
+      <div class="photo-section">
+        <h3>Profile photos</h3>
+        <div class="photo-grid">
+          <div class="photo-box" id="photo-box-1">
+            <input type="file" id="photo-input-1" accept="image/*" />
+            <div class="plus">+</div>
+          </div>
+          <div class="photo-box" id="photo-box-2">
+            <input type="file" id="photo-input-2" accept="image/*" />
+            <div class="plus">+</div>
+          </div>
+          <div class="photo-box" id="photo-box-3">
+            <input type="file" id="photo-input-3" accept="image/*" />
+            <div class="plus">+</div>
+          </div>
+          <div class="photo-box" id="photo-box-4">
+            <input type="file" id="photo-input-4" accept="image/*" />
+            <div class="plus">+</div>
+          </div>
+          <div class="photo-box" id="photo-box-5">
+            <input type="file" id="photo-input-5" accept="image/*" />
+            <div class="plus">+</div>
+          </div>
+          <div class="photo-box" id="photo-box-6">
+            <input type="file" id="photo-input-6" accept="image/*" />
+            <div class="plus">+</div>
+          </div>
+        </div>
+        <p>
+          Please make sure that atleast one image is been uploaded and your face
+          is shown in the first photo.
+        </p>
+        <p>
+          Note: Your first upload would be taken as your profile picture, you
+          may edit it afterwards.
+        </p>
       </div>
     </div>
+    <button class="next-button" id="nextButton">Next</button>
+
+    <script>
+      // Gender and Interested in selection functionality
+      const genderButtons = document.querySelectorAll(".gender .gender-option");
+      const interestedButtons = document.querySelectorAll(
+        ".interested-in .interested-option"
+      );
+      const relationshipButtons = document.querySelectorAll(
+        ".relationship-intent .relationship-option"
+      );
+
+      genderButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          // Remove selected class from all gender buttons
+          genderButtons.forEach((btn) => btn.classList.remove("selected"));
+          // Add selected class to the clicked button
+          this.classList.add("selected");
+
+          // Sync with Interested in
+          if (this.textContent === "Man") {
+            interestedButtons.forEach((btn) =>
+              btn.classList.remove("selected")
+            );
+            interestedButtons[1].classList.add("selected"); // Select Women
+          } else if (this.textContent === "Woman") {
+            interestedButtons.forEach((btn) =>
+              btn.classList.remove("selected")
+            );
+            interestedButtons[0].classList.add("selected"); // Select Men
+          }
+        });
+      });
+
+      interestedButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          // Remove selected class from all interested buttons
+          interestedButtons.forEach((btn) => btn.classList.remove("selected"));
+          // Add selected class to the clicked button
+          this.classList.add("selected");
+
+          // Sync with Gender
+          if (this.textContent === "Men") {
+            genderButtons.forEach((btn) => btn.classList.remove("selected"));
+            genderButtons[1].classList.add("selected"); // Select Woman
+          } else if (this.textContent === "Women") {
+            genderButtons.forEach((btn) => btn.classList.remove("selected"));
+            genderButtons[0].classList.add("selected"); // Select Man
+          }
+        });
+      });
+
+      // Relationship intent selection functionality
+      relationshipButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          // Remove selected class from all relationship buttons
+          relationshipButtons.forEach((btn) =>
+            btn.classList.remove("selected")
+          );
+          // Add selected class to the clicked button
+          this.classList.add("selected");
+        });
+      });
+
+      // Photo upload functionality
+      const photoBoxes = document.querySelectorAll(".photo-box");
+      photoBoxes.forEach((box, index) => {
+        const fileInput = document.getElementById(`photo-input-${index + 1}`);
+
+        box.addEventListener("click", () => {
+          fileInput.click();
+        });
+
+        fileInput.addEventListener("change", (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              // Remove the plus sign
+              box.querySelector(".plus").style.display = "none";
+              // Create or update the image element
+              let img = box.querySelector("img");
+              if (!img) {
+                img = document.createElement("img");
+                box.appendChild(img);
+              }
+              img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      });
+
+      // Next button functionality
+      document
+        .getElementById("nextButton")
+        .addEventListener("click", function () {
+          window.location.href = "discover2.html"; // Redirect to discover2.html
+        });
+    </script>
   </body>
 </html>

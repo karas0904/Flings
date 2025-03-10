@@ -1,0 +1,103 @@
+\/* navbar.css */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.navbar {
+  background-color: transparent; /* Transparent background */
+  color: white; /* White text to match the image */
+  padding: 0 20px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.navbar.scrolled {
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black on scroll */
+  color: white;
+}
+
+.navbar.scrolled a {
+  color: white; /* Ensure links stay white on scroll */
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.left-nav ul,
+.right-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.left-nav ul li,
+.right-nav ul li {
+  margin-left: 20px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.vertical-line {
+  width: 1px; /* Thin vertical line */
+  height: 30px; /* Height of the line */
+  background-color: rgb(250, 247, 247); /* White line to match text color */
+  margin: 0 20px; /* Space around the line */
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 8px 15px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+}
+
+.login-button {
+  background-color: rgba(255, 255, 255, 0.2); /* Slight grayish tint */
+  color: white;
+  border-radius: 20px;
+  padding: 8px 20px;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.login-button:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Small Rectangular Box Below Background Image */
+.rectangle-box {
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.5
+  ); /* Semi-transparent black for visibility */
+  width: 200px; /* Adjustable width */
+  height: 100px; /* Adjustable height */
+  position: absolute;
+  top: 900px; /* Position just below the navbar */
+  left: 50%;
+  transform: translateX(-50%); /* Center the rectangle horizontally */
+  z-index: 1;
+}

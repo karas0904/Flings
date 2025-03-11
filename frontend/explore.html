@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Explore</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
     <style>
       * {
         margin: 0;
@@ -76,23 +80,27 @@
 
       /* Heart button (replacing the right green dot inside the box) */
       .heart-button {
-        width: 40px;
-        height: 40px;
-        background: #ffe6e6; /* Light rose pink background */
+        width: 50px;
+        height: 50px;
+        background: #ffd1d1; /* Light rose pink background */
         border: none;
         border-radius: 50%;
         cursor: pointer;
         font-size: 24px;
-        color: #ff4d4d; /* Red color for the heart */
+        color: white; /* Initial color of the heart */
         display: flex;
         justify-content: center;
         align-items: center;
+        transition: transform 0.3s ease, color 0.3s ease; /* Smooth transition for transform and color */
       }
 
-      /* No-named button (replacing the left green dot inside the box) */
+      .heart-button.active {
+        color: #ff4d4d; /* Color when clicked (red) */
+      }
+
       .no-named-button {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
         background: #000; /* Black background */
         border: 1px solid #ccc;
         border-radius: 50%;
@@ -108,10 +116,8 @@
       .comment-inbox {
         flex-grow: 1;
         margin: 0 10px;
-        padding: 10px;
         background: #f5f5f5; /* Light gray background */
         border-radius: 20px; /* Rounded corners */
-        border: 1px solid #ddd;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -119,6 +125,24 @@
         color: #666;
         font-style: italic;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for aesthetic */
+      }
+
+      .comment-input {
+        width: 100%;
+        height: 40px;
+        padding: 10px;
+        border-radius: 50px;
+        font-size: 14px;
+        color: #333;
+        border: 0px;
+        background: #fff;
+        transition: border 0.3s;
+      }
+
+      .comment-input:focus {
+        border: 0.5px solid black;
+        outline: none; /* Remove default blue outline */
+        transition: 0.3s;
       }
 
       /* Container for external buttons (Rose, Save, Share) outside the phone box */
@@ -402,6 +426,75 @@
         margin-top: 1px;
         margin-bottom: 8px;
       }
+
+      .rose-button {
+        background-color: rgba(
+          255,
+          160,
+          176,
+          0.5
+        ) !important; /* More transparent romantic pink */
+        border: none; /* Remove default button border */
+        border-radius: 50%; /* Make it circular */
+        padding: 10px; /* Add some padding */
+        cursor: pointer; /* Change cursor to pointer */
+        overflow: hidden;
+        position: relative; /* Ensure it has a stacking context */
+        z-index: 20; /* Same level as confirm button when hidden */
+      }
+
+      .rose-icon {
+        width: 40px; /* Set width */
+        height: 40px; /* Set height */
+      }
+
+      @keyframes heartbeat {
+        0% {
+          transform: scale(1);
+        }
+        20% {
+          transform: scale(1.2); /* Scale up */
+        }
+        40% {
+          transform: scale(1); /* Return to original size */
+        }
+        60% {
+          transform: scale(1.2); /* Scale up again */
+        }
+        80% {
+          transform: scale(1); /* Return to original size */
+        }
+        100% {
+          transform: scale(1.2); /* Final scale up */
+        }
+      }
+
+      .rose-button-container {
+        position: relative; /* Position relative for absolute positioning of confirm button */
+      }
+
+      /* Keyframe animation for smooth sliding effect beside the rose button */
+      @keyframes slideInBeside {
+        0% {
+          opacity: 0;
+          right: -50px; /* Start just outside the rose button */
+        }
+        100% {
+          opacity: 1;
+          right: -100px; /* Slide to final position beside the rose button */
+        }
+      }
+
+      @keyframes slideOutBeside {
+        0% {
+          opacity: 1;
+          right: -100px; /* Start at final position beside the rose button */
+        }
+        100% {
+          opacity: 0;
+          right: -50px; /* Slide back to just outside the rose button */
+        }
+      }
     </style>
   </head>
   <body>
@@ -413,18 +506,35 @@
     <div class="phone-box">
       <!-- Buttons inside the phone box -->
       <div class="button-container">
-        <button class="no-named-button">?</button>
-        <div class="comment-inbox">Add a comment...</div>
-        <button class="heart-button">♥</button>
+        <button class="no-named-button">
+          <i class="fa-solid fa-ban"></i>
+        </button>
+        <div class="comment-inbox">
+          <input
+            type="text"
+            placeholder="Add a comment..."
+            class="comment-input"
+          />
+        </div>
+        <button class="heart-button">
+          <i class="fa-solid fa-heart"></i>
+        </button>
       </div>
     </div>
 
     <!-- External buttons (Rose, Save, Share) outside the phone box on the right side -->
     <div class="external-buttons">
-      <button title="Rose">🌹</button>
-      <!-- Rose button -->
-      <button title="Save">💾</button>
-      <button title="Share">🔗</button>
+      <div class="rose-button-container">
+        <button title="Rose" class="rose-button">
+          <img src="rose-icon.svg" alt="Rose" class="rose-icon" />
+        </button>
+      </div>
+      <button title="Save">
+        <i class="fa-solid fa-bookmark"></i>
+      </button>
+      <button title="Share">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
     </div>
 
     <nav class="navbar">
@@ -471,9 +581,12 @@
     </div>
 
     <script>
+      // Update account info
       document.querySelector(".account-name").textContent = "Karmesh Meritia";
       document.querySelector(".account-details").textContent =
         "Age: 21 | Year: 4th";
+
+      // Toggle sidebar
       function toggleSidebar() {
         const sideNavbar = document.getElementById("sideNavbar");
         const hamburger = document.querySelector(".hamburger");
@@ -486,6 +599,7 @@
         }
       }
 
+      // Placeholder functions for logout and delete account
       function logout() {
         alert("Logout button clicked!");
       }
@@ -494,6 +608,7 @@
         alert("Delete Account button clicked!");
       }
 
+      // Sidebar hover blur effect
       document.querySelectorAll(".side-navbar .top-items a").forEach((link) => {
         link.addEventListener("mouseenter", () => {
           document
@@ -513,6 +628,42 @@
             });
         });
       });
+
+      // Heart button click and heartbeat animation
+      document
+        .querySelector(".heart-button")
+        .addEventListener("click", function () {
+          this.classList.add("active"); // Change color to red
+
+          // Trigger the heartbeat animation after a short delay
+          setTimeout(() => {
+            this.style.animation = "heartbeat 1s ease"; // Trigger the heartbeat animation
+
+            // Remove the animation class after it finishes to allow it to be retriggered
+            this.addEventListener(
+              "animationend",
+              () => {
+                this.style.animation = ""; // Reset the animation
+              },
+              { once: true }
+            ); // Use { once: true } to ensure it only runs once per click
+          }, 100); // Delay before starting the heartbeat effect
+        });
+
+      // Rose button click to show confirm button
+      document
+        .querySelector(".rose-button")
+        .addEventListener("click", function () {
+          this.classList.toggle("active"); // Toggle the active class
+        });
+
+      // Confirm button click action (optional)
+      document
+        .querySelector(".confirm-button")
+        .addEventListener("click", function () {
+          console.log("Confirm button clicked");
+          // Add your action here, e.g., confirm an action, submit a form, etc.
+        });
     </script>
   </body>
 </html>

@@ -12,6 +12,8 @@
       href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&display=swap"
       rel="stylesheet"
     />
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+    <script defer src="js/faceValidation.js"></script>
 
     <style>
       body {
@@ -421,9 +423,11 @@
               }
               img.src = e.target.result;
 
-              // If this is the first box, enable all other boxes
+              // If this is the first box (index === 0), save the image to localStorage
               if (index === 0) {
                 enableAllPhotoBoxes();
+                // Store the image data in localStorage
+                localStorage.setItem("profileImage", e.target.result);
               }
             };
             reader.readAsDataURL(file);

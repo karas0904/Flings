@@ -3,10 +3,15 @@
   <head>
     <title>Redirecting...</title>
     <script>
-      window.location.href = "http://127.0.0.1:5500/frontend/discover.html";
+      // This script will run as soon as the page loads
+      window.onload = function () {
+        // Redirect to the frontend
+        window.location.href = "http://127.0.0.1:5500/discover.html";
+      };
     </script>
   </head>
   <body>
+    <h1>Authentication Successful!</h1>
     <p>Redirecting to SRM Connect...</p>
   </body>
 </html>

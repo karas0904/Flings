@@ -1,10 +1,11 @@
 // Create routes for user interactions
 // backend/routes/interactionRoutes.js
-const express = require("express");
+import express from "express";
+import Interaction from "../models/Interaction.js";
+import Match from "../models/Match.js";
+import isAuthenticated from "../middleware/auth.js";
+
 const router = express.Router();
-const Interaction = require("../models/Interaction");
-const Match = require("../models/Match");
-const isAuthenticated = require("../middleware/auth");
 
 // Create a like or dislike
 router.post("/:targetUserId", isAuthenticated, async (req, res) => {
@@ -47,4 +48,4 @@ router.post("/:targetUserId", isAuthenticated, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router; // ✅ Ensure you export it as default

@@ -26,7 +26,7 @@
         flex-direction: column;
         align-items: center;
         height: 100vh;
-        position: relative;
+        position: relative; /* Added for positioning the Next button */
       }
       .header {
         display: flex;
@@ -79,7 +79,7 @@
         padding: 10px;
         background-color: white;
         border: 1px solid black;
-        color: black;
+        color: white;
         font-size: 16px;
       }
       .form-group input:focus {
@@ -103,7 +103,7 @@
       .form-group .relationship-intent {
         display: flex;
         justify-content: space-around;
-        gap: 5px;
+        gap: 5px; /* Reduced gap for Man/Woman buttons */
       }
       .form-group .gender button,
       .form-group .interested-in button,
@@ -116,10 +116,10 @@
         font-size: 16px;
         cursor: pointer;
         transition: border 0.3s;
-        width: 45%;
+        width: 45%; /* Adjusted width for Man/Woman */
       }
       .form-group .relationship-intent button {
-        width: 30%;
+        width: 30%; /* Adjusted width for three buttons */
       }
       .form-group .gender button.selected,
       .form-group .interested-in button.selected,
@@ -155,16 +155,9 @@
         position: relative;
         cursor: pointer;
       }
-      .photo-box.disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
-      }
       .photo-box .plus {
         color: white;
         font-size: 24px;
-      }
-      .photo-box.disabled .plus {
-        color: #888; /* Grayed out plus sign for disabled boxes */
       }
       .photo-box img {
         width: 100%;
@@ -193,27 +186,10 @@
         cursor: pointer;
         transition: background-color 0.3s;
       }
-      .next-button:hover:not(:disabled) {
+      .next-button:hover {
         background-color: black;
         color: white;
         transition: 1s;
-      }
-      .next-button:disabled {
-        background-color: #ccc;
-        color: #666;
-        cursor: not-allowed;
-        border: 1px solid #999;
-      }
-      .email-note {
-        color: #888;
-        font-size: 12px;
-        margin-top: 5px;
-      }
-      .error-message {
-        color: red;
-        font-size: 12px;
-        margin-top: 5px;
-        display: none;
       }
     </style>
   </head>
@@ -232,9 +208,6 @@
         <div class="form-group">
           <label for="email">Email</label>
           <input type="email" id="email" placeholder="xyxy@srmist.edu.in" />
-          <p class="email-note">
-            Don't worry, no notifications will be sent to your email
-          </p>
         </div>
         <div class="form-group">
           <label>Birthday</label>
@@ -243,9 +216,6 @@
             <input type="text" id="day" placeholder="DD" />
             <input type="text" id="year" placeholder="YYYY" />
           </div>
-          <p class="error-message" id="birthday-error">
-            Sorry, you are not allowed
-          </p>
         </div>
         <div class="form-group">
           <label>Gender</label>
@@ -275,24 +245,9 @@
         <div class="form-group">
           <label>Relationship intent</label>
           <div class="relationship-intent">
-            <button
-              class="relationship-option"
-              onclick="selectRelationship(this)"
-            >
-              Short Term
-            </button>
-            <button
-              class="relationship-option"
-              onclick="selectRelationship(this)"
-            >
-              Long Term
-            </button>
-            <button
-              class="relationship-option"
-              onclick="selectRelationship(this)"
-            >
-              Fling
-            </button>
+            <button class="relationship-option">Short Term</button>
+            <button class="relationship-option">Long Term</button>
+            <button class="relationship-option">Fling</button>
           </div>
         </div>
       </div>
@@ -303,30 +258,30 @@
             <input type="file" id="photo-input-1" accept="image/*" />
             <div class="plus">+</div>
           </div>
-          <div class="photo-box disabled" id="photo-box-2">
-            <input type="file" id="photo-input-2" accept="image/*" disabled />
+          <div class="photo-box" id="photo-box-2">
+            <input type="file" id="photo-input-2" accept="image/*" />
             <div class="plus">+</div>
           </div>
-          <div class="photo-box disabled" id="photo-box-3">
-            <input type="file" id="photo-input-3" accept="image/*" disabled />
+          <div class="photo-box" id="photo-box-3">
+            <input type="file" id="photo-input-3" accept="image/*" />
             <div class="plus">+</div>
           </div>
-          <div class="photo-box disabled" id="photo-box-4">
-            <input type="file" id="photo-input-4" accept="image/*" disabled />
+          <div class="photo-box" id="photo-box-4">
+            <input type="file" id="photo-input-4" accept="image/*" />
             <div class="plus">+</div>
           </div>
-          <div class="photo-box disabled" id="photo-box-5">
-            <input type="file" id="photo-input-5" accept="image/*" disabled />
+          <div class="photo-box" id="photo-box-5">
+            <input type="file" id="photo-input-5" accept="image/*" />
             <div class="plus">+</div>
           </div>
-          <div class="photo-box disabled" id="photo-box-6">
-            <input type="file" id="photo-input-6" accept="image/*" disabled />
+          <div class="photo-box" id="photo-box-6">
+            <input type="file" id="photo-input-6" accept="image/*" />
             <div class="plus">+</div>
           </div>
         </div>
         <p>
-          Please make sure that at least one image is been uploaded and your
-          face is shown in the first photo.
+          Please make sure that atleast one image is been uploaded and your face
+          is shown in the first photo.
         </p>
         <p>
           Note: Your first upload would be taken as your profile picture, you
@@ -334,7 +289,7 @@
         </p>
       </div>
     </div>
-    <button class="next-button" id="nextButton" disabled>Next</button>
+    <button class="next-button" id="nextButton">Next</button>
 
     <script>
       // Gender and Interested in selection functionality
@@ -348,66 +303,63 @@
 
       genderButtons.forEach((button) => {
         button.addEventListener("click", function () {
+          // Remove selected class from all gender buttons
           genderButtons.forEach((btn) => btn.classList.remove("selected"));
+          // Add selected class to the clicked button
           this.classList.add("selected");
+
+          // Sync with Interested in
           if (this.textContent === "Man") {
             interestedButtons.forEach((btn) =>
               btn.classList.remove("selected")
             );
-            interestedButtons[1].classList.add("selected");
+            interestedButtons[1].classList.add("selected"); // Select Women
           } else if (this.textContent === "Woman") {
             interestedButtons.forEach((btn) =>
               btn.classList.remove("selected")
             );
-            interestedButtons[0].classList.add("selected");
+            interestedButtons[0].classList.add("selected"); // Select Men
           }
-          validateForm();
         });
       });
 
       interestedButtons.forEach((button) => {
         button.addEventListener("click", function () {
+          // Remove selected class from all interested buttons
           interestedButtons.forEach((btn) => btn.classList.remove("selected"));
+          // Add selected class to the clicked button
           this.classList.add("selected");
+
+          // Sync with Gender
           if (this.textContent === "Men") {
             genderButtons.forEach((btn) => btn.classList.remove("selected"));
-            genderButtons[1].classList.add("selected");
+            genderButtons[1].classList.add("selected"); // Select Woman
           } else if (this.textContent === "Women") {
             genderButtons.forEach((btn) => btn.classList.remove("selected"));
-            genderButtons[0].classList.add("selected");
+            genderButtons[0].classList.add("selected"); // Select Man
           }
-          validateForm();
         });
       });
 
       // Relationship intent selection functionality
-      function selectRelationship(button) {
-        relationshipButtons.forEach((btn) => btn.classList.remove("selected"));
-        button.classList.add("selected");
-        validateForm();
-      }
+      relationshipButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          // Remove selected class from all relationship buttons
+          relationshipButtons.forEach((btn) =>
+            btn.classList.remove("selected")
+          );
+          // Add selected class to the clicked button
+          this.classList.add("selected");
+        });
+      });
 
       // Photo upload functionality
       const photoBoxes = document.querySelectorAll(".photo-box");
-      const fileInputs = document.querySelectorAll('input[type="file"]');
-
-      function enableAllPhotoBoxes() {
-        photoBoxes.forEach((box, index) => {
-          box.classList.remove("disabled");
-          const fileInput = document.getElementById(`photo-input-${index + 1}`);
-          fileInput.disabled = false;
-        });
-      }
-
       photoBoxes.forEach((box, index) => {
         const fileInput = document.getElementById(`photo-input-${index + 1}`);
 
-        box.addEventListener("click", (event) => {
-          if (!box.classList.contains("disabled")) {
-            fileInput.click();
-          } else {
-            event.preventDefault(); // Prevent click on disabled boxes
-          }
+        box.addEventListener("click", () => {
+          fileInput.click();
         });
 
         fileInput.addEventListener("change", (event) => {
@@ -415,13 +367,16 @@
           if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
+              // Remove the plus sign
               box.querySelector(".plus").style.display = "none";
+              // Create or update the image element
               let img = box.querySelector("img");
               if (!img) {
                 img = document.createElement("img");
                 box.appendChild(img);
               }
               img.src = e.target.result;
+<<<<<<< HEAD
 
               // If this is the first box (index === 0), save the image to localStorage
               if (index === 0) {
@@ -429,89 +384,20 @@
                 // Store the image data in localStorage
                 localStorage.setItem("profileImage", e.target.result);
               }
+=======
+>>>>>>> parent of 367757e (connected all the pages and mostly completed the frontent)
             };
             reader.readAsDataURL(file);
           }
-          validateForm();
         });
       });
-
-      // Form validation
-      const firstNameInput = document.getElementById("first-name");
-      const emailInput = document.getElementById("email");
-      const monthInput = document.getElementById("month");
-      const dayInput = document.getElementById("day");
-      const yearInput = document.getElementById("year");
-      const nextButton = document.getElementById("nextButton");
-      const birthdayError = document.getElementById("birthday-error");
-
-      function validateForm() {
-        const isFirstNameFilled = firstNameInput.value.trim() !== "";
-        const isEmailFilled = emailInput.value.trim() !== "";
-        const isMonthFilled = monthInput.value.trim() !== "";
-        const isDayFilled = dayInput.value.trim() !== "";
-        const isYearFilled = yearInput.value.trim() !== "";
-        const isGenderSelected = document.querySelector(
-          ".gender .gender-option.selected"
-        );
-        const isInterestedSelected = document.querySelector(
-          ".interested-in .interested-option.selected"
-        );
-        const isRelationshipSelected = document.querySelector(
-          ".relationship-intent .relationship-option.selected"
-        );
-
-        // Validate birth year
-        let isBirthYearValid = true;
-        const year = yearInput.value.trim();
-        if (year) {
-          const yearNum = parseInt(year, 10);
-          if (yearNum < 2000 || yearNum > 2010) {
-            isBirthYearValid = false;
-            birthdayError.style.display = "block";
-          } else {
-            birthdayError.style.display = "none";
-          }
-        } else {
-          birthdayError.style.display = "none";
-        }
-
-        // Validate if at least one image is uploaded
-        let isImageUploaded = false;
-        fileInputs.forEach((input) => {
-          if (input.files && input.files.length > 0) {
-            isImageUploaded = true;
-          }
-        });
-
-        const isFormValid =
-          isFirstNameFilled &&
-          isEmailFilled &&
-          isMonthFilled &&
-          isDayFilled &&
-          isYearFilled &&
-          isGenderSelected &&
-          isInterestedSelected &&
-          isRelationshipSelected &&
-          isBirthYearValid &&
-          isImageUploaded;
-
-        nextButton.disabled = !isFormValid;
-      }
-
-      // Add event listeners to inputs
-      firstNameInput.addEventListener("input", validateForm);
-      emailInput.addEventListener("input", validateForm);
-      monthInput.addEventListener("input", validateForm);
-      dayInput.addEventListener("input", validateForm);
-      yearInput.addEventListener("input", validateForm);
 
       // Next button functionality
-      nextButton.addEventListener("click", function () {
-        if (!this.disabled) {
-          window.location.href = "discover2.html";
-        }
-      });
+      document
+        .getElementById("nextButton")
+        .addEventListener("click", function () {
+          window.location.href = "discover2.html"; // Redirect to discover2.html
+        });
     </script>
   </body>
 </html>

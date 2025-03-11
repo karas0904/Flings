@@ -6,6 +6,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -21,8 +22,7 @@
     "face-api.js": "^0.20.0",
     "mongoose": "^8.12.1",
     "passport": "^0.4.1",
-    "passport-google-oauth20": "^2.0.0",
-    "connect-mongo": "^4.6.0"
+    "passport-google-oauth20": "^2.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

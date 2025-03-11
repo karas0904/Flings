@@ -1,9 +1,11 @@
 // Create routes for profile management
 // backend/routes/profileRoutes.js
-const express = require("express");
+
+import express from "express";
+import User from "../models/User.js";
+import isAuthenticated from "../middleware/auth.js";
+
 const router = express.Router();
-const User = require("../models/User");
-const isAuthenticated = require("../middleware/auth");
 
 // Get current user profile
 router.get("/", isAuthenticated, async (req, res) => {
@@ -30,4 +32,4 @@ router.put("/", isAuthenticated, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

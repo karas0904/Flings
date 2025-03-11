@@ -72,7 +72,7 @@
         padding: 12px;
         background-color: white;
         border: 1px solid black;
-        color: black;
+        color: white;
         font-size: 16px;
         transition: border-color 0.3s, box-shadow 0.3s;
         outline: none;
@@ -244,11 +244,6 @@
       // Enable/disable Next button based on checkbox
       dataConsentCheckbox.addEventListener("change", function () {
         nextButton.disabled = !this.checked;
-      });
-
-      // Add event listener to redirect to explore.html when Next button is clicked
-      nextButton.addEventListener("click", function () {
-        window.location.href = "explore.html";
       });
     </script>
   </body>

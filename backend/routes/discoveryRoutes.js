@@ -1,10 +1,11 @@
 // Create routes for discovering potential matches
 // backend/routes/discoveryRoutes.js
-const express = require("express");
+import express from "express";
+import User from "../models/User.js";
+import Interaction from "../models/Interaction.js";
+import isAuthenticated from "../middleware/auth.js";
+
 const router = express.Router();
-const User = require("../models/User");
-const Interaction = require("../models/Interaction");
-const isAuthenticated = require("../middleware/auth");
 
 // Get potential matches
 router.get("/", isAuthenticated, async (req, res) => {
@@ -24,4 +25,4 @@ router.get("/", isAuthenticated, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router; // ✅ Ensure you export it as default

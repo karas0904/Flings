@@ -7,4 +7,4 @@ function isAuthenticated(req, res, next) {
     .json({ error: "You must be logged in to access this resource" });
 }
 
-module.exports = isAuthenticated;
+export default isAuthenticated;

@@ -1,10 +1,9 @@
-// Create routes for messaging
-// backend/routes/messageRoutes.js
-const express = require("express");
+import express from "express";
+import Message from "../models/Message.js";
+import Match from "../models/Match.js";
+import isAuthenticated from "../middleware/auth.js";
+
 const router = express.Router();
-const Message = require("../models/Message");
-const Match = require("../models/Match");
-const isAuthenticated = require("../middleware/auth");
 
 // Get messages for a match
 router.get("/:matchId", isAuthenticated, async (req, res) => {
@@ -13,7 +12,7 @@ router.get("/:matchId", isAuthenticated, async (req, res) => {
 
     // Verify user is part of this match
     const match = await Match.findById(matchId);
-    if (!match.users.includes(req.user.id)) {
+    if (!match || !match.users.includes(req.user.id)) {
       return res
         .status(403)
         .json({ error: "Not authorized to view these messages" });
@@ -35,7 +34,7 @@ router.post("/:matchId", isAuthenticated, async (req, res) => {
 
     // Verify user is part of this match
     const match = await Match.findById(matchId);
-    if (!match.users.includes(req.user.id)) {
+    if (!match || !match.users.includes(req.user.id)) {
       return res
         .status(403)
         .json({ error: "Not authorized to send messages in this match" });
@@ -53,4 +52,4 @@ router.post("/:matchId", isAuthenticated, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

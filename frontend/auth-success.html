@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Authentication Successful</title>
+    <script>
+      // Get user info from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const userInfoBase64 = urlParams.get("user");
+
+      if (userInfoBase64) {
+        try {
+          // Decode user info from base64
+          const userInfoJson = atob(userInfoBase64);
+          const userInfo = JSON.parse(userInfoJson);
+
+          // Store user info in localStorage
+          localStorage.setItem("user", JSON.stringify(userInfo));
+          console.log("User info stored:", userInfo);
+
+          // Set authentication timestamp
+          localStorage.setItem("authTime", Date.now().toString());
+
+          // Redirect to discover page
+          window.location.href = "discover.html";
+        } catch (error) {
+          console.error("Error processing user info:", error);
+          window.location.href = "login.html?error=auth";
+        }
+      } else {
+        console.error("No user info provided");
+        window.location.href = "login.html?error=auth";
+      }
+    </script>
+  </head>
+  <body>
+    <p>Authentication successful! Redirecting...</p>
+  </body>
+</html>

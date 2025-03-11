@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amourette - Account</title>
+    <!-- Font Awesome CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background: #000; /* Solid black background */
+        height: 100vh;
+        display: flex;
+        align-items: top;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        overflow-y: auto;
+      }
+
+      /* Red and Blue vertically tilted blurred rectangles */
+      .blur-shape {
+        position: fixed;
+        width: 250px;
+        height: 500px;
+        border-radius: 50px;
+        filter: blur(100px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+
+      .red-shape {
+        background: rgba(255, 0, 0, 0.7); /* Red/love color */
+        top: -50px;
+        left: -100px;
+        transform: rotate(45deg);
+      }
+
+      .blue-shape {
+        background: rgba(135, 206, 250, 0.7); /* Sky blue color */
+        bottom: -50px;
+        right: -100px;
+        transform: rotate(45deg);
+      }
+
+      /* Page title in top left */
+      .page-title {
+        position: fixed;
+        top: 20px;
+        left: 80px; /* Positioned to the right of the sidebar */
+        color: white;
+        z-index: 99;
+      }
+
+      .page-title h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+        letter-spacing: 1px;
+      }
+
+      .page-title .account-name {
+        font-size: 12px;
+        color: #ccc;
+        margin-top: 5px;
+      }
+
+      /* Sidebar (left fixed sidebar) */
+      .sidebar {
+        width: 60px;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 100; /* Ensure sidebar is above blurred shapes */
+        overflow-y: auto;
+      }
+
+      .sidebar .brand {
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        margin-top: 20px;
+      }
+
+      /* Icon container - positioned in the middle */
+      .icon-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-grow: 1;
+        justify-content: center;
+      }
+
+      /* Icon styles */
+      .sidebar-icon {
+        color: white;
+        font-size: 24px;
+        margin: 15px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      /* Divider line */
+      .icon-divider {
+        width: 20px;
+        height: 1px;
+        background-color: rgba(255, 255, 255, 0.3);
+        margin: 5px 0;
+      }
+
+      .profile-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%; /* Makes it round */
+        overflow: hidden;
+        margin-top: auto; /* Pushes it to the bottom */
+        margin-bottom: 20px; /* Spacing from the bottom */
+        box-sizing: border-box;
+      }
+
+      .profile-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .profile-icon:hover {
+        outline: 5px solid rgba(144, 136, 136, 0.432);
+        transition: 0.5s;
+      }
+
+      /* Account content area */
+      .account-content {
+        margin-left: 60px; /* Offset for sidebar */
+        padding: 40px;
+        padding-top: 80px; /* Extra padding to account for the fixed title */
+        width: calc(100% - 60px); /* Adjust for sidebar width */
+        color: white;
+        max-width: 800px;
+        margin-top: 50px;
+        min-height: 100vh;
+      }
+
+      .account-header {
+        display: flex;
+        flex-direction: row; /* Changed to row to place content side by side */
+        align-items: center;
+        margin-bottom: 40px;
+      }
+
+      .account-avatar {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        border: 1px solid white;
+        overflow: hidden;
+        margin-right: 30px; /* Add space between avatar and info */
+        position: relative;
+        transition: transform 0.3s ease; /* Smooth transition for scaling */
+      }
+
+      .account-avatar:hover {
+        transform: scale(1.1); /* Enlarge the avatar on hover */
+      }
+
+      .avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(
+          0,
+          0,
+          0,
+          0.5
+        ); /* Semi-transparent black overlay */
+        opacity: 0; /* Start with no visibility */
+        transition: opacity 0.3s ease; /* Smooth transition for overlay */
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: flex-end; /* Align items to the bottom */
+        padding: 25px; /* Add some padding at the bottom */
+      }
+
+      .account-avatar:hover .avatar-overlay {
+        opacity: 1; /* Show overlay on hover */
+      }
+
+      .avatar-text {
+        color: white; /* Text color */
+        font-size: 16px; /* Text size */
+        text-align: center; /* Center the text */
+        width: 100%; /* Ensure text takes full width for centering */
+        cursor: pointer;
+      }
+
+      .account-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .account-info {
+        flex: 1;
+      }
+
+      .account-info h1 {
+        font-size: 28px;
+        margin-bottom: 5px;
+      }
+
+      .account-info p {
+        color: #ccc;
+        margin-bottom: 15px;
+        font-family: "Raleway", sans-serif;
+      }
+
+      .account-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      /* Styling buttons like in login.html */
+      .account-button {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 20px;
+        border: none;
+        padding: 10px 20px;
+        text-decoration: none;
+        transition: background 0.3s;
+        font-size: 12px;
+        font-family: "Raleway", sans-serif;
+        cursor: pointer;
+      }
+
+      .account-button:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Special styling for delete button */
+      .delete-button:hover {
+        background-color: rgba(255, 0, 0, 0.6) !important;
+      }
+
+      .account-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .account-section h2 {
+        margin-bottom: 15px;
+        font-size: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 10px;
+      }
+
+      .field {
+        display: flex;
+        margin-bottom: 10px;
+      }
+
+      .field-label {
+        width: 150px;
+        font-weight: bold;
+        color: #ccc;
+      }
+
+      .field-value {
+        flex: 1;
+      }
+
+      .edit-button {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 20px;
+        border: none;
+        padding: 8px 15px;
+        text-decoration: none;
+        transition: background 0.3s;
+        font-size: 12px;
+        font-family: "Raleway", sans-serif;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+
+      .edit-button:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .boxes-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 60px;
+      }
+
+      .rectangular-box {
+        flex: 6;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        height: 200px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .rectangle-top {
+        flex: 3;
+        padding: 15px;
+        position: relative;
+        overflow: hidden; /* Hide overflow to clip cards at divider */
+      }
+
+      .rectangle-bottom {
+        flex: 1;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 3; /* Ensure bottom section is above cards */
+        background-color: rgba(255, 255, 255, 0.9); /* Match box background */
+      }
+
+      .rectangle-divider {
+        height: 1px;
+        background-color: rgba(0, 0, 0, 0.1);
+        width: 100%;
+        position: relative;
+        z-index: 4; /* Higher z-index to ensure it's above cards */
+      }
+
+      .photo-stack-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: 5px;
+        margin-left: 10px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .photo-text {
+        font-family: "Oswald", sans-serif;
+        font-size: 32px;
+        color: #333;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .stack-text {
+        font-family: "Tangerine", cursive;
+        font-size: 36px;
+        color: #333;
+        margin-top: -10px;
+        margin-left: 25px;
+        line-height: 1;
+      }
+
+      /* Card stack styling - with increased height */
+      .card-stack {
+        position: absolute;
+        bottom: 0;
+        right: 80px;
+        width: 180px;
+        height: 180px; /* Increased from 140px */
+        z-index: 1;
+      }
+
+      .card {
+        position: absolute;
+        width: 100px;
+        height: 180px; /* Increased from 120px */
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .card-left {
+        bottom: 0;
+        right: 60px;
+        transform: rotate(-20deg) translateY(50%);
+        background-color: #f8f8f8;
+        z-index: 1;
+      }
+
+      .card-middle {
+        bottom: 0;
+        right: 30px;
+        transform: rotate(0deg) translateY(50%);
+        background-color: white;
+        z-index: 3;
+      }
+
+      .card-right {
+        bottom: 0;
+        right: 0;
+        transform: rotate(20deg) translateY(50%);
+        background-color: #f8f8f8;
+        z-index: 2;
+      }
+
+      /* Hover Effects */
+      .card-stack:hover .card-left {
+        transform: rotate(-10deg) translateY(50%) scale(1.05); /* Tilt towards the right and enlarge */
+        transition: 0.5s;
+      }
+
+      .card-stack:hover .card-middle {
+        transform: translateY(30px) scale(4); /* Move down while maintaining size */
+        opacity: 1; /* Keep it fully visible */
+      }
+
+      .card-stack:hover .card-right {
+        transform: rotate(10deg) translateY(50%) scale(1.05); /* Tilt towards the left and enlarge */
+        transition: 0.5s;
+      }
+
+      /* Additional hover effect for the middle card to slide down */
+      .card-stack:hover .card-middle {
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Smooth transition for sliding effect */
+        transform: translateY(200px) scale(1); /* Move down by 50px */
+        opacity: 0; /* Fade out */
+      }
+
+      .add-button {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.1);
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .add-button:hover {
+        background-color: rgba(0, 0, 0, 0.2);
+      }
+
+      .add-button i {
+        font-size: 16px;
+        color: #333;
+      }
+
+      .open-button {
+        background-color: rgba(0, 0, 0, 0.1);
+        color: #333;
+        border: none;
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 11px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .open-button:hover {
+        background-color: rgba(0, 0, 0, 0.2);
+      }
+
+      .square-box {
+        flex: 2;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        height: 200px;
+        position: relative;
+        padding: 15px 12px 12px 12px; /* Increased top padding for edit button */
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Container for the content with overflow control */
+      .square-box .info-content {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+        /* Remove top padding since we increased box top padding */
+      }
+
+      .square-box .info-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 2px 0;
+        font-size: 11px;
+        padding: 3px 0;
+      }
+
+      .square-box .info-label {
+        color: #000000 !important;
+        font-weight: 600;
+        flex-shrink: 0; /* Prevent text from shrinking */
+        margin-right: 10px; /* Space between label and value */
+      }
+
+      .square-box .info-value {
+        color: rgba(0, 0, 0, 0.7) !important;
+        text-align: right;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Add ellipsis for long text */
+        white-space: nowrap; /* Keep text in one line */
+      }
+
+      .square-box .divider {
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.1) 50%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        margin: 1px 0;
+      }
+
+      /* Position edit button to overflow */
+      .corner-edit-btn {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: rgba(0, 0, 0, 0.1);
+        color: rgba(0, 0, 0, 0.8);
+        font-size: 9px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 0 15px 0 10px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        z-index: 2;
+      }
+
+      .corner-edit-btn:hover {
+        background-color: rgba(0, 0, 0, 0.15);
+      }
+
+      /* Scrollbar styling */
+      .square-box .info-content::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .square-box .info-content::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 2px;
+      }
+
+      .square-box .info-content::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 2px;
+      }
+
+      /* Add Google Fonts */
+      @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Tangerine:wght@400;700&display=swap");
+
+      /* Add these styles to enable scrolling while keeping sidebar fixed */
+      .main-content {
+        margin-left: 80px; /* Adjust based on your sidebar width */
+        padding-bottom: 50px; /* Add some padding at the bottom for scrolling */
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+
+      .quotes-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 25px; /* Consistent spacing */
+      }
+
+      .quote-box {
+        flex: 1;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        height: 100px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px solid rgba(255, 255, 255, 0.95);
+        box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .quote-text {
+        color: #666;
+        font-size: 16px;
+        font-family: "Raleway", sans-serif;
+        font-weight: 500;
+        padding: 15px 25px;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        transition: opacity 0.3s ease; /* Added transition for smooth fade */
+      }
+
+      .quote-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding: 15px 25px;
+        background: transparent;
+        border: none;
+        border-radius: 15px;
+        font-size: 16px;
+        font-family: "Raleway", sans-serif;
+        text-align: center;
+        color: #333;
+        outline: none;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease; /* Added transition for smooth fade */
+      }
+
+      .quote-input:focus {
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .corner-plus-btn {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 24px;
+        height: 24px;
+        background-color: white;
+        color: black;
+        border: none;
+        border-radius: 0 15px 0 8px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 2;
+        transition: all 0.3s ease;
+      }
+
+      .corner-plus-btn:hover {
+        background-color: #e0e0e0;
+      }
+
+      .quote-caption {
+        text-align: left;
+        font-family: "Dancing Script", cursive;
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 15px;
+        font-weight: 200;
+      }
+
+      .profile-info-container {
+        display: flex;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 40px 20px;
+        margin: 0 -20px;
+        width: calc(100% + 40px);
+        position: relative;
+        min-height: 400px;
+        margin-bottom: 25px; /* Consistent spacing */
+      }
+
+      .info-column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 0 20px;
+      }
+
+      .column-divider {
+        width: 0.5px;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0) 20%,
+          rgba(255, 255, 255, 0.8) 50%,
+          rgba(255, 255, 255, 0) 80%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        margin: 0 10px;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 15px 0;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+
+      .info-label {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        margin-left: 2px;
+      }
+
+      .info-value {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 8px;
+        font-weight: 100;
+      }
+
+      .arrow-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 4px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .arrow-btn i {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 12px;
+      }
+
+      .arrow-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .separator {
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.3) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        margin: 0;
+      }
+
+      /* Style the scrollbar */
+      .info-content::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .info-content::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 2px;
+      }
+
+      .info-content::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 2px;
+      }
+
+      .square-box-container {
+        position: relative;
+        flex: 2;
+        padding-top: 10px; /* Add space for elevated button */
+      }
+
+      .square-box {
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 15px;
+        height: 200px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .floating-edit-btn {
+        position: absolute;
+        top: 0;
+        right: 15px;
+        background-color: white;
+        color: black;
+        font-size: 9px;
+        padding: 5px 12px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: bold;
+        transform: translateY(-50%);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        z-index: 2;
+      }
+
+      .floating-edit-btn:hover {
+        transform: translateY(-50%) scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .floating-edit-btn.active {
+        background-color: #020202;
+        color: white;
+      }
+
+      .info-content {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+      }
+
+      .square-box .info-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 2px 0;
+        font-size: 11px;
+        padding: 3px 0;
+      }
+
+      .square-box .info-label {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 500;
+        flex-shrink: 0;
+        margin-right: 10px;
+      }
+
+      .square-box .info-value {
+        color: rgba(255, 255, 255, 0.6) !important;
+        text-align: right;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .square-box .divider {
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.2) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        margin: 1px 0;
+      }
+
+      /* Edit input styling */
+      .edit-input {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 11px;
+        padding: 2px 0;
+        width: 100%;
+        text-align: right;
+        outline: none;
+        transition: border-color 0.3s;
+      }
+
+      .edit-input:focus {
+        border-bottom-color: #007bff;
+      }
+
+      /* Scrollbar styling */
+      .info-content::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .info-content::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+      }
+
+      .info-content::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+      }
+
+      .gif-section {
+        margin: 0; /* Remove default margins */
+        padding-top: 15px; /* Keep padding for floating buttons */
+      }
+
+      .gif-prompts-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px; /* Space before note */
+      }
+
+      .gif-box {
+        flex: 1;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        height: 140px;
+        width: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: visible;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1),
+          inset 0 0 15px rgba(0, 0, 0, 0.1);
+        transition: border-color 0.3s ease;
+      }
+
+      .gif-box:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .gif-text {
+        color: #666;
+        font-size: 16px;
+        font-family: "Raleway", sans-serif;
+        font-weight: 500;
+        opacity: 0.7;
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .gif-box .corner-plus-btn {
+        position: absolute;
+        top: -15px; /* Adjusted for larger size */
+        right: 15px; /* Default position for larger screens */
+        width: 80px;
+        height: 30px;
+        background-color: white;
+        color: black;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 14px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 2;
+        transition: all 0.3s ease;
+      }
+
+      /* Media query for smaller screens */
+      @media (max-width: 768px) {
+        .gif-box .corner-plus-btn {
+          right: 10px; /* Adjust position for smaller screens */
+        }
+      }
+
+      @media (max-width: 480px) {
+        .gif-box .corner-plus-btn {
+          right: 5px; /* Further adjust for very small screens */
+        }
+      }
+
+      .gif-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 13px;
+      }
+
+      .gif-note {
+        text-align: left;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 12px;
+        margin-bottom: 25px; /* Consistent spacing */
+        font-style: italic;
+      }
+
+      /* Update video display to hide GIF text */
+      .gif-box.has-video .gif-text {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Red and Blue blurred shapes -->
+    <div class="blur-shape red-shape"></div>
+    <div class="blur-shape blue-shape"></div>
+
+    <!-- Page title in top left -->
+    <div class="page-title">
+      <h1>ACCOUNT</h1>
+      <div class="account-name">(your.email@example.com)</div>
+    </div>
+
+    <!-- Sidebar (left fixed sidebar) -->
+    <div class="sidebar">
+      <span class="brand">Amourette</span>
+
+      <!-- Icon container with the three new icons -->
+      <div class="icon-container">
+        <a href="explore.html" class="sidebar-icon">
+          <i class="fa-solid fa-heart"></i>
+        </a>
+        <div class="icon-divider"></div>
+        <a href="saves.html" class="sidebar-icon">
+          <i class="fa-solid fa-bookmark"></i>
+        </a>
+        <div class="icon-divider"></div>
+        <a href="messages.html" class="sidebar-icon">
+          <i class="fa-solid fa-comment"></i>
+        </a>
+      </div>
+
+      <div class="profile-icon">
+        <img src="boy-account.svg" alt="Profile" id="profileImage" />
+      </div>
+    </div>
+
+    <!-- Account content area -->
+    <div class="account-content">
+      <div class="account-header">
+        <div class="account-avatar">
+          <img src="boy-account.svg" alt="Profile" id="accountAvatar" />
+          <div class="avatar-overlay">
+            <span class="avatar-text" id="changeAvatarText">Change</span>
+            <input
+              type="file"
+              id="avatarUpload"
+              accept="image/*"
+              style="display: none"
+            />
+          </div>
+        </div>
+        <div class="account-info">
+          <h1>Your Name</h1>
+          <p>your.email@example.com</p>
+          <div class="account-buttons">
+            <button class="account-button">SIGN OUT</button>
+            <button class="account-button delete-button">DELETE ACCOUNT</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="boxes-container">
+        <div class="rectangular-box">
+          <div class="rectangle-top">
+            <div class="photo-stack-container">
+              <span class="photo-text">PHOTO</span>
+              <span class="stack-text">Stack</span>
+            </div>
+
+            <!-- Card stack effect -->
+            <div class="card-stack">
+              <div class="card card-left"></div>
+              <div class="card card-middle"></div>
+              <div class="card card-right"></div>
+            </div>
+          </div>
+          <div class="rectangle-divider"></div>
+          <div class="rectangle-bottom">
+            <button class="add-button"><i class="fa-solid fa-plus"></i></button>
+            <button class="open-button">OPEN</button>
+          </div>
+        </div>
+
+        <!-- Square box with info -->
+        <div class="square-box-container">
+          <button class="floating-edit-btn" id="squareBoxEdit">EDIT</button>
+          <div class="square-box">
+            <div class="info-content">
+              <div class="info-item">
+                <span class="info-label">Age:</span>
+                <span class="info-value" data-field="age">22</span>
+              </div>
+              <div class="divider"></div>
+
+              <div class="info-item">
+                <span class="info-label">Year:</span>
+                <span class="info-value" data-field="year">3rd Year</span>
+              </div>
+              <div class="divider"></div>
+
+              <div class="info-item">
+                <span class="info-label">Height:</span>
+                <span class="info-value" data-field="height">6'1"</span>
+              </div>
+              <div class="divider"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quote-caption">
+        express yourself with the words you have never spoken
+      </div>
+
+      <div class="quotes-container">
+        <div class="quote-box">
+          <button class="corner-plus-btn" onclick="enableQuoteEdit(this)">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <div class="quote-text">Quotes</div>
+        </div>
+
+        <div class="quote-box">
+          <button class="corner-plus-btn" onclick="enableQuoteEdit(this)">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <div class="quote-text">Quotes</div>
+        </div>
+
+        <div class="quote-box">
+          <button class="corner-plus-btn" onclick="enableQuoteEdit(this)">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <div class="quote-text">Quotes</div>
+        </div>
+      </div>
+
+      <div class="profile-info-container">
+        <div class="info-column">
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Job</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">Software Engineer</span>
+          </div>
+          <div class="separator"></div>
+
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Plan to</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">Travel the World</span>
+          </div>
+          <div class="separator"></div>
+
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Hometown</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">New York</span>
+          </div>
+          <div class="separator"></div>
+
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Dating Intention</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">Long Term</span>
+          </div>
+        </div>
+
+        <div class="column-divider"></div>
+
+        <div class="info-column">
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Name</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">John Doe</span>
+          </div>
+          <div class="separator"></div>
+
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Pets</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">Dog Lover</span>
+          </div>
+          <div class="separator"></div>
+
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Language</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">English, Spanish</span>
+          </div>
+        </div>
+
+        <div class="column-divider"></div>
+
+        <div class="info-column">
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Drinking</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">Social Drinker</span>
+          </div>
+          <div class="separator"></div>
+
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Smoking</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">Non-Smoker</span>
+          </div>
+          <div class="separator"></div>
+
+          <div class="info-item">
+            <div class="info-row">
+              <span class="info-value">Party Person</span>
+              <button class="arrow-btn" onclick="enableEdit(this)">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <span class="info-label">Moderate</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="gif-section">
+        <div class="gif-prompts-container">
+          <div class="gif-box">
+            <button class="corner-plus-btn" onclick="triggerGifUpload(this)">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+            <input
+              type="file"
+              class="gif-upload"
+              accept=".gif,video/*"
+              hidden
+            />
+            <div class="gif-text">GIF</div>
+            <video class="gif-video" loop muted hidden></video>
+          </div>
+
+          <div class="gif-box">
+            <button class="corner-plus-btn" onclick="triggerGifUpload(this)">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+            <input
+              type="file"
+              class="gif-upload"
+              accept=".gif,video/*"
+              hidden
+            />
+            <div class="gif-text">GIF</div>
+            <video class="gif-video" loop muted hidden></video>
+          </div>
+        </div>
+        <div class="gif-note">
+          Note: Only 2-3 seconds video clips are allowed
+        </div>
+      </div>
+
+      <!-- New black box at the end of the page -->
+      <div
+        class="black-box"
+        style="
+          height: 350px;
+          margin-top: 50%;
+          width: 100vw;
+          left: 0;
+          position: absolute;
+          background-color: white;
+        "
+      ></div>
+    </div>
+
+    <script>
+      // Check if there's a stored profile image
+      window.onload = function () {
+        const storedImage = localStorage.getItem("profileImage");
+        if (storedImage) {
+          document.getElementById("profileImage").src = storedImage;
+          document.getElementById("accountAvatar").src = storedImage;
+        }
+
+        // Add hover effect for sidebar icons
+        const icons = document.querySelectorAll(".sidebar-icon");
+
+        icons.forEach((icon) => {
+          icon.addEventListener("mouseenter", () => {
+            icons.forEach((otherIcon) => {
+              if (otherIcon !== icon) {
+                otherIcon.style.filter = "blur(2px)";
+                otherIcon.style.opacity = "0.5";
+              } else {
+                otherIcon.style.transform = "scale(1.2)";
+              }
+            });
+          });
+
+          icon.addEventListener("mouseleave", () => {
+            icons.forEach((otherIcon) => {
+              otherIcon.style.filter = "none";
+              otherIcon.style.opacity = "1";
+              otherIcon.style.transform = "scale(1)";
+            });
+          });
+        });
+
+        // Update the email in the page title
+        const email = document
+          .querySelector(".account-info p")
+          .textContent.trim();
+        document.querySelector(".account-name").textContent = "(" + email + ")";
+      };
+
+      function enableQuoteEdit(button) {
+        const quoteBox = button.parentElement;
+        const quoteText = quoteBox.querySelector(".quote-text");
+
+        // Create input if it doesn't exist
+        let input = quoteBox.querySelector(".quote-input");
+        if (!input) {
+          input = document.createElement("textarea");
+          input.className = "quote-input";
+          quoteBox.appendChild(input);
+
+          input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              saveQuote(quoteBox);
+            }
+          });
+        }
+
+        // Fade out text and fade in input
+        quoteText.style.opacity = "0";
+        input.style.display = "block";
+        setTimeout(() => {
+          input.style.opacity = "1";
+        }, 10);
+
+        input.value =
+          quoteText.textContent === "Quotes" ? "" : quoteText.textContent;
+        input.focus();
+
+        button.innerHTML = '<i class="fa-solid fa-check"></i>';
+        button.onclick = () => saveQuote(quoteBox);
+      }
+
+      function saveQuote(quoteBox) {
+        const input = quoteBox.querySelector(".quote-input");
+        const quoteText = quoteBox.querySelector(".quote-text");
+        const button = quoteBox.querySelector(".corner-plus-btn");
+
+        // Fade out input and fade in text
+        input.style.opacity = "0";
+        setTimeout(() => {
+          input.style.display = "none";
+          quoteText.textContent = input.value.trim() || "Quotes";
+          quoteText.style.opacity = "1";
+        }, 300);
+
+        button.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        button.onclick = () => enableQuoteEdit(button);
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const editBtn = document.getElementById("squareBoxEdit");
+        const squareBox = document.querySelector(".square-box");
+        const infoValues = squareBox.querySelectorAll(".info-value"); // Only select values within square box
+        let isEditing = false;
+
+        editBtn.addEventListener("click", function () {
+          isEditing = !isEditing;
+          editBtn.classList.toggle("active");
+
+          if (isEditing) {
+            editBtn.textContent = "SAVE";
+            // Make only square box values editable
+            infoValues.forEach((value) => {
+              const currentText = value.textContent;
+              const input = document.createElement("input");
+              input.type = "text";
+              input.value = currentText;
+              input.className = "edit-input";
+              value.innerHTML = "";
+              value.appendChild(input);
+            });
+          } else {
+            editBtn.textContent = "EDIT";
+            // Save only square box values
+            infoValues.forEach((value) => {
+              const input = value.querySelector("input");
+              const newText = input.value;
+              value.innerHTML = newText;
+
+              // Here you can add code to save to backend
+              console.log(`Saving ${value.dataset.field}: ${newText}`);
+            });
+          }
+        });
+      });
+
+      function triggerGifUpload(button) {
+        const gifBox = button.parentElement;
+        const fileInput = gifBox.querySelector(".gif-upload");
+        fileInput.click();
+
+        fileInput.onchange = function () {
+          const file = this.files[0];
+          if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+              alert("File size too large. Please upload a smaller file.");
+              return;
+            }
+
+            const video = gifBox.querySelector(".gif-video");
+            gifBox.classList.add("loading");
+            button.innerHTML = '<i class="fa-solid fa-spinner"></i>';
+
+            const url = URL.createObjectURL(file);
+            video.src = url;
+
+            video.onloadedmetadata = function () {
+              if (this.duration > 3) {
+                alert("Video must be 3 seconds or shorter");
+                URL.revokeObjectURL(url);
+                resetGifBox(gifBox);
+                return;
+              }
+
+              video.hidden = false;
+              gifBox.classList.remove("loading");
+              gifBox.classList.add("has-video");
+              video.play();
+
+              button.innerHTML = '<i class="fa-solid fa-trash"></i>';
+              button.onclick = () => resetGifBox(gifBox);
+            };
+          }
+        };
+      }
+
+      function resetGifBox(gifBox) {
+        const video = gifBox.querySelector(".gif-video");
+        const button = gifBox.querySelector(".corner-plus-btn");
+        const fileInput = gifBox.querySelector(".gif-upload");
+
+        video.hidden = true;
+        video.src = "";
+        gifBox.classList.remove("has-video");
+        button.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        button.onclick = () => triggerGifUpload(button);
+        fileInput.value = "";
+      }
+
+      function enableEdit(button) {
+        const infoItem = button.closest(".info-item");
+        const infoLabel = infoItem.querySelector(".info-label");
+        const currentText = infoLabel.textContent;
+
+        // Create input if it doesn't exist
+        let input = infoItem.querySelector(".edit-input");
+        if (!input) {
+          input = document.createElement("input");
+          input.type = "text";
+          input.value = currentText;
+          input.className = "edit-input";
+          input.style.border = "none"; // Prevent any border from appearing
+          input.style.outline = "none"; // Prevent outline on focus
+          infoLabel.innerHTML = ""; // Clear the label
+          infoLabel.appendChild(input);
+          input.focus();
+
+          input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              saveEdit(infoItem);
+            }
+          });
+        }
+      }
+
+      function saveEdit(infoItem) {
+        const input = infoItem.querySelector(".edit-input");
+        const infoLabel = infoItem.querySelector(".info-label");
+
+        // Save the new value
+        const newText = input.value.trim();
+        infoLabel.innerHTML = newText || "N/A"; // Default to 'N/A' if empty
+      }
+
+      document
+        .getElementById("changeAvatarText")
+        .addEventListener("click", function () {
+          document.getElementById("avatarUpload").click(); // Trigger the file input click
+        });
+
+      document
+        .getElementById("avatarUpload")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              document.getElementById("accountAvatar").src = e.target.result; // Update the avatar image
+              localStorage.setItem("profileImage", e.target.result); // Optionally store the image in local storage
+            };
+            reader.readAsDataURL(file); // Read the file as a data URL
+          }
+        });
+    </script>
+  </body>
+</html>

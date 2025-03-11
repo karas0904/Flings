@@ -72,7 +72,7 @@ body {
   border-radius: 5px;
 }
 
-.login-button {
+.signup-button {
   background-color: rgba(255, 255, 255, 0.2); /* Slight grayish tint */
   color: white;
   border-radius: 20px;
@@ -81,7 +81,7 @@ body {
   transition: background 0.3s;
 }
 
-.login-button:hover {
+.signup-button:hover {
   background-color: rgba(255, 255, 255, 0.4);
 }
 

@@ -74,7 +74,6 @@
         padding: 12px;
         background-color: white;
         border: 1px solid black;
-        border-radius: 5px;
         color: black;
         font-size: 16px;
         transition: border-color 0.3s, box-shadow 0.3s;
@@ -131,7 +130,7 @@
         position: fixed; /* Changed to fixed positioning */
         bottom: 20px;
         right: 20px;
-        padding: 12px 20px;
+        padding: 10px 40px;
         background-color: white;
         border: none;
         border-radius: 5px;
@@ -142,10 +141,16 @@
         transition: background-color 0.3s;
         z-index: 1000; /* Ensure it stays above other content */
       }
-      .next-button:hover {
+      .next-button:hover:not(:disabled) {
         background-color: black;
         color: white;
         transition: 1s;
+      }
+      .next-button:disabled {
+        background-color: #ccc;
+        color: #666;
+        cursor: not-allowed;
+        border: 1px solid #999;
       }
     </style>
   </head>
@@ -204,7 +209,7 @@
         </div>
       </div>
     </div>
-    <button class="next-button" id="nextButton">Next</button>
+    <button class="next-button" id="nextButton" disabled>Next</button>
 
     <script>
       // Year selection functionality
@@ -212,6 +217,51 @@
         ".year-options .year-option"
       );
       const electivesSection = document.getElementById("electives-section");
+      const bioInput = document.getElementById("bio");
+      const loveLanguagesInput = document.getElementById("love-languages");
+      const dealBreakersInput = document.getElementById("deal-breakers");
+      const hobbiesInput = document.getElementById("hobbies");
+      const activitiesInput = document.getElementById("activities");
+      const preferencesInput = document.getElementById("preferences");
+      const elective1Input = document.getElementById("elective1");
+      const elective2Input = document.getElementById("elective2");
+      const elective3Input = document.getElementById("elective3");
+      const nextButton = document.getElementById("nextButton");
+
+      function validateForm() {
+        const isBioFilled = bioInput.value.trim() !== "";
+        const isYearSelected = document.querySelector(
+          ".year-options .year-option.selected"
+        );
+        const isLoveLanguagesFilled = loveLanguagesInput.value.trim() !== "";
+        const isDealBreakersFilled = dealBreakersInput.value.trim() !== "";
+        const isHobbiesFilled = hobbiesInput.value.trim() !== "";
+        const isActivitiesFilled = activitiesInput.value.trim() !== "";
+        const isPreferencesFilled = preferencesInput.value.trim() !== "";
+
+        // Check if electives section is visible (3rd or 4th year)
+        let isElectivesValid = true;
+        if (electivesSection.style.display === "block") {
+          const elective1 = elective1Input.value.trim();
+          const elective2 = elective2Input.value.trim();
+          const elective3 = elective3Input.value.trim();
+          // At least one elective must be filled
+          isElectivesValid =
+            elective1 !== "" || elective2 !== "" || elective3 !== "";
+        }
+
+        const isFormValid =
+          isBioFilled &&
+          isYearSelected &&
+          isLoveLanguagesFilled &&
+          isDealBreakersFilled &&
+          isHobbiesFilled &&
+          isActivitiesFilled &&
+          isPreferencesFilled &&
+          isElectivesValid;
+
+        nextButton.disabled = !isFormValid;
+      }
 
       yearButtons.forEach((button) => {
         button.addEventListener("click", function () {
@@ -226,15 +276,27 @@
           } else {
             electivesSection.style.display = "none";
           }
+          validateForm(); // Validate form after year selection
         });
       });
 
+      // Add event listeners to inputs for real-time validation
+      bioInput.addEventListener("input", validateForm);
+      loveLanguagesInput.addEventListener("input", validateForm);
+      dealBreakersInput.addEventListener("input", validateForm);
+      hobbiesInput.addEventListener("input", validateForm);
+      activitiesInput.addEventListener("input", validateForm);
+      preferencesInput.addEventListener("input", validateForm);
+      elective1Input.addEventListener("input", validateForm);
+      elective2Input.addEventListener("input", validateForm);
+      elective3Input.addEventListener("input", validateForm);
+
       // Next button functionality
-      document
-        .getElementById("nextButton")
-        .addEventListener("click", function () {
+      nextButton.addEventListener("click", function () {
+        if (!this.disabled) {
           window.location.href = "discover3.html"; // Redirect to discover3.html
-        });
+        }
+      });
     </script>
   </body>
 </html>

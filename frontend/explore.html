@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Explore</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background: #000; /* Solid black background */
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative; /* For positioning the blurred shapes */
+        overflow: hidden; /* Prevent overflow of blurred shapes */
+      }
+
+      /* Red and Blue vertically tilted blurred rectangles */
+      .blur-shape {
+        position: absolute;
+        width: 250px; /* Reduced from 300px to make less prominent */
+        height: 500px; /* Reduced from 600px to make less prominent */
+        border-radius: 50px;
+        filter: blur(100px);
+        z-index: -1; /* Behind all content */
+        opacity: 0.4; /* Reduced from 0.5 to make less intense */
+      }
+
+      .red-shape {
+        background: rgba(255, 0, 0, 0.7); /* Red/love color */
+        top: -50px;
+        left: -100px;
+        transform: rotate(45deg); /* Tilted vertically */
+      }
+
+      .blue-shape {
+        background: rgba(135, 206, 250, 0.7); /* Sky blue color */
+        bottom: -50px;
+        right: -100px;
+        transform: rotate(45deg); /* Tilted vertically */
+      }
+
+      /* Centered phone-like box */
+      .phone-box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Center the box exactly */
+        width: 360px; /* Typical phone width */
+        height: 700px; /* Typical phone height */
+        background: #fff; /* White background */
+        border-radius: 20px; /* Rounded corners like a phone */
+        box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5); /* Shadow at bottom and right */
+        z-index: 10; /* Ensure it's above the blurred shapes but below navbar */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end; /* Push content to the bottom */
+        padding-bottom: 20px; /* Add some padding at the bottom */
+      }
+
+      /* Container for buttons inside the phone box */
+      .button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 20px; /* Add padding to the sides */
+      }
+
+      /* Heart button (replacing the right green dot inside the box) */
+      .heart-button {
+        width: 40px;
+        height: 40px;
+        background: #ffe6e6; /* Light rose pink background */
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 24px;
+        color: #ff4d4d; /* Red color for the heart */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* No-named button (replacing the left green dot inside the box) */
+      .no-named-button {
+        width: 40px;
+        height: 40px;
+        background: #000; /* Black background */
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+        color: #fff; /* White color for visibility on black background */
+      }
+
+      /* Comment inbox (replacing the black rectangular box) */
+      .comment-inbox {
+        flex-grow: 1;
+        margin: 0 10px;
+        padding: 10px;
+        background: #f5f5f5; /* Light gray background */
+        border-radius: 20px; /* Rounded corners */
+        border: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #666;
+        font-style: italic;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for aesthetic */
+      }
+
+      /* Container for external buttons (Rose, Save, Share) outside the phone box */
+      .external-buttons {
+        position: absolute;
+        top: calc(50% + 190px); /* Shift buttons down by 50px from the center */
+        left: calc(
+          50% + 195px
+        ); /* Increase offset to add more space (360px width / 2 + 40px) */
+        transform: translateY(-50%); /* Adjust for vertical centering */
+        display: flex;
+        flex-direction: column; /* Vertical layout */
+        gap: 15px; /* Space between buttons */
+        z-index: 15; /* Above the phone box */
+      }
+
+      /* External buttons (Rose, Save, Share) */
+      .external-buttons button {
+        width: 50px;
+        height: 50px;
+        background: rgba(
+          255,
+          255,
+          255,
+          0.2
+        ); /* White and transparent background */
+        border: 0px solid rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #fff;
+        transition: background 0.3s ease;
+      }
+
+      .external-buttons button:hover {
+        background: rgba(
+          255,
+          255,
+          255,
+          0.4
+        ); /* Slightly more opaque on hover */
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 30px;
+        background-color: transparent;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+      }
+
+      .navbar .logo {
+        font-size: 24px;
+        font-weight: bold;
+        font-family: Arial, sans-serif;
+        color: #fff; /* White text */
+      }
+
+      .navbar .nav-links {
+        position: absolute; /* Center the nav-links in the middle of the navbar */
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center; /* Center items vertically */
+      }
+
+      .navbar .nav-links a {
+        font-size: 18px;
+        font-family: Arial, sans-serif;
+        color: rgba(255, 255, 255, 0.8); /* Off-white text */
+        text-decoration: none;
+        margin: 0 10px; /* Equal margin on both sides to control spacing */
+        transition: color 0.3s; /* Smooth transition for color change */
+      }
+
+      .navbar .nav-links a:hover {
+        color: #fff; /* White text on hover */
+      }
+
+      .navbar .nav-links a:nth-child(2) {
+        margin: 0 10px;
+        color: rgba(255, 255, 255, 0.8);
+        cursor: default;
+      }
+
+      .navbar .nav-links a:nth-child(2):hover {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .navbar .hamburger {
+        font-size: 24px;
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+        z-index: 1100;
+      }
+
+      .navbar .hamburger.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .side-navbar {
+        height: 100%;
+        width: 450px;
+        position: fixed;
+        top: 0;
+        right: -450px;
+        background: rgba(0, 0, 0, 0.325);
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: right 0.3s ease;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #fff;
+        z-index: 1000;
+      }
+
+      .side-navbar.active {
+        right: 0;
+      }
+
+      .close-icon {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 24px;
+        color: #fff;
+        cursor: pointer;
+        z-index: 1200;
+      }
+
+      .side-navbar .top-items {
+        padding-top: 60px;
+        text-align: left;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start; /* Changed to flex-start to move items to the top */
+      }
+
+      .side-navbar .top-items a {
+        color: #fff;
+        text-decoration: none;
+        display: block;
+        padding: 8px 0;
+        font-size: 15px;
+        transition: transform 0.3s ease, filter 0.3s ease;
+      }
+
+      .side-navbar .top-items a:hover {
+        transform: scale(1.05);
+      }
+
+      .side-navbar .top-items a {
+        filter: none;
+      }
+
+      .side-navbar .top-items .description {
+        font-size: 10px;
+        font-style: italic;
+        color: white;
+        margin-top: 1px;
+        margin-bottom: 8px;
+      }
+
+      .side-navbar .bottom-buttons {
+        margin-bottom: 20px;
+      }
+
+      .side-navbar .bottom-buttons button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 16px;
+        color: #fff;
+        background-color: rgba(57, 55, 55, 0.484);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .side-navbar .bottom-buttons button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .side-navbar .bottom-buttons button.delete-account {
+        background-color: rgba(250, 37, 37, 0.7);
+        border: 0px solid rgba(250, 37, 37, 0.7);
+      }
+
+      .side-navbar .bottom-buttons button.delete-account:hover {
+        background-color: rgba(255, 87, 87, 0.9);
+      }
+
+      /* Account Section in Sidebar */
+      .account-section {
+        display: flex;
+        align-items: center;
+        height: 90px;
+        margin-bottom: 20px; /* Space below the account section */
+      }
+
+      /* Account Image Styling */
+      .account-image {
+        width: 120px; /* Horizontal rectangle width */
+        height: 150px; /* Horizontal rectangle height */
+        object-fit: cover; /* Ensure the image fits well */
+        border-radius: 10px; /* Small border radius */
+        border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
+        margin-right: 15px; /* Space between image and text */
+      }
+
+      /* Account Name Styling */
+      .account-info .account-name {
+        margin-top: 80px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #fff;
+      }
+
+      /* Account Details (Age and Study Year) Styling */
+      .account-info .account-details {
+        font-size: 10px;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.8); /* Slightly faded white */
+        margin-top: 2px;
+      }
+
+      /* Adjust top-items padding to account for the new layout */
+      .side-navbar .top-items {
+        padding-top: 60px;
+        text-align: left;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start; /* Changed to flex-start to move items to the top */
+      }
+      .account-section:hover {
+        transform: scale(1.05); /* Slight zoom on hover */
+        transition: 1s;
+      }
+
+      /* New Styles for Middle-Left Alignment */
+      .side-navbar .middle-left {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start; /* Align items to the left */
+        margin-left: 20px; /* Add some margin to the left */
+        margin-top: 50%;
+      }
+
+      .side-navbar .middle-left a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 15px;
+        padding: 8px 0;
+        transition: transform 0.3s ease, filter 0.3s ease;
+      }
+
+      .side-navbar .middle-left a:hover {
+        transform: scale(1.05);
+      }
+
+      .side-navbar .middle-left .description {
+        font-size: 10px;
+        font-style: italic;
+        color: white;
+        margin-top: 1px;
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Red and Blue blurred shapes -->
+    <div class="blur-shape red-shape"></div>
+    <div class="blur-shape blue-shape"></div>
+
+    <!-- Centered phone-like box -->
+    <div class="phone-box">
+      <!-- Buttons inside the phone box -->
+      <div class="button-container">
+        <button class="no-named-button">?</button>
+        <div class="comment-inbox">Add a comment...</div>
+        <button class="heart-button">♥</button>
+      </div>
+    </div>
+
+    <!-- External buttons (Rose, Save, Share) outside the phone box on the right side -->
+    <div class="external-buttons">
+      <button title="Rose">🌹</button>
+      <!-- Rose button -->
+      <button title="Save">💾</button>
+      <button title="Share">🔗</button>
+    </div>
+
+    <nav class="navbar">
+      <div class="logo">Amourette</div>
+      <div class="nav-links">
+        <a href="#">explore</a>
+        <a href="#">|</a>
+        <a href="trending.html">trending</a>
+      </div>
+      <div class="hamburger" onclick="toggleSidebar()">☰</div>
+    </nav>
+
+    <div class="side-navbar" id="sideNavbar">
+      <div class="close-icon" onclick="toggleSidebar()">✕</div>
+      <div class="top-items">
+        <!-- Account Section with Image, Name, Age, and Study Year -->
+        <div class="account-section">
+          <a href="account.html">
+            <img
+              src="try-image.jpg"
+              alt="Account Image"
+              class="account-image"
+            />
+          </a>
+          <div class="account-info">
+            <div class="account-name">John Doe</div>
+            <div class="account-details">Age: 21 | Study Year: 3rd</div>
+          </div>
+        </div>
+        <!-- Middle-Left Section for Messages and Saves -->
+        <div class="middle-left">
+          <a href="messages.html">MESSAGES</a>
+          <div class="description">(See what your connections have to say)</div>
+          <a href="saves.html">SAVES</a>
+          <div class="description">(See the accounts you have saved)</div>
+        </div>
+      </div>
+      <div class="bottom-buttons">
+        <button onclick="logout()">Logout</button>
+        <button class="delete-account" onclick="deleteAccount()">
+          Delete Account
+        </button>
+      </div>
+    </div>
+
+    <script>
+      document.querySelector(".account-name").textContent = "Karmesh Meritia";
+      document.querySelector(".account-details").textContent =
+        "Age: 21 | Year: 4th";
+      function toggleSidebar() {
+        const sideNavbar = document.getElementById("sideNavbar");
+        const hamburger = document.querySelector(".hamburger");
+        const isActive = sideNavbar.classList.toggle("active");
+
+        if (isActive) {
+          hamburger.classList.add("hidden");
+        } else {
+          hamburger.classList.remove("hidden");
+        }
+      }
+
+      function logout() {
+        alert("Logout button clicked!");
+      }
+
+      function deleteAccount() {
+        alert("Delete Account button clicked!");
+      }
+
+      document.querySelectorAll(".side-navbar .top-items a").forEach((link) => {
+        link.addEventListener("mouseenter", () => {
+          document
+            .querySelectorAll(".side-navbar .top-items a")
+            .forEach((otherLink) => {
+              if (otherLink !== link) {
+                otherLink.style.filter = "blur(2px)";
+              }
+            });
+        });
+
+        link.addEventListener("mouseleave", () => {
+          document
+            .querySelectorAll(".side-navbar .top-items a")
+            .forEach((otherLink) => {
+              otherLink.style.filter = "none";
+            });
+        });
+      });
+    </script>
+  </body>
+</html>

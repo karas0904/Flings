@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amourette</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background: #000;
+        height: 100vh;
+        display: flex;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Red and Blue blurred shapes */
+      .blur-shape {
+        position: fixed;
+        width: 250px;
+        height: 500px;
+        border-radius: 50px;
+        filter: blur(100px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+
+      .red-shape {
+        background: rgba(255, 0, 0, 0.7);
+        top: 10%;
+        left: 5%;
+        transform: rotate(45deg);
+      }
+
+      .blue-shape {
+        background: rgba(135, 206, 250, 0.7);
+        bottom: 10%;
+        right: 5%;
+        transform: rotate(45deg);
+      }
+
+      /* Sidebar */
+      .left-sidebar {
+        width: 60px;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        color: #fff;
+        position: relative;
+      }
+
+      .left-sidebar .logo {
+        font-size: 14px;
+        font-weight: bold;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        margin-bottom: 40px;
+      }
+
+      .left-sidebar .icons-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        justify-content: center;
+      }
+
+      .left-sidebar .icon-btn {
+        font-size: 24px;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        width: 40px;
+        height: 40px;
+        text-decoration: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: color 0.3s, filter 0.3s, background-color 0.3s;
+      }
+
+      .left-sidebar .icon-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .left-sidebar .icons-container:hover .icon-btn:not(:hover) {
+        filter: blur(2px);
+      }
+
+      .heart-icon:hover {
+        color: rgb(255, 52, 52);
+        transition: 0.5s;
+      }
+
+      .left-sidebar .separator {
+        width: 20px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.5);
+        margin: 10px 0;
+      }
+
+      .left-sidebar .profile-icon {
+        font-size: 24px;
+        color: rgba(255, 250, 250, 0.8);
+        cursor: pointer;
+        transition: color 0.3s;
+        margin-top: 40px;
+      }
+
+      .left-sidebar .profile-icon:hover {
+        color: #fff;
+      }
+
+      /* Content */
+      .content {
+        margin-left: 60px;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        overflow-y: auto;
+        width: calc(100% - 60px);
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        height: 200px;
+        transition: transform 0.3s ease;
+      }
+
+      .card:hover {
+        transform: scale(1.05);
+      }
+
+      .card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+      }
+
+      .card:hover img {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Red and Blue blurred shapes -->
+    <div class="blur-shape red-shape"></div>
+    <div class="blur-shape blue-shape"></div>
+
+    <!-- Sidebar -->
+    <div class="left-sidebar">
+      <div class="logo">Amourette</div>
+      <div class="icons-container">
+        <a href="explore.html" class="icon-btn">
+          <i class="fas fa-heart heart-icon"></i>
+        </a>
+        <div class="separator"></div>
+        <a href="saves.html" class="icon-btn">
+          <i class="fas fa-bookmark"></i>
+        </a>
+      </div>
+      <div class="profile-icon">
+        <a href="account.html"><i class="fas fa-user"></i></a>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Content goes here -->
+    </div>
+  </body>
+</html>

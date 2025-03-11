@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amourette</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background: #000;
+        height: 100vh;
+        display: flex;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Red and Blue blurred shapes */
+      .blur-shape {
+        position: fixed;
+        width: 250px;
+        height: 500px;
+        border-radius: 50px;
+        filter: blur(100px);
+        z-index: -1;
+        opacity: 0.4;
+      }
+
+      .red-shape {
+        background: rgba(255, 0, 0, 0.7);
+        top: 10%;
+        left: 5%;
+        transform: rotate(45deg);
+      }
+
+      .blue-shape {
+        background: rgba(135, 206, 250, 0.7);
+        bottom: 10%;
+        right: 5%;
+        transform: rotate(45deg);
+      }
+
+      /* Sidebar */
+      .left-sidebar {
+        width: 60px;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+      }
+
+      .left-sidebar .logo {
+        font-size: 14px;
+        font-weight: bold;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        margin-bottom: 40px;
+      }
+
+      .left-sidebar .icons-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        justify-content: center;
+      }
+
+      .left-sidebar .icons-container a {
+        text-decoration: none; /* Remove underline from links */
+        color: rgba(
+          255,
+          255,
+          255,
+          0.8
+        ); /* Ensure the icon color is consistent */
+      }
+
+      .left-sidebar .icon-btn {
+        font-size: 24px;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.3s, filter 0.3s,
+          color 0.3s;
+      }
+
+      .left-sidebar .icon-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+      }
+
+      /* Blur effect for non-hovered icons */
+      .left-sidebar .icons-container:hover .icon-btn:not(:hover) {
+        filter: blur(2px);
+      }
+
+      /* Change color for heart icon on hover */
+      .left-sidebar .icon-btn:hover i.fa-heart {
+        color: red;
+      }
+
+      /* Reset color for heart icon when not hovered */
+      .left-sidebar .icon-btn i.fa-heart {
+        transition: color 0.3s;
+      }
+
+      .left-sidebar .separator {
+        width: 20px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.5);
+        margin: 10px 0;
+      }
+
+      .left-sidebar .profile-icon {
+        font-size: 24px;
+        color: rgba(255, 250, 250, 0.8);
+        cursor: pointer;
+        transition: color 0.3s, transform 0.3s;
+        margin-top: 40px;
+      }
+
+      .left-sidebar .profile-icon:hover {
+        color: #fff;
+        transform: scale(1.1);
+      }
+
+      /* Main Content Layout */
+      .main-content {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+      }
+
+      /* Top Bar */
+      .top-bar {
+        display: flex;
+        justify-content: center; /* Center the content */
+        align-items: center;
+        width: 100%;
+        padding-bottom: 20px;
+      }
+
+      .top-bar h1 {
+        color: white;
+        font-size: 24px;
+        margin-right: 20px; /* Space between title and search input */
+      }
+
+      .search-input {
+        width: 500px;
+        padding: 10px;
+        border: none;
+        border-radius: 50px;
+        font-size: 16px;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+
+      /* Rectangular Boxes */
+      .content {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 30px 30px;
+        padding: 20px;
+      }
+
+      .rectangular-box {
+        width: 48%;
+        height: 200px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        transition: none; /* Disable transition for hover effect */
+      }
+
+      .rectangle-top {
+        flex: 3;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .rectangle-bottom {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 3;
+        background-color: #fff;
+        padding-right: 10px; /* Add some padding to the right for the button */
+      }
+
+      .rectangle-divider {
+        height: 1px;
+        background-color: rgb(224, 220, 220);
+        width: 100%;
+        position: relative;
+        z-index: 4;
+        opacity: 1;
+        transition: opacity 0.3s ease, width 0.3s ease;
+      }
+
+      .card-stack {
+        position: absolute;
+        bottom: 0;
+        right: 0; /* Move the card stack completely to the right */
+        width: 180px;
+        height: 180px;
+        z-index: 1;
+        transition: transform 0.3s ease; /* Smooth transition for scaling */
+      }
+
+      .card-stack:hover {
+        transform: scale(1.1); /* Enlarge the entire stack */
+      }
+
+      .card-stack:hover .card-left {
+        transform: rotate(20deg) translateY(50%) translateZ(10px); /* Tilt left card to the right and move towards the user */
+      }
+
+      .card-stack:hover .card-right {
+        transform: rotate(-20deg) translateY(50%) translateZ(10px); /* Tilt right card to the left and move towards the user */
+      }
+
+      .card {
+        position: absolute;
+        width: 100px;
+        height: 200px;
+        background-color: rgba(255, 255, 255, 0.229);
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, opacity 0.3s ease; /* Ensure smooth transition for individual cards */
+      }
+
+      .card-left {
+        bottom: 0;
+        right: 180px;
+        transform: rotate(-20deg) translateY(50%);
+        background-color: #f8f8f8;
+        z-index: 1;
+      }
+
+      .card-middle {
+        bottom: 0;
+        right: 150px;
+        transform: rotate(0deg) translateY(50%);
+        background-color: white;
+        z-index: 3;
+      }
+
+      .card-right {
+        bottom: 0;
+        right: 130px;
+        transform: rotate(20deg) translateY(50%);
+        background-color: #f8f8f8;
+        z-index: 2;
+      }
+
+      .add-button {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.1);
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-left: 10px;
+      }
+
+      .add-button:hover {
+        background-color: rgba(0, 0, 0, 0.2);
+      }
+
+      .add-button i {
+        font-size: 16px;
+        color: #333;
+      }
+
+      .page-title {
+        position: absolute;
+        top: 20px;
+        left: 70px;
+        color: white;
+        font-size: 24px;
+        z-index: 99;
+      }
+
+      @media (max-width: 800px) {
+        .rectangular-box {
+          width: 100%; /* Full width on smaller screens */
+        }
+      }
+
+      .saves-label {
+        font-size: 16px;
+        color: black;
+        background-color: rgba(0, 0, 0, 0.1);
+        padding: 5px 10px;
+        border-radius: 5px 5px 5px 15px;
+        display: flex;
+        align-items: center;
+        margin-left: 8px;
+      }
+
+      .saves-count {
+        margin-left: 5px;
+      }
+
+      .date-container {
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        text-align: left;
+      }
+
+      .month {
+        font-size: 80px;
+        font-weight: bold;
+        color: #f8f8f8;
+        font-family: "Teko", sans-serif;
+        font-optical-sizing: auto;
+        font-style: normal;
+      }
+
+      .month-name {
+        font-size: 16px;
+        color: #f8f8f8;
+        margin-top: -30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="blur-shape red-shape"></div>
+    <div class="blur-shape blue-shape"></div>
+
+    <!-- Sidebar -->
+    <div class="left-sidebar">
+      <div class="logo">Amourette</div>
+      <div class="icons-container">
+        <a href="explore.html" class="icon-btn"><i class="fas fa-heart"></i></a>
+        <div class="separator"></div>
+        <a href="messages.html" class="icon-btn"
+          ><i class="fas fa-comment"></i
+        ></a>
+      </div>
+      <div class="profile-icon">
+        <a href="account.html"><i class="fas fa-user"></i></a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <h1 class="page-title">Saves</h1>
+        <input type="text" class="search-input" placeholder="Search..." />
+      </div>
+
+      <!-- Rectangular Boxes -->
+      <div class="content">
+        <div class="rectangular-box">
+          <div class="rectangle-top">
+            <div class="card-stack">
+              <div class="card card-left"></div>
+              <div class="card card-middle"></div>
+              <div class="card card-right"></div>
+            </div>
+            <div class="date-container">
+              <div class="month">15</div>
+              <div class="month-name">September</div>
+            </div>
+          </div>
+          <div class="rectangle-divider"></div>
+          <div class="rectangle-bottom">
+            <div class="saves-label">
+              Saves <span class="saves-count">3</span>
+            </div>
+            <button class="add-button">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="rectangular-box">
+          <div class="rectangle-top">
+            <div class="card-stack">
+              <div class="card card-left"></div>
+              <div class="card card-middle"></div>
+              <div class="card card-right"></div>
+            </div>
+            <div class="date-container">
+              <div class="month">15</div>
+              <div class="month-name">September</div>
+            </div>
+          </div>
+          <div class="rectangle-divider"></div>
+          <div class="rectangle-bottom">
+            <div class="saves-label">
+              Saves <span class="saves-count">5</span>
+            </div>
+            <button class="add-button">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="rectangular-box">
+          <div class="rectangle-top">
+            <div class="card-stack">
+              <div class="card card-left"></div>
+              <div class="card card-middle"></div>
+              <div class="card card-right"></div>
+            </div>
+            <div class="date-container">
+              <div class="month">15</div>
+              <div class="month-name">September</div>
+            </div>
+          </div>
+          <div class="rectangle-divider"></div>
+          <div class="rectangle-bottom">
+            <div class="saves-label">
+              Saves <span class="saves-count">2</span>
+            </div>
+            <button class="add-button">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

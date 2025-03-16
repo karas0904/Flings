@@ -1,54 +1,37 @@
 import express from "express";
-import Message from "../models/Message.js";
-import Match from "../models/Match.js";
-import isAuthenticated from "../middleware/auth.js";
+import Message from "../models/message.js";
 
 const router = express.Router();
 
-// Get messages for a match
-router.get("/:matchId", isAuthenticated, async (req, res) => {
+// Middleware to ensure user is authenticated
+const ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: "Unauthorized" });
+};
+
+// Get message history between two users
+router.get("/history/:userId", ensureAuthenticated, async (req, res) => {
   try {
-    const { matchId } = req.params;
+    const userId = req.user._id; // Current user's ID
+    const otherUserId = req.params.userId; // The other user's ID
 
-    // Verify user is part of this match
-    const match = await Match.findById(matchId);
-    if (!match || !match.users.includes(req.user.id)) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized to view these messages" });
-    }
-
-    const messages = await Message.find({ matchId }).sort({ createdAt: 1 });
+    // Fetch messages where the user is either the sender or recipient
+    const messages = await Message.find({
+      $or: [
+        { senderId: userId, recipientId: otherUserId },
+        { senderId: otherUserId, recipientId: userId },
+      ],
+    })
+      .populate("senderId", "name email")
+      .populate("recipientId", "name email")
+      .sort({ createdAt: 1 }); // Sort by timestamp (oldest first)
 
     res.json(messages);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Send a message
-router.post("/:matchId", isAuthenticated, async (req, res) => {
-  try {
-    const { matchId } = req.params;
-    const { content } = req.body;
-
-    // Verify user is part of this match
-    const match = await Match.findById(matchId);
-    if (!match || !match.users.includes(req.user.id)) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized to send messages in this match" });
-    }
-
-    const message = await Message.create({
-      matchId,
-      senderId: req.user.id,
-      content,
-    });
-
-    res.json(message);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error("Error fetching message history:", error);
+    res.status(500).json({ error: "Failed to fetch message history" });
   }
 });
 

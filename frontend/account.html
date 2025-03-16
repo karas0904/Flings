@@ -1002,13 +1002,217 @@
         display: none;
       }
 
-      .footer-content {
+      .white-box {
+        background-color: #fff !important;
+        height: auto;
+        min-height: 250px; /* Maintain minimum height as specified */
+        width: 100vw;
+        left: 0;
+        margin-top: 7%;
         position: absolute;
-        bottom: 20px; /* Adjust as needed */
-        right: 20px; /* Adjust as needed */
-        color: black; /* Text color */
-        font-size: 14px; /* Font size */
-        font-family: "Raleway", sans-serif; /* Font family */
+        background-color: #222; /* Dark background for cohesion */
+        padding: 20px;
+        box-sizing: border-box;
+        color: rgb(0, 0, 0);
+      }
+
+      .footer-wrapper {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+        max-width: 1200px; /* Limit width on large screens */
+        margin: 0 auto; /* Center the content */
+      }
+
+      .footer-left {
+        flex: 1.5; /* Allocate more space to push right content further right */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding-right: 20px;
+      }
+
+      .footer-brand {
+        font-size: 50px; /* Base font size for large screens */
+        font-weight: bold;
+        padding-bottom: 30px;
+        margin-bottom: 15px;
+        color: rgb(0, 0, 0);
+        font-family: "Raleway", sans-serif;
+      }
+
+      .features-link {
+        font-size: 16px; /* Base font size for large screens */
+        color: rgb(0, 0, 0);
+        text-decoration: none;
+        margin-bottom: 20px;
+        display: inline-block;
+      }
+
+      .features-link .features-arrow {
+        font-weight: bold;
+        transition: transform 0.3s ease;
+      }
+
+      .features-link:hover .features-arrow {
+        transform: translateX(5px); /* Arrow moves right on hover */
+      }
+
+      .features-link:hover {
+        text-decoration: underline;
+      }
+
+      .footer-trademark {
+        font-size: 14px; /* Base font size for large screens */
+        color: rgba(68, 68, 68, 0.812);
+        margin-top: auto; /* Push to bottom of left column */
+      }
+
+      .footer-right {
+        flex: 1; /* Reduced flex to allow left side to take more space */
+        display: flex;
+        justify-content: space-between;
+        gap: 40px; /* Increased gap to shift content right */
+        margin-left: 40px; /* Added margin to shift content further right */
+      }
+
+      .footer-column {
+        flex: 1;
+      }
+
+      .footer-section {
+        margin-bottom: 20px;
+      }
+
+      .footer-section h3 {
+        font-size: 16px; /* Base font size for large screens */
+        margin-bottom: 10px;
+        color: rgb(0, 0, 0);
+      }
+
+      .footer-section ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .footer-section ul li {
+        margin-bottom: 5px;
+      }
+
+      .footer-section ul li a {
+        color: rgb(0, 0, 0);
+        text-decoration: none;
+        font-size: 14px; /* Base font size for large screens */
+      }
+
+      .footer-section ul li a:hover {
+        text-decoration: underline;
+      }
+
+      /* Responsive Design */
+
+      /* Extra Large Screens (> 1200px) */
+      @media (min-width: 1201px) {
+        .footer-wrapper {
+          max-width: 1200px; /* Ensure content doesn't stretch too wide */
+        }
+      }
+
+      /* Large Screens (769px - 1200px) */
+      @media (max-width: 1200px) {
+        .footer-wrapper {
+          padding: 15px; /* Reduce padding slightly */
+        }
+        .footer-brand {
+          font-size: 32px; /* Slightly smaller "Amourette" */
+        }
+        .features-link {
+          font-size: 14px;
+        }
+        .footer-trademark {
+          font-size: 12px;
+        }
+        .footer-section h3 {
+          font-size: 14px;
+        }
+        .footer-section ul li a {
+          font-size: 12px;
+        }
+        .footer-right {
+          gap: 30px; /* Reduce gap slightly */
+          margin-left: 30px; /* Reduce margin slightly */
+        }
+      }
+
+      /* Medium Screens (481px - 768px) */
+      @media (max-width: 768px) {
+        .footer-wrapper {
+          flex-direction: column; /* Stack left and right vertically */
+          padding: 10px; /* Reduce padding */
+        }
+        .footer-left {
+          padding-right: 0; /* Remove right padding */
+          margin-bottom: 20px; /* Add space below left section */
+          align-items: center; /* Center content on smaller screens */
+          text-align: center; /* Center text */
+        }
+        .footer-right {
+          flex-direction: row; /* Keep two columns side by side */
+          gap: 20px; /* Reduce gap */
+          margin-left: 0; /* Remove margin */
+          justify-content: space-around; /* Distribute columns evenly */
+        }
+        .footer-brand {
+          font-size: 28px; /* Further reduce "Amourette" size */
+        }
+        .features-link {
+          font-size: 14px;
+        }
+        .footer-trademark {
+          font-size: 12px;
+        }
+        .footer-section h3 {
+          font-size: 14px;
+        }
+        .footer-section ul li a {
+          font-size: 12px;
+        }
+      }
+
+      /* Small Screens (<= 480px) */
+      @media (max-width: 480px) {
+        .footer-wrapper {
+          padding: 10px; /* Further reduce padding */
+        }
+        .footer-left {
+          margin-bottom: 15px; /* Reduce space below left section */
+        }
+        .footer-right {
+          flex-direction: column; /* Stack columns vertically on very small screens */
+          gap: 0; /* Remove gap */
+          margin-left: 0; /* Ensure no margin */
+        }
+        .footer-column {
+          margin-bottom: 15px; /* Add space between stacked columns */
+        }
+        .footer-brand {
+          font-size: 24px; /* Even smaller "Amourette" */
+        }
+        .features-link {
+          font-size: 12px;
+        }
+        .footer-trademark {
+          font-size: 10px;
+        }
+        .footer-section h3 {
+          font-size: 12px;
+        }
+        .footer-section ul li a {
+          font-size: 10px;
+        }
+        .footer-section {
+          margin-bottom: 10px; /* Reduce margin between sections */
+        }
       }
     </style>
   </head>
@@ -1302,19 +1506,42 @@
         </div>
       </div>
 
-      <!-- New black box at the end of the page -->
-      <div
-        class="black-box"
-        style="
-          height: 350px;
-          margin-top: 50%;
-          width: 100vw;
-          left: 0;
-          position: absolute;
-          background-color: white;
-        "
-      >
-        <div class="footer-content">Privacy | Setting | Safety | Report</div>
+      <div class="white-box">
+        <div class="footer-wrapper">
+          <!-- Left Side -->
+          <div class="footer-left">
+            <h2 class="footer-brand">Amourette</h2>
+            <a href="/features" class="features-link"
+              >See upcoming features <span class="features-arrow">>></span></a
+            >
+            <p class="footer-trademark">
+              © 2025 Amourette. All rights reserved.
+            </p>
+          </div>
+          <!-- Right Side -->
+          <div class="footer-right">
+            <div class="footer-column">
+              <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                  <li><a href="/privacy">Privacy Policy</a></li>
+                  <li><a href="/terms">Terms of Service</a></li>
+                  <li><a href="/safety">Safety Guidelines</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="footer-column">
+              <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                  <li><a href="/report">Report a Problem</a></li>
+                  <li><a href="/contact">Contact Us</a></li>
+                  <li><a href="/help">Help Center</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1549,7 +1776,7 @@
             const reader = new FileReader();
             reader.onload = function (e) {
               document.getElementById("accountAvatar").src = e.target.result; // Update the avatar image
-              localStorage.setItem("profileImage", e.target.result); // Optionally store the image in local storage
+              localStorage.setItem("profileImage", e.target.result); // Store the image in local storage
             };
             reader.readAsDataURL(file); // Read the file as a data URL
           }

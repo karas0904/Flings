@@ -10,6 +10,11 @@ package-lock.json
 # IDE/Editor specific files
 .vscode/
 .idea/
+gpt2-medium-tfjs/
+distilgpt2_tfjs_model/
+vocab.json
+
+
 *.sublime-project
 *.sublime-workspace
 

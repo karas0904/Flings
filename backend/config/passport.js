@@ -1,82 +1,43 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import User from "../models/User";
+import dotenv from "dotenv";
 
-// Serialize user for the session
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-// Deserialize user from the session
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});
+dotenv.config();
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
-      userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
-      proxy: true,
-      passReqToCallback: true,
+      callbackURL: "http://localhost:3000/auth/google/callback",
     },
-    async (req, accessToken, refreshToken, profile, done) => {
-      try {
-        // Get email from profile
-        const email = profile.emails[0].value;
+    (accessToken, refreshToken, profile, done) => {
+      // Get email from profile
+      const email =
+        profile.emails && profile.emails[0] ? profile.emails[0].value : null;
 
-        // Check if email is from srmist.edu.in domain
-        if (!email.endsWith("@srmist.edu.in")) {
-          return done(null, false, {
-            message:
-              "Only SRM Institute of Science and Technology email addresses are allowed.",
-          });
-        }
-
-        // Check if user already exists
-        let user = await User.findOne({ googleId: profile.id });
-
-        if (user) {
-          // After successful authentication, store the redirect URL in the session
-          req.session.redirectTo = "http://127.0.0.1:5500/test.html";
-          return done(null, user);
-        }
-
-        // Create new user if doesn't exist
-        user = await new User({
-          googleId: profile.id,
-          name: profile.displayName,
-          email: email,
-          profilePicture: profile.photos?.[0]?.value || "",
-          // Other required fields with default values
-          gender: "",
-          bio: "",
-          interests: [],
-          preferences: {
-            gender: "",
-            ageRange: {
-              min: 18,
-              max: 30,
-            },
-          },
-        }).save();
-
-        // After successful authentication, store the redirect URL in the session
-        req.session.redirectTo = "http://127.0.0.1:5500/test.html";
-        return done(null, user);
-      } catch (error) {
-        console.error("Error in Google strategy callback:", error);
-        return done(error, null);
+      // Check if email exists and is from srmist.edu.in domain
+      if (!email || !email.endsWith("@srmist.edu.in")) {
+        console.log("Authentication failed: Non-SRM email attempted:", email);
+        return done(null, false, {
+          message:
+            "Only SRM Institute of Science and Technology email addresses are allowed.",
+        });
       }
+
+      // Authentication successful, proceed with user profile
+      console.log("Google Profile:", profile);
+      return done(null, profile);
     }
   )
 );
 
-module.exports = passport;
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
+export default passport;

@@ -22,6 +22,7 @@
         display: flex;
         position: relative;
         overflow: hidden;
+        color: #fff;
       }
 
       /* Red and Blue blurred shapes */
@@ -60,7 +61,9 @@
         align-items: center;
         padding: 20px 0;
         color: #fff;
-        position: relative;
+        position: fixed;
+        height: 100vh;
+        z-index: 10;
       }
 
       .left-sidebar .logo {
@@ -69,6 +72,8 @@
         writing-mode: vertical-rl;
         transform: rotate(180deg);
         margin-bottom: 40px;
+        text-decoration: none;
+        color: #fff;
       }
 
       .left-sidebar .icons-container {
@@ -93,6 +98,7 @@
         justify-content: center;
         cursor: pointer;
         transition: color 0.3s, filter 0.3s, background-color 0.3s;
+        margin: 10px 0;
       }
 
       .left-sidebar .icon-btn:hover {
@@ -117,51 +123,261 @@
       }
 
       .left-sidebar .profile-icon {
-        font-size: 24px;
-        color: rgba(255, 250, 250, 0.8);
         cursor: pointer;
-        transition: color 0.3s;
-        margin-top: 40px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-top: auto;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        transition: outline 0.3s;
       }
 
       .left-sidebar .profile-icon:hover {
-        color: #fff;
+        outline: 5px solid rgba(144, 136, 136, 0.432);
+      }
+
+      .left-sidebar .profile-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
       /* Content */
       .content {
         margin-left: 60px;
         padding: 20px;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         overflow-y: auto;
         width: calc(100% - 60px);
+        height: 100vh;
       }
 
-      .card {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        overflow: hidden;
+      /* Carousel Container */
+      .carousel {
         position: relative;
-        height: 200px;
-        transition: transform 0.3s ease;
-      }
-
-      .card:hover {
-        transform: scale(1.05);
-      }
-
-      .card img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
-        opacity: 0.7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
         transition: opacity 0.3s ease;
       }
 
-      .card:hover img {
-        opacity: 1;
+      /* Carousel Cards (Horizontal Rectangles) */
+      .carousel-card {
+        position: absolute;
+        width: calc((100% - 60px) / 2);
+        height: 40%;
+        background: rgb(255, 255, 255);
+        border-radius: 10px;
+        transition: width 0.5s ease, height 0.5s ease, transform 0.5s ease,
+          opacity 0.5s ease;
+        cursor: pointer;
+        z-index: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+      }
+
+      /* Card Content */
+      .carousel-card img {
+        width: 100%;
+        height: 60%;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+
+      .carousel-card h3 {
+        margin: 10px 0;
+        font-size: 18px;
+        color: #333;
+      }
+
+      .carousel-card p {
+        font-size: 14px;
+        color: #666;
+      }
+
+      /* Focused Card (Middle) - Enhanced to appear on top */
+      .carousel-card.focused {
+        transform: scale(1.2) translateY(-20px);
+        z-index: 3;
+        filter: none;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Blurred Cards (Left and Right) - Adjusted to be equally visible */
+      .carousel-card.blurred {
+        transform: scale(0.9) translateY(10px);
+        filter: blur(10px);
+        opacity: 0.8;
+        z-index: 2;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Expanded Card (Clicked) */
+      .carousel-card.expanded {
+        width: 80%;
+        max-width: 600px;
+        height: 60%;
+        transform: scale(1.5); /* Expand in place */
+        filter: none;
+        z-index: 1000; /* Ensure it's on top of everything */
+        background: rgba(255, 255, 255, 1);
+        border-radius: 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        opacity: 1; /* Ensure it's fully visible */
+      }
+
+      .carousel-card.expanded img {
+        height: 70%;
+      }
+
+      .carousel-card.expanded h3 {
+        font-size: 24px;
+      }
+
+      .carousel-card.expanded p {
+        font-size: 16px;
+      }
+
+      /* Navigation Buttons */
+      .carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 30px;
+        color: white;
+        background: none;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        transition: background 0.3s;
+      }
+
+      .carousel-nav:hover {
+        background: rgba(0, 0, 0, 0.8);
+      }
+
+      .carousel-nav.left {
+        left: 10px;
+      }
+
+      .carousel-nav.right {
+        right: 10px;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .left-sidebar {
+          width: 50px;
+        }
+
+        .content {
+          margin-left: 50px;
+          width: calc(100% - 50px);
+        }
+
+        .carousel-card {
+          width: calc((100% - 40px) / 1.5);
+          height: 30%;
+        }
+
+        .carousel-card.focused {
+          transform: scale(1.1) translateY(-10px);
+        }
+
+        .carousel-card.blurred {
+          transform: scale(0.8) translateY(5px);
+        }
+
+        .carousel-card.expanded {
+          width: 90%;
+          height: 70%;
+          transform: scale(1.3); /* Adjust scale for smaller screens */
+        }
+      }
+
+      @media (max-width: 480px) {
+        .left-sidebar {
+          width: 40px;
+        }
+
+        .content {
+          margin-left: 40px;
+          width: calc(100% - 40px);
+        }
+
+        .carousel-card {
+          width: 80%;
+          height: 25%;
+        }
+
+        .carousel-card.focused {
+          transform: scale(1.05) translateY(-5px);
+        }
+
+        .carousel-card.blurred {
+          transform: scale(0.7) translateY(3px);
+        }
+
+        .carousel-card.expanded {
+          width: 95%;
+          height: 60%;
+          transform: scale(1.2); /* Adjust scale for very small screens */
+        }
+
+        .carousel-nav {
+          font-size: 20px;
+          width: 30px;
+          height: 30px;
+        }
+      }
+
+      .carousel-note {
+        position: absolute;
+        bottom: 170px; /* Adjust as needed to position below carousel */
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        text-align: center;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 5px;
+        z-index: 5; /* Ensure it's above carousel cards */
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .carousel-note {
+          font-size: 12px;
+          padding: 8px;
+          bottom: 15px; /* Adjust for smaller screens */
+        }
+      }
+
+      @media (max-width: 480px) {
+        .carousel-note {
+          font-size: 10px;
+          padding: 6px;
+          bottom: 10px; /* Further adjust for very small screens */
+        }
       }
     </style>
   </head>
@@ -172,23 +388,296 @@
 
     <!-- Sidebar -->
     <div class="left-sidebar">
-      <div class="logo">Amourette</div>
+      <a href="#" class="logo">Amourette</a>
       <div class="icons-container">
-        <a href="explore.html" class="icon-btn">
+        <a href="explore.html" class="icon-btn" aria-label="Explore">
           <i class="fas fa-heart heart-icon"></i>
         </a>
         <div class="separator"></div>
-        <a href="saves.html" class="icon-btn">
+        <a href="saves.html" class="icon-btn" aria-label="Saves">
           <i class="fas fa-bookmark"></i>
         </a>
+        <div class="separator"></div>
+        <a href="messages.html" class="icon-btn" aria-label="Messages">
+          <i class="fas fa-comment"></i>
+        </a>
       </div>
-      <div class="profile-icon">
-        <a href="account.html"><i class="fas fa-user"></i></a>
-      </div>
+      <a href="account.html" aria-label="Profile">
+        <div class="profile-icon">
+          <img src="boy-account.svg" alt="Profile" id="profileImage" />
+        </div>
+      </a>
     </div>
 
     <div class="content">
-      <!-- Content goes here -->
+      <!-- Carousel -->
+      <div class="carousel">
+        <button class="carousel-nav left" aria-label="Previous">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <!-- Carousel Cards will be dynamically added via JavaScript -->
+        <button class="carousel-nav right" aria-label="Next">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+      <div class="carousel-note">
+        Top trending pages of the month would be displayed here
+      </div>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const profileIcon = document.getElementById("profileImage");
+        const carousel = document.querySelector(".carousel");
+        const leftNav = document.querySelector(".carousel-nav.left");
+        const rightNav = document.querySelector(".carousel-nav.right");
+
+        // Retrieve the stored image from localStorage
+        const storedImage = localStorage.getItem("profileImage");
+        if (storedImage) {
+          profileIcon.src = storedImage;
+        }
+
+        // Sample card data (replace with real data or API fetch)
+        const cardData = [
+          {
+            id: 1,
+            image: "https://via.placeholder.com/300x200?text=Card+1",
+            title: "Card 1",
+            description: "Description for Card 1",
+          },
+          {
+            id: 2,
+            image: "https://via.placeholder.com/300x200?text=Card+2",
+            title: "Card 2",
+            description: "Description for Card 2",
+          },
+          {
+            id: 3,
+            image: "https://via.placeholder.com/300x200?text=Card+3",
+            title: "Card 3",
+            description: "Description for Card 3",
+          },
+          {
+            id: 4,
+            image: "https://via.placeholder.com/300x200?text=Card+4",
+            title: "Card 4",
+            description: "Description for Card 4",
+          },
+          {
+            id: 5,
+            image: "https://via.placeholder.com/300x200?text=Card+5",
+            title: "Card 5",
+            description: "Description for Card 5",
+          },
+          {
+            id: 6,
+            image: "https://via.placeholder.com/300x200?text=Card+6",
+            title: "Card 6",
+            description: "Description for Card 6",
+          },
+          {
+            id: 7,
+            image: "https://via.placeholder.com/300x200?text=Card+7",
+            title: "Card 7",
+            description: "Description for Card 7",
+          },
+          {
+            id: 8,
+            image: "https://via.placeholder.com/300x200?text=Card+8",
+            title: "Card 8",
+            description: "Description for Card 8",
+          },
+          {
+            id: 9,
+            image: "https://via.placeholder.com/300x200?text=Card+9",
+            title: "Card 9",
+            description: "Description for Card 9",
+          },
+          {
+            id: 10,
+            image: "https://via.placeholder.com/300x200?text=Card+10",
+            title: "Card 10",
+            description: "Description for Card 10",
+          },
+        ];
+
+        // Dynamically create carousel cards
+        cardData.forEach((data) => {
+          const card = document.createElement("div");
+          card.classList.add("carousel-card");
+          card.setAttribute("data-id", data.id);
+          card.innerHTML = `
+            <img src="${data.image}" alt="${data.title}">
+            <h3>${data.title}</h3>
+            <p>${data.description}</p>
+          `;
+          carousel.insertBefore(card, rightNav);
+        });
+
+        const cards = document.querySelectorAll(".carousel-card");
+        let currentIndex = 0;
+        const totalCards = cards.length;
+        let expandedCard = null;
+
+        function updateCarousel() {
+          cards.forEach((card, index) => {
+            // Skip updating the expanded card if it's still animating
+            if (card === expandedCard) return;
+
+            card.classList.remove("focused", "blurred", "expanded");
+            const cardWidthPercentage =
+              window.innerWidth > 768
+                ? 100 / 2
+                : window.innerWidth > 480
+                ? 66.67
+                : 80;
+
+            // Calculate the indices for left, focused, and right cards
+            const leftIndex = (currentIndex - 1 + totalCards) % totalCards;
+            const rightIndex = (currentIndex + 1) % totalCards;
+
+            if (index === currentIndex) {
+              // Focused card (middle)
+              card.classList.add("focused");
+              card.style.left = "50%";
+              card.style.transform =
+                "translateX(-50%) scale(1.2) translateY(-20px)";
+              card.style.opacity = "1";
+              card.style.pointerEvents = "auto";
+            } else if (index === leftIndex) {
+              // Left blurred card
+              card.classList.add("blurred");
+              card.style.left = `calc(50% - ${cardWidthPercentage / 2}%)`;
+              card.style.transform =
+                "translateX(-100%) scale(0.9) translateY(10px)";
+              card.style.opacity = "0.8";
+              card.style.pointerEvents = "auto";
+            } else if (index === rightIndex) {
+              // Right blurred card
+              card.classList.add("blurred");
+              card.style.left = `calc(50% + ${cardWidthPercentage / 2}%)`;
+              card.style.transform =
+                "translateX(0%) scale(0.9) translateY(10px)";
+              card.style.opacity = "0.8";
+              card.style.pointerEvents = "auto";
+            } else {
+              // Hide other cards
+              card.style.left = "50%";
+              card.style.transform = "translateX(-50%) scale(0)";
+              card.style.opacity = "0";
+              card.style.pointerEvents = "none";
+            }
+          });
+
+          // Update navigation buttons visibility
+          if (expandedCard) {
+            leftNav.style.opacity = "0";
+            rightNav.style.opacity = "0";
+            leftNav.style.pointerEvents = "none";
+            rightNav.style.pointerEvents = "none";
+          } else {
+            leftNav.style.opacity = "1";
+            rightNav.style.opacity = "1";
+            leftNav.style.pointerEvents = "auto";
+            rightNav.style.pointerEvents = "auto";
+          }
+        }
+
+        function hideOtherCards(expanded) {
+          cards.forEach((card) => {
+            if (card !== expanded) {
+              card.style.opacity = "0";
+              card.style.pointerEvents = "none";
+            }
+          });
+          leftNav.style.opacity = "0";
+          rightNav.style.opacity = "0";
+          leftNav.style.pointerEvents = "none";
+          rightNav.style.pointerEvents = "none";
+        }
+
+        function showAllCards() {
+          // First, ensure the expanded card collapses smoothly
+          if (expandedCard) {
+            expandedCard.classList.remove("expanded");
+            expandedCard = null;
+          }
+          // Delay the full carousel update to allow the collapse animation to complete
+          setTimeout(() => {
+            updateCarousel();
+          }, 500); // Match the transition duration (0.5s)
+        }
+
+        // Initial setup
+        updateCarousel();
+
+        // Infinite scroll navigation
+        leftNav.addEventListener("click", function () {
+          if (expandedCard) return;
+          currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+          updateCarousel();
+        });
+
+        rightNav.addEventListener("click", function () {
+          if (expandedCard) return;
+          currentIndex = (currentIndex + 1) % totalCards;
+          updateCarousel();
+        });
+
+        // Keyboard navigation
+        document.addEventListener("keydown", function (e) {
+          if (expandedCard) return;
+          if (e.key === "ArrowLeft") {
+            currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+            updateCarousel();
+          } else if (e.key === "ArrowRight") {
+            currentIndex = (currentIndex + 1) % totalCards;
+            updateCarousel();
+          }
+        });
+
+        // Card click to expand
+        cards.forEach((card) => {
+          card.addEventListener("click", function (e) {
+            e.stopPropagation(); // Prevent click from bubbling up to document
+            if (!card.classList.contains("expanded")) {
+              // Remove expanded class from any previously expanded card
+              if (expandedCard) {
+                expandedCard.classList.remove("expanded");
+                showAllCards(); // Restore carousel state
+              }
+              // Expand the clicked card
+              card.classList.add("expanded");
+              expandedCard = card;
+              hideOtherCards(card); // Hide all other cards
+            } else {
+              // Collapse the expanded card
+              card.classList.remove("expanded");
+              expandedCard = null;
+              showAllCards(); // Restore carousel state
+            }
+          });
+        });
+
+        // Close expanded card when clicking outside
+        document.addEventListener("click", function (e) {
+          if (expandedCard && !e.target.closest(".carousel-card")) {
+            expandedCard.classList.remove("expanded");
+            expandedCard = null;
+            showAllCards();
+          }
+        });
+
+        // Update carousel on window resize
+        window.addEventListener("resize", function () {
+          if (!expandedCard) {
+            updateCarousel();
+          } else {
+            hideOtherCards(expandedCard); // Ensure other cards stay hidden on resize
+          }
+        });
+      });
+    </script>
   </body>
 </html>

@@ -372,6 +372,28 @@
         margin-top: 10px;
         margin-left: 20px;
       }
+
+      /* Profile icon styles */
+      .profile-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%; /* Makes it round */
+        overflow: hidden;
+        margin-top: auto; /* Pushes it to the bottom */
+        margin-bottom: 20px; /* Spacing from the bottom */
+        box-sizing: border-box;
+      }
+
+      .profile-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .profile-icon:hover {
+        outline: 5px solid rgba(144, 136, 136, 0.432);
+        transition: 0.5s;
+      }
     </style>
   </head>
   <body>
@@ -388,9 +410,11 @@
           ><i class="fas fa-comment"></i
         ></a>
       </div>
-      <div class="profile-icon">
-        <a href="account.html"><i class="fas fa-user"></i></a>
-      </div>
+      <a href="account.html">
+        <div class="profile-icon">
+          <img src="boy-account.svg" alt="Profile" id="profileImage" />
+        </div>
+      </a>
     </div>
 
     <!-- Main Content -->
@@ -477,5 +501,15 @@
         </div>
       </div>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const profileIcon = document.querySelector(".profile-icon img"); // Adjust the selector if necessary
+        const storedImage = localStorage.getItem("profileImage");
+        if (storedImage) {
+          profileIcon.src = storedImage; // Set the profile icon image
+        }
+      });
+    </script>
   </body>
 </html>

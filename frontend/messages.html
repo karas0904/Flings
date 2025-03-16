@@ -8,6 +8,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
+    <script src="http://127.0.0.1:3000/socket.io/socket.io.js"></script>
 
     <style>
       * {
@@ -183,9 +184,72 @@
         ); /* More pronounced fade effect */
       }
 
-      .messages-list h2 {
-        font-size: 20px;
+      /* Custom Dropdown Styles */
+      .custom-dropdown {
+        position: relative;
         margin-bottom: 20px;
+      }
+
+      .dropdown-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 20px;
+        font-weight: bold;
+        color: #fff;
+        cursor: pointer;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0);
+        border-radius: 5px;
+        transition: box-shadow 0.3s ease-in-out; /* Smooth glow effect */
+      }
+
+      .dropdown-header .arrow {
+        font-size: 14px;
+
+        color: rgba(255, 255, 255, 0.8);
+        transition: transform 0.3s ease-in-out;
+      }
+
+      .dropdown-header .arrow.active {
+        transform: rotate(180deg); /* Rotate arrow when dropdown is open */
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: rgb(0, 0, 0);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(103, 103, 103, 0.477);
+        border-radius: 5px;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(10px);
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        z-index: 10;
+      }
+
+      .dropdown-menu.active {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .dropdown-menu .dropdown-item {
+        padding: 10px;
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        transition: color 0.3s, background 0.3s;
+      }
+
+      .dropdown-menu .dropdown-item:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
       }
 
       .messages-list .search-bar {
@@ -248,6 +312,23 @@
       .message-item .time {
         font-size: 12px;
         color: rgba(255, 255, 255, 0.6);
+      }
+
+      /* Simplified message item for Efforts/Buddy Up */
+      .message-item.simplified {
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .message-item.simplified:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .message-item.simplified .name {
+        font-size: 16px;
+        font-weight: bold;
       }
 
       /* Chat Section */
@@ -439,6 +520,28 @@
       .options-menu button:hover {
         color: #fff; /* White color on hover */
       }
+
+      /* Profile icon styles */
+      .profile-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%; /* Makes it round */
+        overflow: hidden;
+        margin-top: auto; /* Pushes it to the bottom */
+        margin-bottom: 20px; /* Spacing from the bottom */
+        box-sizing: border-box;
+      }
+
+      .profile-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .profile-icon:hover {
+        outline: 5px solid rgba(144, 136, 136, 0.432);
+        transition: 0.5s;
+      }
     </style>
   </head>
   <body>
@@ -460,30 +563,49 @@
             <i class="fas fa-bookmark"></i>
           </a>
         </div>
-        <div class="profile-icon">
-          <a href="account.html"><i class="fas fa-user"></i></a>
-        </div>
+        <a href="account.html">
+          <div class="profile-icon">
+            <img
+              src="http://localhost:3000/boy-account.svg"
+              alt="Profile"
+              id="profileImage"
+            />
+          </div>
+        </a>
       </div>
 
       <!-- Messages List -->
       <div class="messages-list">
-        <h2>Messages</h2>
-        <input type="text" class="search-bar" placeholder="Search" />
-        <div class="message-item">
-          <div class="avatar"></div>
-          <div class="details">
-            <div class="name">Name</div>
-            <div class="snippet">Message</div>
+        <!-- Custom Dropdown -->
+        <div class="custom-dropdown">
+          <div class="dropdown-header" id="dropdownHeader">
+            <span id="dropdownSelected">Messages</span>
+            <span class="arrow"><i class="fas fa-chevron-down"></i></span>
           </div>
-          <div class="time">Time</div>
+          <div class="dropdown-menu" id="dropdownMenu">
+            <div class="dropdown-item" data-value="efforts">Efforts</div>
+            <div class="dropdown-item" data-value="buddyUp">Buddy Up</div>
+          </div>
         </div>
-        <div class="message-item">
-          <div class="avatar"></div>
-          <div class="details">
-            <div class="name">Name</div>
-            <div class="snippet">Message</div>
+        <input type="text" class="search-bar" placeholder="Search" />
+        <div id="messageList">
+          <!-- Messages will be dynamically added here -->
+          <div class="message-item">
+            <div class="avatar"></div>
+            <div class="details">
+              <div class="name">Name 1</div>
+              <div class="snippet">Message</div>
+            </div>
+            <div class="time">Time</div>
           </div>
-          <div class="time">Time</div>
+          <div class="message-item">
+            <div class="avatar"></div>
+            <div class="details">
+              <div class="name">Name 2</div>
+              <div class="snippet">Message</div>
+            </div>
+            <div class="time">Time</div>
+          </div>
         </div>
       </div>
 
@@ -504,7 +626,7 @@
                 <i class="fas fa-phone"></i>
               </div>
               <div class="icon">
-                <i class="fas fa-video"></i>
+                <i class="fas fa-ellipsis-vertical"></i>
               </div>
             </div>
           </div>
@@ -556,7 +678,6 @@
             }
           });
 
-          // Function to handle option selection
           function selectOption(option) {
             alert(`Selected: ${option}`);
             plusBtn.classList.remove("active");
@@ -564,7 +685,6 @@
             blurContainer.classList.remove("blur");
           }
 
-          // Expose selectOption to the global scope for onclick handlers
           window.selectOption = selectOption;
         } else {
           console.error("One or more elements not found:", {
@@ -573,6 +693,239 @@
             blurContainer,
           });
         }
+
+        // Profile icon image
+        const profileIcon = document.querySelector(".profile-icon img");
+        const storedImage = localStorage.getItem("profileImage");
+        if (storedImage) {
+          profileIcon.src = storedImage;
+        }
+
+        // Custom Dropdown Functionality
+        const dropdownHeader = document.getElementById("dropdownHeader");
+        const dropdownMenu = document.getElementById("dropdownMenu");
+        const dropdownSelected = document.getElementById("dropdownSelected");
+        const dropdownArrow = document.querySelector(".dropdown-header .arrow");
+        const messageList = document.getElementById("messageList");
+        const chatBody = document.querySelector(".chat-body");
+        const chatHeaderName = document.querySelector(".chat-header .name");
+        const messageInput = document.querySelector(".message-input");
+        const sendBtn = document.querySelector(".send-btn");
+
+        const effortsData = [
+          { name: "Effort User 1" },
+          { name: "Effort User 2" },
+        ];
+        const buddyUpData = [
+          { name: "Buddy User 1" },
+          { name: "Buddy User 2" },
+        ];
+        const messagesData = [
+          {
+            matchId: "67d5827fe677150f33b2adbf", // Your latest matchId
+            name: "Test User 1",
+            snippet: "Hi there!",
+            time: "Just now",
+          },
+        ];
+
+        let currentMatchId = null;
+
+        function updateDropdownOptions(selectedOption) {
+          dropdownMenu.innerHTML = "";
+          const options = ["Messages", "Efforts", "Buddy Up"].filter(
+            (opt) => opt.toLowerCase() !== selectedOption.toLowerCase()
+          );
+          options.forEach((option) => {
+            const item = document.createElement("div");
+            item.classList.add("dropdown-item");
+            item.setAttribute(
+              "data-value",
+              option.toLowerCase().replace(" ", "")
+            );
+            item.textContent = option;
+            dropdownMenu.appendChild(item);
+          });
+
+          const dropdownItems = document.querySelectorAll(".dropdown-item");
+          dropdownItems.forEach((item) => {
+            item.addEventListener("click", handleDropdownSelection);
+          });
+        }
+
+        function updateMessageList(selectedOption) {
+          messageList.innerHTML = "";
+          let data;
+          if (selectedOption.toLowerCase() === "efforts") {
+            data = effortsData;
+          } else if (selectedOption.toLowerCase() === "buddy up") {
+            data = buddyUpData;
+          } else {
+            data = messagesData;
+          }
+
+          data.forEach((item) => {
+            const messageDiv = document.createElement("div");
+            if (selectedOption.toLowerCase() === "messages") {
+              messageDiv.classList.add("message-item");
+              messageDiv.dataset.matchId = item.matchId;
+              messageDiv.innerHTML = `
+                <div class="avatar"></div>
+                <div class="details">
+                  <div class="name">${item.name}</div>
+                  <div class="snippet">${item.snippet}</div>
+                </div>
+                <div class="time">${item.time}</div>
+              `;
+            } else {
+              messageDiv.classList.add("message-item", "simplified");
+              messageDiv.innerHTML = `
+                <div class="name">${item.name}</div>
+              `;
+            }
+            messageList.appendChild(messageDiv);
+          });
+
+          const messageItems = document.querySelectorAll(".message-item");
+          messageItems.forEach((item) => {
+            item.addEventListener("click", () => {
+              const matchId = item.dataset.matchId;
+              const name = item.querySelector(".name").textContent;
+              currentMatchId = matchId;
+              loadMessages(matchId, name);
+            });
+          });
+        }
+
+        function handleDropdownSelection(event) {
+          const selectedValue = event.target.getAttribute("data-value");
+          const selectedText = event.target.textContent;
+          dropdownSelected.textContent = selectedText;
+          dropdownMenu.classList.remove("active");
+          dropdownArrow.classList.remove("active");
+
+          updateDropdownOptions(selectedText);
+          updateMessageList(selectedText);
+        }
+
+        if (dropdownHeader && dropdownMenu) {
+          dropdownHeader.addEventListener("click", () => {
+            const isActive = dropdownMenu.classList.contains("active");
+            dropdownMenu.classList.toggle("active");
+            dropdownArrow.classList.toggle("active", !isActive);
+          });
+
+          const dropdownItems = document.querySelectorAll(".dropdown-item");
+          dropdownItems.forEach((item) => {
+            item.addEventListener("click", handleDropdownSelection);
+          });
+
+          document.addEventListener("click", (event) => {
+            if (
+              !dropdownHeader.contains(event.target) &&
+              !dropdownMenu.contains(event.target)
+            ) {
+              dropdownMenu.classList.remove("active");
+              dropdownArrow.classList.remove("active");
+            }
+          });
+
+          updateMessageList("Messages");
+        }
+
+        // Fetch and display messages for a match
+        async function loadMessages(matchId, name) {
+          try {
+            const response = await fetch(
+              `http://localhost:3000/api/messages/${matchId}`,
+              {
+                method: "GET",
+                credentials: "include",
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const messages = await response.json();
+            chatBody.innerHTML = "";
+
+            messages.forEach((msg) => {
+              const messageDiv = document.createElement("div");
+              messageDiv.textContent = `${msg.senderId}: ${msg.message}`;
+              chatBody.appendChild(messageDiv);
+            });
+
+            chatHeaderName.textContent = name;
+          } catch (error) {
+            console.error("Error loading messages:", error);
+            chatBody.innerHTML = "<p>Error loading messages</p>";
+          }
+        }
+
+        // Send a new message
+        async function sendMessage() {
+          const content = messageInput.value.trim();
+          if (!content || !currentMatchId) return;
+
+          try {
+            const response = await fetch(
+              `http://localhost:3000/api/messages/${currentMatchId}`,
+              {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ content }),
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const newMessage = await response.json();
+            const messageDiv = document.createElement("div");
+            messageDiv.textContent = `${newMessage.senderId}: ${newMessage.message}`;
+            chatBody.appendChild(messageDiv);
+            messageInput.value = "";
+          } catch (error) {
+            console.error("Error sending message:", error);
+            chatBody.innerHTML += "<p>Error sending message</p>";
+          }
+        }
+
+        sendBtn.addEventListener("click", sendMessage);
+        messageInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") sendMessage();
+        });
+
+        // Connect to the Socket.IO server
+        const socket = io("http://127.0.0.1:3000", {
+          withCredentials: true, // Include credentials for CORS
+        });
+
+        // Log when connected
+        socket.on("connect", () => {
+          console.log("Connected to Socket.IO server!");
+        });
+
+        // Log when disconnected
+        socket.on("disconnect", () => {
+          console.log("Disconnected from Socket.IO server!");
+        });
+
+        // Handle connection errors (e.g., unauthorized)
+        socket.on("connect_error", (error) => {
+          console.log("Connection error:", error.message);
+          if (error.message === "Unauthorized") {
+            console.log("You need to log in to use the chat!");
+            // Optionally, redirect to login page
+            // window.location.href = "http://127.0.0.1:5500/login.html";
+          }
+        });
       });
     </script>
   </body>

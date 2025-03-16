@@ -8,6 +8,15 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
     <style>
       * {
         margin: 0;
@@ -17,91 +26,291 @@
 
       body {
         font-family: Arial, sans-serif;
-        background: #000; /* Solid black background */
+        background: #000;
         height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative; /* For positioning the blurred shapes */
-        overflow: hidden; /* Prevent overflow of blurred shapes */
+        position: relative;
+        overflow: hidden;
+        margin: 0;
       }
 
-      /* Red and Blue vertically tilted blurred rectangles */
       .blur-shape {
         position: absolute;
-        width: 250px; /* Reduced from 300px to make less prominent */
-        height: 500px; /* Reduced from 600px to make less prominent */
+        width: 250px;
+        height: 500px;
         border-radius: 50px;
         filter: blur(100px);
-        z-index: -1; /* Behind all content */
-        opacity: 0.4; /* Reduced from 0.5 to make less intense */
+        z-index: -1;
+        opacity: 0.4;
       }
 
       .red-shape {
-        background: rgba(255, 0, 0, 0.7); /* Red/love color */
+        background: rgba(255, 0, 0, 0.7);
         top: -50px;
         left: -100px;
-        transform: rotate(45deg); /* Tilted vertically */
+        transform: rotate(45deg);
       }
 
       .blue-shape {
-        background: rgba(135, 206, 250, 0.7); /* Sky blue color */
+        background: rgba(135, 206, 250, 0.7);
         bottom: -50px;
         right: -100px;
-        transform: rotate(45deg); /* Tilted vertically */
+        transform: rotate(45deg);
       }
 
-      /* Centered phone-like box */
       .phone-box {
-        position: absolute;
+        position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%); /* Center the box exactly */
-        width: 360px; /* Typical phone width */
-        height: 700px; /* Typical phone height */
-        background: #fff; /* White background */
-        border-radius: 20px; /* Rounded corners like a phone */
-        box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5); /* Shadow at bottom and right */
-        z-index: 10; /* Ensure it's above the blurred shapes but below navbar */
+        transform: translate(-50%, -50%);
+        width: 360px;
+        height: 700px;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5);
+        z-index: 10;
         display: flex;
         flex-direction: column;
-        justify-content: flex-end; /* Push content to the bottom */
-        padding-bottom: 20px; /* Add some padding at the bottom */
+        overflow: hidden;
       }
 
-      /* Container for buttons inside the phone box */
+      .profile-list {
+        flex-grow: 1;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding: 0;
+        outline: none;
+        -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
+        scrollbar-width: none; /* Hide scrollbar in Firefox */
+        transition: filter 0.7s ease-in-out, opacity 0.7s ease-in-out; /* Add base transition for smoothness */
+      }
+
+      /* Hide scrollbar in Chrome, Safari, and Opera */
+      .profile-list::-webkit-scrollbar {
+        display: none;
+      }
+
+      .profile-card {
+        background: #f5f5f5; /* Existing background */
+        border-radius: 10px;
+        height: 100%;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Center vertically */
+        align-items: flex-start; /* Align items to the left */
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        position: relative;
+        /* Add gradient overlay */
+        background-image: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.8),
+          transparent
+        );
+        overflow: hidden;
+      }
+
+      /* Add gradient as a pseudo-element behind all content */
+      .profile-card::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%; /* Full height of the card */
+        background-image: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.8),
+          transparent
+        );
+        z-index: 1; /* Behind all content */
+      }
+
+      .profile-image {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 20px;
+        align-self: center;
+      }
+
+      .profile-info {
+        padding-top: 90px;
+        text-align: left;
+        padding-right: 40px;
+        z-index: 2;
+      }
+
+      @font-face {
+        font-family: "Agraham";
+        src: url("fonts/Agraham.otf") format("opentype"); /* OTF format */
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      .profile-info h3 {
+        margin: 10px;
+        font-size: 22px;
+        font-family: "Agraham", sans-serif;
+        color: #fbfafa;
+      }
+      .profile-age {
+        font-family: "Noto Serif Display", serif;
+        font-optical-sizing: auto;
+        font-style: normal;
+        font-variation-settings: "wdth" 100;
+        font-size: 20px; /* Match the h3 size */
+        color: #ffffff; /* Match the h3 color */
+      }
+
+      .profile-info p {
+        margin: 0px;
+        font-size: 13px;
+        padding-top: 0px;
+        padding-left: 10px;
+        color: #ffffff;
+      }
+
+      .profile-details-box {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px);
+        transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out,
+          visibility 0.7s ease-in-out;
+        overflow-y: auto; /* Enable scrolling when content overflows */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
+      }
+
+      .profile-details-box.active {
+        opacity: 1; /* Fully visible */
+        visibility: visible; /* Fully interactive */
+        transform: translateY(0); /* Slide to original position */
+        transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out,
+          visibility 0.7s ease-in-out; /* Ensure matching transition for disappearance */
+      }
+
+      /* Close Button in Profile Details Box */
+      .profile-details-close {
+        position: fixed !important;
+        width: 30px;
+        height: 30px;
+        background-color: rgba(2, 2, 2, 0.84); /* #f7e3e3d7 equivalent */
+        box-shadow: 5px 1px 20px rgba(0, 0, 0, 0.2); /* Added shadow color */
+        top: 15px;
+        right: 15px;
+        border-radius: 50%; /* Simplified */
+        display: flex; /* Enable flexbox */
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
+        font-size: 20px;
+        color: #f9f7f7;
+        cursor: pointer;
+        z-index: 25;
+      }
+
+      /* Profile List Blur and Fade */
+      .profile-list.blur {
+        filter: blur(10px);
+        opacity: 0.3;
+        transition: filter 0.7s ease-in-out, opacity 0.9s ease-in-out;
+        pointer-events: none; /* Disable interactions while blurred */
+      }
+
+      /* Profile Details Content */
+      .profile-details-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        padding-top: 50px;
+        padding-bottom: 50px;
+        text-align: center;
+      }
+
+      .profile-details-box::-webkit-scrollbar {
+        display: none; /* Hide scrollbar in Chrome, Safari, and Opera */
+      }
+      .profile-details-box {
+        -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
+        scrollbar-width: none; /* Hide scrollbar in Firefox */
+      }
+
+      .profile-details-content h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .profile-details-content p {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 10px;
+      }
+
+      /* Ensure profile text is clickable */
+      .profile-info h3,
+      .profile-info p {
+        cursor: pointer;
+      }
+
       .button-container {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        width: 100%;
-        padding: 0 20px; /* Add padding to the sides */
+        z-index: 2;
       }
 
-      /* Heart button (replacing the right green dot inside the box) */
       .heart-button {
         width: 50px;
         height: 50px;
-        background: #ffd1d1; /* Light rose pink background */
+        background: #ffd1d1;
         border: none;
         border-radius: 50%;
         cursor: pointer;
         font-size: 24px;
-        color: white; /* Initial color of the heart */
+        color: white;
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: transform 0.3s ease, color 0.3s ease; /* Smooth transition for transform and color */
+        transition: transform 0.3s ease, color 0.3s ease;
+      }
+
+      .heart-button:hover {
+        width: 55px;
+        height: 55px;
+        transition: 0.3s;
       }
 
       .heart-button.active {
-        color: #ff4d4d; /* Color when clicked (red) */
+        color: #ff4d4d;
       }
 
       .no-named-button {
         width: 50px;
         height: 50px;
-        background: #000; /* Black background */
+        background: #000;
         border: 1px solid #ccc;
         border-radius: 50%;
         cursor: pointer;
@@ -109,66 +318,73 @@
         justify-content: center;
         align-items: center;
         font-size: 16px;
-        color: #fff; /* White color for visibility on black background */
+        color: #fff;
       }
 
-      /* Comment inbox (replacing the black rectangular box) */
+      .no-named-button:hover {
+        width: 55px;
+        height: 55px;
+        transition: 0.3s;
+      }
+
+      /* Modify the .comment-inbox class to add a 3d effect */
       .comment-inbox {
         flex-grow: 1;
         margin: 0 10px;
-        background: #f5f5f5; /* Light gray background */
-        border-radius: 20px; /* Rounded corners */
+        background: #f5f5f5;
+        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 14px;
         color: #666;
         font-style: italic;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for aesthetic */
+
+        transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
       }
 
+      /* Add hover effect to enhance 3D feel */
+      .comment-inbox:hover {
+        transform: perspective(1000px) rotateX(0deg); /* Straighten on hover */
+        box-shadow: 7px 7px 20px rgba(0, 0, 0, 0.25),
+          -2px -2px 10px rgba(251, 249, 249, 0.8); /* Enhance shadow on hover */
+      }
+
+      /* Modify the .comment-input class to match the 3D style */
       .comment-input {
         width: 100%;
         height: 40px;
         padding: 10px;
-        border-radius: 50px;
+        border-radius: 20px; /* Match the parent border-radius */
         font-size: 14px;
         color: #333;
-        border: 0px;
-        background: #fff;
-        transition: border 0.3s;
+        border: none; /* Remove border for a cleaner look */
+        background: #e0e0e0; /* Slightly darker background for depth */
+
+        transition: box-shadow 0.3s ease; /* Smooth transition for focus */
       }
 
+      /* Enhance focus state for 3D effect */
       .comment-input:focus {
-        border: 0.5px solid black;
-        outline: none; /* Remove default blue outline */
-        transition: 0.3s;
+        outline: none;
       }
 
-      /* Container for external buttons (Rose, Save, Share) outside the phone box */
+      /* Rest of your CSS remains unchanged */
       .external-buttons {
         position: absolute;
-        top: calc(50% + 190px); /* Shift buttons down by 50px from the center */
-        left: calc(
-          50% + 195px
-        ); /* Increase offset to add more space (360px width / 2 + 40px) */
-        transform: translateY(-50%); /* Adjust for vertical centering */
+        top: calc(50% + 190px);
+        left: calc(50% + 195px);
+        transform: translateY(-50%);
         display: flex;
-        flex-direction: column; /* Vertical layout */
-        gap: 15px; /* Space between buttons */
-        z-index: 15; /* Above the phone box */
+        flex-direction: column;
+        gap: 15px;
+        z-index: 15;
       }
 
-      /* External buttons (Rose, Save, Share) */
       .external-buttons button {
         width: 50px;
         height: 50px;
-        background: rgba(
-          255,
-          255,
-          255,
-          0.2
-        ); /* White and transparent background */
+        background: rgba(255, 255, 255, 0.2);
         border: 0px solid rgba(255, 255, 255, 0.5);
         border-radius: 50%;
         cursor: pointer;
@@ -181,12 +397,193 @@
       }
 
       .external-buttons button:hover {
-        background: rgba(
-          255,
-          255,
-          255,
-          0.4
-        ); /* Slightly more opaque on hover */
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Default Save Button */
+      .external-buttons button[title="Save"] {
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(255, 255, 255, 0.25),
+          rgba(255, 255, 255, 0.1) 70%,
+          rgba(255, 255, 255, 0.05)
+        ); /* Radial gradient for dome effect */
+        border: none; /* No border */
+        border-radius: 50%; /* Perfect circle for droplet shape */
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #fff;
+        transition: background 0.3s ease, transform 0.3s ease,
+          box-shadow 0.3s ease;
+        backdrop-filter: blur(
+          10px
+        ); /* Stronger blur for frosted glass effect */
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
+          /* Outer shadow for depth */ inset 0 4px 8px rgba(255, 255, 255, 0.5),
+          /* Stronger inner highlight for dome */ inset 0 -2px 6px rgba(0, 0, 0, 0.15); /* Inner shadow for depth */
+        transform: perspective(500px) translateZ(5px); /* Slight 3D perspective for dome */
+      }
+
+      /* Save Button Icon (Default - Border Only) */
+      .external-buttons button[title="Save"] i {
+        font-weight: 400; /* Ensures outline style for unfilled icon */
+      }
+
+      /* Save Button Active (Filled Icon) */
+      .external-buttons button[title="Save"].saved {
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(255, 255, 255, 0.45),
+          rgba(255, 255, 255, 0.2) 70%,
+          rgba(255, 255, 255, 0.05)
+        ); /* Even brighter gradient when saved */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
+          /* Stronger outer shadow for depth */ inset 0 4px 12px
+            rgba(255, 255, 255, 0.7),
+          /* Very bright highlight */ inset 0 -2px 6px rgba(0, 0, 0, 0.25); /* Darker inner shadow */
+        transform: perspective(500px) translateZ(3px); /* Slightly pressed down for interaction */
+      }
+
+      /* Save Button Icon (Filled) */
+      .external-buttons button[title="Save"].saved i {
+        font-weight: 900; /* Filled icon style */
+        color: #fff; /* Ensure filled icon is visible */
+      }
+
+      /* Share Button */
+      .external-buttons button[title="Share"] {
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(255, 255, 255, 0.25),
+          rgba(255, 255, 255, 0.1) 70%,
+          rgba(255, 255, 255, 0.05)
+        ); /* Radial gradient for dome effect */
+        border: none; /* No border */
+        border-radius: 50%; /* Perfect circle for droplet shape */
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.3s ease,
+          box-shadow 0.3s ease;
+        backdrop-filter: blur(
+          10px
+        ); /* Stronger blur for frosted glass effect */
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
+          /* Outer shadow for depth */ inset 0 4px 8px rgba(255, 255, 255, 0.5),
+          /* Stronger inner highlight for dome */ inset 0 -2px 6px rgba(0, 0, 0, 0.15); /* Inner shadow for depth */
+        transform: perspective(500px) translateZ(5px); /* Slight 3D perspective for dome */
+      }
+
+      /* Updated Share options popup (the "slide") to appear on top of phone-box */
+      .share-options {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 360px;
+        background: rgba(233, 237, 233, 0.992); /* Light green grassy effect */
+        border-radius: 15px 15px 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+        z-index: 20;
+        transform: translateY(100%); /* Start below phone-box */
+        opacity: 0; /* Fully transparent */
+        max-height: 0; /* Collapsed height */
+        overflow: hidden; /* Prevent content from showing when collapsed */
+        transition: transform 0.5s ease, opacity 0.5s ease, max-height 0.5s ease; /* Animate all */
+        border: 1px solid rgba(235, 241, 235, 0.465);
+      }
+
+      /* Active state for share options (slide up) */
+      .share-options.active {
+        max-height: 150px;
+        opacity: 1;
+        transform: translateY(0); /* Slide up to be fully visible */
+      }
+
+      /* Individual share options (WhatsApp and Twitter) */
+      .share-option {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 20px 15px;
+        font-size: 16px;
+        color: #040404;
+        cursor: pointer;
+        text-align: center;
+        transition: color 0.3s ease, transform 0.2s ease;
+        font-family: Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative; /* For underline effect */
+      }
+
+      /* Hover state for share options */
+      .share-option:hover {
+        color: #000000; /* Change text color on hover */
+        transform: translateY(-5px); /* Slight lift for interaction */
+      }
+
+      /* Icon styling (if icons are added) */
+      .share-option i {
+        font-size: 18px; /* Adjust icon size */
+        color: inherit; /* Inherit color from parent */
+      }
+
+      /* Specific styling for WhatsApp */
+      .share-option.whatsapp {
+        position: relative;
+      }
+
+      /* Underline effect for WhatsApp on hover */
+      .share-option.whatsapp::after {
+        content: "";
+        position: absolute;
+        bottom: 5px; /* Position the line below the text */
+        left: 0;
+        width: 0; /* Start with no width */
+        height: 2px; /* Thickness of the line */
+        background: #25d366; /* WhatsApp green color */
+        transition: width 0.4s ease; /* Smooth width transition */
+      }
+
+      /* Expand the line on hover for WhatsApp */
+      .share-option.whatsapp:hover::after {
+        width: 100%; /* Expand to full width */
+      }
+
+      /* Specific styling for Twitter */
+      .share-option.twitter {
+        position: relative;
+      }
+
+      /* Optional: Underline effect for Twitter on hover (if desired) */
+      .share-option.twitter::after {
+        content: "";
+        position: absolute;
+        bottom: 5px; /* Position the line below the text */
+        left: 0;
+        width: 0; /* Start with no width */
+        height: 2px; /* Thickness of the line */
+        background: #1da1f2; /* Twitter blue color */
+        transition: width 0.4s ease; /* Smooth width transition */
+      }
+
+      /* Expand the line on hover for Twitter (if desired) */
+      .share-option.twitter:hover::after {
+        width: 100%; /* Expand to full width */
       }
 
       .navbar {
@@ -205,28 +602,28 @@
         font-size: 24px;
         font-weight: bold;
         font-family: Arial, sans-serif;
-        color: #fff; /* White text */
+        color: #fff;
       }
 
       .navbar .nav-links {
-        position: absolute; /* Center the nav-links in the middle of the navbar */
+        position: absolute;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
-        align-items: center; /* Center items vertically */
+        align-items: center;
       }
 
       .navbar .nav-links a {
         font-size: 18px;
         font-family: Arial, sans-serif;
-        color: rgba(255, 255, 255, 0.8); /* Off-white text */
+        color: rgba(255, 255, 255, 0.8);
         text-decoration: none;
-        margin: 0 10px; /* Equal margin on both sides to control spacing */
-        transition: color 0.3s; /* Smooth transition for color change */
+        margin: 0 10px;
+        transition: color 0.3s;
       }
 
       .navbar .nav-links a:hover {
-        color: #fff; /* White text on hover */
+        color: #fff;
       }
 
       .navbar .nav-links a:nth-child(2) {
@@ -245,6 +642,7 @@
         cursor: pointer;
         transition: opacity 0.3s ease;
         z-index: 1100;
+        position: relative;
       }
 
       .navbar .hamburger.hidden {
@@ -272,7 +670,8 @@
       }
 
       .side-navbar.active {
-        right: 0;
+        right: 0 !important;
+        z-index: 1200;
       }
 
       .close-icon {
@@ -291,7 +690,7 @@
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start; /* Changed to flex-start to move items to the top */
+        justify-content: flex-start;
       }
 
       .side-navbar .top-items a {
@@ -350,25 +749,22 @@
         background-color: rgba(255, 87, 87, 0.9);
       }
 
-      /* Account Section in Sidebar */
       .account-section {
         display: flex;
         align-items: center;
         height: 90px;
-        margin-bottom: 20px; /* Space below the account section */
+        margin-bottom: 20px;
       }
 
-      /* Account Image Styling */
       .account-image {
-        width: 120px; /* Horizontal rectangle width */
-        height: 150px; /* Horizontal rectangle height */
-        object-fit: cover; /* Ensure the image fits well */
-        border-radius: 10px; /* Small border radius */
-        border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
-        margin-right: 15px; /* Space between image and text */
+        width: 120px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-right: 15px;
       }
 
-      /* Account Name Styling */
       .account-info .account-name {
         margin-top: 80px;
         font-size: 18px;
@@ -376,34 +772,18 @@
         color: #fff;
       }
 
-      /* Account Details (Age and Study Year) Styling */
       .account-info .account-details {
         font-size: 10px;
         font-style: italic;
-        color: rgba(255, 255, 255, 0.8); /* Slightly faded white */
+        color: rgba(255, 255, 255, 0.8);
         margin-top: 2px;
       }
 
-      /* Adjust top-items padding to account for the new layout */
-      .side-navbar .top-items {
-        padding-top: 60px;
-        text-align: left;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start; /* Changed to flex-start to move items to the top */
-      }
-      .account-section:hover {
-        transform: scale(1.05); /* Slight zoom on hover */
-        transition: 1s;
-      }
-
-      /* New Styles for Middle-Left Alignment */
       .side-navbar .middle-left {
         display: flex;
         flex-direction: column;
-        align-items: flex-start; /* Align items to the left */
-        margin-left: 20px; /* Add some margin to the left */
+        align-items: flex-start;
+        margin-left: 20px;
         margin-top: 50%;
       }
 
@@ -427,25 +807,183 @@
         margin-bottom: 8px;
       }
 
+      /* Default Rose Button */
       .rose-button {
-        background-color: rgba(
+        background: rgba(
           255,
-          160,
-          176,
-          0.5
-        ) !important; /* More transparent romantic pink */
-        border: none; /* Remove default button border */
-        border-radius: 50%; /* Make it circular */
-        padding: 10px; /* Add some padding */
-        cursor: pointer; /* Change cursor to pointer */
+          119,
+          144,
+          0.8
+        ) !important; /* Exact pink shade as original */
+        border: none; /* No border */
+        border-radius: 50%; /* Perfect circle for droplet shape */
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        display: flex;
+        backdrop-filter: none;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #fff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        backdrop-filter: blur(
+          10px
+        ); /* Stronger blur for frosted glass effect */
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
+          /* Outer shadow for depth */ inset 0 4px 8px rgba(255, 255, 255, 0.3),
+          /* Stronger inner highlight for dome */ inset 0 -2px 6px rgba(0, 0, 0, 0.15); /* Inner shadow for depth */
+        transform: perspective(500px) translateZ(5px); /* Slight 3D perspective for dome */
         overflow: hidden;
-        position: relative; /* Ensure it has a stacking context */
-        z-index: 20; /* Same level as confirm button when hidden */
+        position: relative;
+        z-index: 20;
       }
 
-      .rose-icon {
-        width: 40px; /* Set width */
-        height: 40px; /* Set height */
+      /* Rose Button Icon */
+      .rose-button .rose-icon {
+        width: 40px;
+        height: 40px;
+        transition: transform 0.3s ease; /* Smooth icon scaling on hover */
+      }
+
+      /* Rose Button Hover */
+      .rose-button:hover {
+        transform: perspective(500px) translateZ(10px) scale(1.1); /* Lift and scale for 3D effect */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
+          /* Enhanced outer shadow */ inset 0 4px 10px rgba(255, 255, 255, 0.6),
+          /* Brighter inner highlight */ inset 0 -2px 6px rgba(0, 0, 0, 0.2); /* Slightly darker inner shadow */
+      }
+
+      /* Rose Button Active */
+      .rose-button.active {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
+          /* Stronger outer shadow for depth */ inset 0 4px 12px
+            rgba(255, 255, 255, 0.7),
+          /* Very bright highlight */ inset 0 -2px 6px rgba(0, 0, 0, 0.25); /* Darker inner shadow */
+        transform: perspective(500px) translateZ(3px); /* Slightly pressed down for interaction */
+      }
+
+      /* Rose Button Active Icon */
+      .rose-button.active .rose-icon {
+        transform: scale(1.1); /* Slight scale up for feedback */
+      }
+
+      /* Shine Effect on Click */
+      .rose-button::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%; /* Start off-screen to the left */
+        width: 30%; /* Width of the shine */
+        height: 100%;
+        background: linear-gradient(
+          120deg,
+          transparent,
+          rgba(255, 255, 255, 0.8) 50%,
+          transparent
+        ); /* Sharp shine gradient */
+        transform: skewX(-20deg); /* Skew for a dynamic shine effect */
+        transition: none; /* No transition by default */
+        pointer-events: none; /* Ensure shine doesn't interfere with clicks */
+      }
+
+      /* Trigger Shine Animation on Click */
+      .rose-button.shine::after {
+        animation: shine 0.6s linear forwards; /* Run shine animation */
+      }
+
+      /* Shine Animation Keyframes */
+      @keyframes shine {
+        0% {
+          left: -100%;
+        }
+        60% {
+          left: 100%; /* Move across the button */
+        }
+        100% {
+          left: 100%; /* Stay off-screen to the right */
+        }
+      }
+
+      /* Default Buddy Button */
+      .buddy-button {
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(255, 255, 255, 0.25),
+          rgba(255, 255, 255, 0.1) 70%,
+          rgba(255, 255, 255, 0.05)
+        ) !important; /* Radial gradient for dome effect */
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #fff !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
+          inset 0 4px 8px rgba(255, 255, 255, 0.3),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.15);
+        transform: perspective(500px) translateZ(5px);
+        overflow: hidden;
+        position: relative;
+        z-index: 21;
+      }
+
+      /* Buddy Button Icon */
+      .buddy-button .buddy-icon {
+        width: 30px;
+        height: 30px;
+        transition: transform 0.3s ease;
+      }
+
+      /* Buddy Button Hover */
+      .buddy-button:hover {
+        transform: perspective(500px) translateZ(10px) scale(1.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
+          inset 0 4px 10px rgba(255, 255, 255, 0.6),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Buddy Button Active */
+      .buddy-button.active {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
+          inset 0 4px 12px rgba(255, 255, 255, 0.7),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.25);
+        transform: perspective(500px) translateZ(3px);
+      }
+
+      /* Buddy Button Active Icon */
+      .buddy-button.active .buddy-icon {
+        transform: scale(1.1);
+      }
+
+      /* Shine Effect on Click for Buddy Button */
+      .buddy-button::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 30%;
+        height: 100%;
+        background: linear-gradient(
+          120deg,
+          transparent,
+          rgba(255, 255, 255, 0.8) 50%,
+          transparent
+        );
+        transform: skewX(-20deg);
+        transition: none;
+        pointer-events: none;
+      }
+
+      /* Trigger Shine Animation on Click for Buddy Button */
+      .buddy-button.shine::after {
+        animation: shine 0.6s linear forwards;
       }
 
       @keyframes heartbeat {
@@ -453,86 +991,95 @@
           transform: scale(1);
         }
         20% {
-          transform: scale(1.2); /* Scale up */
+          transform: scale(1.2);
         }
         40% {
-          transform: scale(1); /* Return to original size */
+          transform: scale(1);
         }
         60% {
-          transform: scale(1.2); /* Scale up again */
+          transform: scale(1.2);
         }
         80% {
-          transform: scale(1); /* Return to original size */
+          transform: scale(1);
         }
         100% {
-          transform: scale(1.2); /* Final scale up */
+          transform: scale(1.2);
         }
       }
 
       .rose-button-container {
-        position: relative; /* Position relative for absolute positioning of confirm button */
+        position: relative;
       }
 
-      /* Keyframe animation for smooth sliding effect beside the rose button */
       @keyframes slideInBeside {
         0% {
           opacity: 0;
-          right: -50px; /* Start just outside the rose button */
+          right: -50px;
         }
         100% {
           opacity: 1;
-          right: -100px; /* Slide to final position beside the rose button */
+          right: -100px;
         }
       }
 
       @keyframes slideOutBeside {
         0% {
           opacity: 1;
-          right: -100px; /* Start at final position beside the rose button */
+          right: -100px;
         }
         100% {
           opacity: 0;
-          right: -50px; /* Slide back to just outside the rose button */
+          right: -50px;
         }
       }
     </style>
   </head>
   <body>
-    <!-- Red and Blue blurred shapes -->
     <div class="blur-shape red-shape"></div>
     <div class="blur-shape blue-shape"></div>
 
-    <!-- Centered phone-like box -->
     <div class="phone-box">
-      <!-- Buttons inside the phone box -->
-      <div class="button-container">
-        <button class="no-named-button">
-          <i class="fa-solid fa-ban"></i>
-        </button>
-        <div class="comment-inbox">
-          <input
-            type="text"
-            placeholder="Add a comment..."
-            class="comment-input"
-          />
+      <div class="profile-list" id="profileList" tabindex="0"></div>
+      <div class="profile-details-box" id="profileDetailsBox">
+        <div class="profile-details-close" onclick="closeProfileDetails()">
+          ✕
         </div>
-        <button class="heart-button">
-          <i class="fa-solid fa-heart"></i>
-        </button>
+        <div class="profile-details-content" id="profileDetailsContent"></div>
+      </div>
+      <!-- Moved share-options inside phone-box -->
+      <div class="share-options" id="shareOptions">
+        <div class="share-option whatsapp" data-platform="whatsapp">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </div>
+        <div class="share-option twitter" data-platform="twitter">
+          <i class="fab fa-twitter"></i> Twitter
+        </div>
       </div>
     </div>
 
-    <!-- External buttons (Rose, Save, Share) outside the phone box on the right side -->
     <div class="external-buttons">
       <div class="rose-button-container">
         <button title="Rose" class="rose-button">
           <img src="rose-icon.svg" alt="Rose" class="rose-icon" />
         </button>
       </div>
+      <div class="buddy-button-container">
+        <button title="Buddy" class="buddy-button">
+          <img
+            src="buddy-icon.png"
+            alt="Buddy"
+            class="buddy-icon"
+            style="
+              filter: brightness(0) saturate(100%) invert(100%) sepia(0%)
+                saturate(1%) hue-rotate(149deg) brightness(103%) contrast(101%);
+            "
+          />
+        </button>
+      </div>
       <button title="Save">
         <i class="fa-solid fa-bookmark"></i>
       </button>
-      <button title="Share">
+      <button title="Share" id="shareButton">
         <i class="fa-solid fa-paper-plane"></i>
       </button>
     </div>
@@ -550,7 +1097,6 @@
     <div class="side-navbar" id="sideNavbar">
       <div class="close-icon" onclick="toggleSidebar()">✕</div>
       <div class="top-items">
-        <!-- Account Section with Image, Name, Age, and Study Year -->
         <div class="account-section">
           <a href="account.html">
             <img
@@ -564,7 +1110,6 @@
             <div class="account-details">Age: 21 | Study Year: 3rd</div>
           </div>
         </div>
-        <!-- Middle-Left Section for Messages and Saves -->
         <div class="middle-left">
           <a href="messages.html">MESSAGES</a>
           <div class="description">(See what your connections have to say)</div>
@@ -581,12 +1126,477 @@
     </div>
 
     <script>
-      // Update account info
-      document.querySelector(".account-name").textContent = "Karmesh Meritia";
-      document.querySelector(".account-details").textContent =
-        "Age: 21 | Year: 4th";
+      document.addEventListener("DOMContentLoaded", function () {
+        let loadedProfiles = 0;
+        const profilesPerPage = 1;
 
-      // Toggle sidebar
+        const dummyProfiles = [
+          {
+            id: 1,
+            name: "Alice Smith",
+            age: 22,
+            hometown: "New York",
+            year: "3rd",
+            department: "Computer Science",
+            bio: "Loves hiking and reading.",
+            image: "https://via.placeholder.com/200",
+            interests: ["Hiking", "Reading", "Photography", "Traveling"],
+            hobbies: ["Painting", "Cooking", "Yoga"],
+            favoriteQuote:
+              "The journey of a thousand miles begins with a single step.",
+            additionalInfo:
+              "I'm a passionate computer science student with a love for exploring the outdoors and capturing moments through photography. In my free time, I enjoy experimenting with new recipes in the kitchen and practicing yoga to stay balanced. I'm always up for a good book recommendation or a challenging hike!",
+          },
+          {
+            id: 2,
+            name: "Bob Johnson",
+            age: 21,
+            hometown: "Chicago",
+            year: "2nd",
+            department: "Engineering",
+            bio: "Enjoys coding and gaming.",
+            image: "https://via.placeholder.com/200",
+            interests: ["Coding", "Gaming", "Music", "Movies"],
+            hobbies: ["Playing guitar", "Video editing", "Board games"],
+            favoriteQuote:
+              "Code is like humor. When you have to explain it, it’s bad.",
+            additionalInfo:
+              "I'm an engineering student with a knack for problem-solving through code. Gaming is my go-to way to unwind, and I love creating music playlists for different moods. I also enjoy editing videos as a creative outlet and hosting board game nights with friends. Let's connect over a coding challenge or a game!",
+          },
+          {
+            id: 3,
+            name: "Jack Dorsey",
+            age: 20,
+            hometown: "Chicago",
+            year: "5th",
+            department: "Engineering",
+            bio: "Enjoys coding and gaming.",
+            image: "https://via.placeholder.com/200",
+            interests: ["Technology", "Gaming", "Sports", "Reading"],
+            hobbies: ["Running", "Chess", "Building PCs"],
+            favoriteQuote: "Technology is best when it brings people together.",
+            additionalInfo:
+              "I'm an engineering student passionate about technology and its impact on society. I enjoy staying active through running and challenging my strategic thinking with chess. Building custom PCs is my latest hobby, and I'm always eager to learn about the latest tech trends. Let's chat about tech or compete in a game!",
+          },
+        ];
+
+        function loadProfiles() {
+          const profileList = document.getElementById("profileList");
+          const start = loadedProfiles;
+          const end = Math.min(
+            loadedProfiles + profilesPerPage,
+            dummyProfiles.length
+          );
+
+          if (start >= dummyProfiles.length) {
+            const noMoreProfiles = document.createElement("div");
+            noMoreProfiles.classList.add("profile-card");
+            noMoreProfiles.textContent = "No more profiles to show";
+            noMoreProfiles.style.textAlign = "center";
+            noMoreProfiles.style.fontSize = "18px";
+            noMoreProfiles.style.color = "#666";
+            profileList.appendChild(noMoreProfiles);
+            return;
+          }
+
+          for (let i = start; i < end; i++) {
+            const profile = dummyProfiles[i];
+            const profileCard = document.createElement("div");
+            profileCard.classList.add("profile-card");
+
+            const profileImage = document.createElement("img");
+            profileImage.classList.add("profile-image");
+            profileImage.src = profile.image;
+            profileImage.alt = `${profile.name}'s profile image`;
+
+            const profileInfo = document.createElement("div");
+            profileInfo.classList.add("profile-info");
+
+            const profileNameAge = document.createElement("h3");
+            profileNameAge.innerHTML = `${profile.name}, <span class="profile-age">${profile.age}</span>`;
+            const profileDetails = document.createElement("p");
+            profileDetails.classList.add("profile-details");
+            profileDetails.textContent = `${profile.hometown} | ${profile.year} | ${profile.department}`;
+            const profileBio = document.createElement("p");
+            profileBio.classList.add("profile-bio");
+            profileBio.textContent = profile.bio;
+
+            profileInfo.appendChild(profileNameAge);
+            profileInfo.appendChild(profileDetails);
+            profileInfo.appendChild(profileBio);
+
+            const buttonContainer = document.createElement("div");
+            buttonContainer.classList.add("button-container");
+
+            const noNamedButton = document.createElement("button");
+            noNamedButton.classList.add("no-named-button");
+            noNamedButton.innerHTML = '<i class="fa-solid fa-ban"></i>';
+
+            const commentInbox = document.createElement("div");
+            commentInbox.classList.add("comment-inbox");
+            const commentInput = document.createElement("input");
+            commentInput.type = "text";
+            commentInput.placeholder = "Add a comment...";
+            commentInput.classList.add("comment-input");
+            commentInbox.appendChild(commentInput);
+
+            const heartButton = document.createElement("button");
+            heartButton.classList.add("heart-button");
+            heartButton.innerHTML = '<i class="fa-solid fa-heart"></i>';
+
+            buttonContainer.appendChild(noNamedButton);
+            buttonContainer.appendChild(commentInbox);
+            buttonContainer.appendChild(heartButton);
+
+            profileCard.appendChild(profileImage);
+            profileCard.appendChild(profileInfo);
+            profileCard.appendChild(buttonContainer);
+
+            profileList.appendChild(profileCard);
+
+            heartButton.addEventListener("click", function () {
+              this.classList.add("active");
+              setTimeout(() => {
+                this.style.animation = "heartbeat 1s ease";
+                this.addEventListener(
+                  "animationend",
+                  () => {
+                    this.style.animation = "";
+                  },
+                  { once: true }
+                );
+              }, 100);
+            });
+
+            [profileNameAge, profileDetails, profileBio].forEach((element) => {
+              element.addEventListener("click", () =>
+                showProfileDetails(profile)
+              );
+            });
+
+            noNamedButton.addEventListener("click", function () {
+              currentProfileIndex++;
+              if (currentProfileIndex >= loadedProfiles) {
+                if (loadedProfiles < dummyProfiles.length) {
+                  loadProfiles();
+                } else {
+                  currentProfileIndex = loadedProfiles - 1;
+                }
+              }
+              scrollToProfile(currentProfileIndex);
+            });
+          }
+
+          loadedProfiles = end;
+
+          if (start === 0) {
+            scrollToProfile(0);
+          }
+        }
+
+        loadProfiles();
+
+        function isNearBottom(element) {
+          const lastProfile = element.lastElementChild;
+          if (!lastProfile) return false;
+          const lastProfileRect = lastProfile.getBoundingClientRect();
+          const containerRect = element.getBoundingClientRect();
+          return lastProfileRect.bottom <= containerRect.bottom + 50;
+        }
+
+        function scrollToProfile(index) {
+          const profileList = document.getElementById("profileList");
+          const profiles = profileList.children;
+          if (index >= 0 && index < profiles.length) {
+            const profileHeight = profiles[index].offsetHeight;
+            const targetPosition = index * profileHeight;
+            profileList.scrollTo({
+              top: targetPosition,
+              behavior: "smooth",
+            });
+          }
+        }
+
+        let currentProfileIndex = 0;
+
+        document
+          .getElementById("profileList")
+          .addEventListener("scroll", function () {
+            const profileList = this;
+            const profiles = profileList.children;
+
+            for (let i = 0; i < profiles.length; i++) {
+              const profileRect = profiles[i].getBoundingClientRect();
+              const containerRect = profileList.getBoundingClientRect();
+              if (
+                profileRect.top >= containerRect.top - 50 &&
+                profileRect.bottom <= containerRect.bottom + 50
+              ) {
+                currentProfileIndex = i;
+                break;
+              }
+            }
+
+            if (
+              isNearBottom(profileList) &&
+              loadedProfiles < dummyProfiles.length
+            ) {
+              loadProfiles();
+            }
+          });
+
+        document
+          .getElementById("profileList")
+          .addEventListener("keydown", function (event) {
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              currentProfileIndex++;
+              if (currentProfileIndex >= loadedProfiles) {
+                currentProfileIndex = loadedProfiles - 1;
+                if (loadedProfiles < dummyProfiles.length) {
+                  loadProfiles();
+                }
+              }
+              scrollToProfile(currentProfileIndex);
+            } else if (event.key === "ArrowUp") {
+              event.preventDefault();
+              currentProfileIndex--;
+              if (currentProfileIndex < 0) {
+                currentProfileIndex = 0;
+              }
+              scrollToProfile(currentProfileIndex);
+            }
+          });
+
+        document.getElementById("profileList").setAttribute("tabindex", "0");
+        document.getElementById("profileList").focus();
+
+        document.querySelector(".account-name").textContent = "Karmesh Meritia";
+        document.querySelector(".account-details").textContent =
+          "Age: 21 | Year: 4th";
+
+        function logout() {
+          alert("Logout button clicked!");
+        }
+
+        function deleteAccount() {
+          alert("Delete Account button clicked!");
+        }
+
+        document
+          .querySelectorAll(".side-navbar .top-items a")
+          .forEach((link) => {
+            link.addEventListener("mouseenter", () => {
+              document
+                .querySelectorAll(".side-navbar .top-items a")
+                .forEach((otherLink) => {
+                  if (otherLink !== link) {
+                    otherLink.style.filter = "blur(2px)";
+                  }
+                });
+            });
+
+            link.addEventListener("mouseleave", () => {
+              document
+                .querySelectorAll(".side-navbar .top-items a")
+                .forEach((otherLink) => {
+                  otherLink.style.filter = "none";
+                });
+            });
+          });
+
+        document
+          .querySelector(".rose-button")
+          .addEventListener("click", function () {
+            this.classList.toggle("active");
+          });
+
+        document
+          .querySelector(".confirm-button")
+          ?.addEventListener("click", function () {
+            console.log("Confirm button clicked");
+          });
+
+        function showProfileDetails(profile) {
+          const profileList = document.getElementById("profileList");
+          const profileDetailsBox =
+            document.getElementById("profileDetailsBox");
+          const profileDetailsContent = document.getElementById(
+            "profileDetailsContent"
+          );
+
+          profileList.classList.add("blur");
+
+          profileDetailsContent.innerHTML = `
+            <h3>${profile.name}, ${profile.age}</h3>
+            <p>${profile.hometown} | ${profile.year} | ${profile.department}</p>
+            <p><strong>Bio:</strong> ${profile.bio}</p>
+            <img src="${profile.image}" alt="${
+            profile.name
+          }'s profile image" style="width: 150px; height: 150px; border-radius: 50%; margin: 20px auto;">
+            ${
+              profile.interests
+                ? `<p><strong>Interests:</strong> ${profile.interests.join(
+                    ", "
+                  )}</p>`
+                : ""
+            }
+            ${
+              profile.hobbies
+                ? `<p><strong>Hobbies:</strong> ${profile.hobbies.join(
+                    ", "
+                  )}</p>`
+                : ""
+            }
+            ${
+              profile.favoriteQuote
+                ? `<p><strong>Favorite Quote:</strong> "${profile.favoriteQuote}"</p>`
+                : ""
+            }
+            ${
+              profile.additionalInfo
+                ? `<p><strong>About Me:</strong> ${profile.additionalInfo}</p>`
+                : ""
+            }
+            <p style="margin-bottom: 100px;"> </p>
+          `;
+
+          profileDetailsBox.classList.add("active");
+        }
+
+        window.closeProfileDetails = function () {
+          const profileList = document.getElementById("profileList");
+          const profileDetailsBox =
+            document.getElementById("profileDetailsBox");
+
+          profileDetailsBox.classList.remove("active");
+
+          setTimeout(() => {
+            profileList.classList.remove("blur");
+          }, 700);
+        };
+
+        const profileDetailsBox = document.getElementById("profileDetailsBox");
+        profileDetailsBox.addEventListener(
+          "wheel",
+          (event) => {
+            event.stopPropagation();
+          },
+          { passive: false }
+        );
+        profileDetailsBox.addEventListener(
+          "touchmove",
+          (event) => {
+            event.stopPropagation();
+          },
+          { passive: false }
+        );
+
+        // Share functionality with slide-up animation
+        const shareButton = document.querySelector('button[title="Share"]');
+        const shareOptions = document.querySelector(".share-options");
+
+        // Check if elements exist to avoid errors
+        if (shareButton && shareOptions) {
+          // Toggle the .active class on the share options when the share button is clicked
+          shareButton.addEventListener("click", (e) => {
+            e.stopPropagation(); // Prevent the click event from bubbling up to the document
+            shareOptions.classList.toggle("active");
+          });
+
+          // Close the share options when clicking outside
+          document.addEventListener("click", (e) => {
+            if (
+              !shareOptions.contains(e.target) &&
+              !shareButton.contains(e.target)
+            ) {
+              shareOptions.classList.remove("active");
+            }
+          });
+
+          // Close the share options when pressing the Escape key
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+              shareOptions.classList.remove("active");
+            }
+          });
+
+          // Share profile functionality
+          function shareProfile(platform) {
+            const profile = dummyProfiles[currentProfileIndex];
+            const shareUrl = `${window.location.origin}/profile?id=${profile.id}`;
+            const shareText = `Check out ${profile.name}'s profile on Amourette: ${profile.bio}`;
+
+            switch (platform) {
+              case "whatsapp":
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+                  shareText + " " + shareUrl
+                )}`;
+                window.open(whatsappUrl, "_blank");
+                break;
+              case "twitter":
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  shareText
+                )}&url=${encodeURIComponent(shareUrl)}`;
+                window.open(twitterUrl, "_blank");
+                break;
+              default:
+                alert(`Sharing on ${platform} is not supported yet.`);
+            }
+
+            shareOptions.classList.remove("active");
+          }
+
+          // Event listeners for share options
+          document.querySelectorAll(".share-option").forEach((option) => {
+            option.addEventListener("click", () => {
+              const platform = option.getAttribute("data-platform");
+              shareProfile(platform);
+            });
+          });
+        } else {
+          console.error(
+            "Share button or share options container not found in the DOM."
+          );
+        }
+      });
+
+      document
+        .querySelector('button[title="Save"]')
+        .addEventListener("click", function () {
+          this.classList.toggle("saved");
+        });
+
+      document
+        .querySelector(".buddy-button")
+        .addEventListener("click", function () {
+          // Toggle active class for button state
+          this.classList.toggle("active");
+
+          // Add shine class to trigger animation
+          this.classList.add("shine");
+
+          // Remove shine class after animation completes to allow re-triggering
+          setTimeout(() => {
+            this.classList.remove("shine");
+          }, 600); // Match the animation duration (0.6s)
+        });
+
+      document
+        .querySelector(".rose-button")
+        .addEventListener("click", function () {
+          // Toggle active class for button state
+          this.classList.toggle("active");
+
+          // Add shine class to trigger animation
+          this.classList.add("shine");
+
+          // Remove shine class after animation completes to allow re-triggering
+          setTimeout(() => {
+            this.classList.remove("shine");
+          }, 600); // Match the animation duration (0.6s)
+        });
+
       function toggleSidebar() {
         const sideNavbar = document.getElementById("sideNavbar");
         const hamburger = document.querySelector(".hamburger");
@@ -598,72 +1608,6 @@
           hamburger.classList.remove("hidden");
         }
       }
-
-      // Placeholder functions for logout and delete account
-      function logout() {
-        alert("Logout button clicked!");
-      }
-
-      function deleteAccount() {
-        alert("Delete Account button clicked!");
-      }
-
-      // Sidebar hover blur effect
-      document.querySelectorAll(".side-navbar .top-items a").forEach((link) => {
-        link.addEventListener("mouseenter", () => {
-          document
-            .querySelectorAll(".side-navbar .top-items a")
-            .forEach((otherLink) => {
-              if (otherLink !== link) {
-                otherLink.style.filter = "blur(2px)";
-              }
-            });
-        });
-
-        link.addEventListener("mouseleave", () => {
-          document
-            .querySelectorAll(".side-navbar .top-items a")
-            .forEach((otherLink) => {
-              otherLink.style.filter = "none";
-            });
-        });
-      });
-
-      // Heart button click and heartbeat animation
-      document
-        .querySelector(".heart-button")
-        .addEventListener("click", function () {
-          this.classList.add("active"); // Change color to red
-
-          // Trigger the heartbeat animation after a short delay
-          setTimeout(() => {
-            this.style.animation = "heartbeat 1s ease"; // Trigger the heartbeat animation
-
-            // Remove the animation class after it finishes to allow it to be retriggered
-            this.addEventListener(
-              "animationend",
-              () => {
-                this.style.animation = ""; // Reset the animation
-              },
-              { once: true }
-            ); // Use { once: true } to ensure it only runs once per click
-          }, 100); // Delay before starting the heartbeat effect
-        });
-
-      // Rose button click to show confirm button
-      document
-        .querySelector(".rose-button")
-        .addEventListener("click", function () {
-          this.classList.toggle("active"); // Toggle the active class
-        });
-
-      // Confirm button click action (optional)
-      document
-        .querySelector(".confirm-button")
-        .addEventListener("click", function () {
-          console.log("Confirm button clicked");
-          // Add your action here, e.g., confirm an action, submit a form, etc.
-        });
     </script>
   </body>
 </html>

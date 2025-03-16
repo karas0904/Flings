@@ -6,27 +6,150 @@
     <title>Simple Navbar</title>
     <link rel="stylesheet" href="css/navbar.css" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=DM+Serif+Text:ital@1&display=swap"
       rel="stylesheet"
     />
     <style>
       body {
         margin: 0;
         font-family: Arial, sans-serif;
+        background: #000; /* Fallback color */
+        scroll-behavior: smooth; /* Smooth scrolling */
+      }
+
+      /* Navbar Styles */
+      .navbar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+      }
+
+      .navbar.scrolled {
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .navbar .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .navbar .left-nav ul,
+      .navbar .right-nav ul {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+      }
+
+      .navbar .left-nav li,
+      .navbar .right-nav li {
+        margin: 0 15px;
+      }
+
+      .navbar .logo {
+        font-size: 24px;
+        font-family: "DM Serif Text", serif;
+        font-style: italic;
+        color: white;
+      }
+
+      .navbar .vertical-line {
+        width: 1px;
+        height: 20px;
+        background: white;
+      }
+
+      .navbar .nav-link {
+        color: white;
+        text-decoration: none;
+        font-family: "Raleway", sans-serif;
+        font-size: 16px;
+        position: relative;
+        transition: color 0.3s ease;
+      }
+
+      /* New hover effect for Safety and About links */
+      .navbar .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: white;
+        transition: width 0.3s ease, left 0.3s ease;
+      }
+
+      .navbar .nav-link:hover::after {
+        width: 100%;
+        left: 0;
+      }
+
+      .navbar .login-button {
+        color: white;
+        text-decoration: none;
+        font-family: "Raleway", sans-serif;
+        font-size: 16px;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 20px;
+        border-radius: 20px;
+        transition: background 0.3s;
+      }
+
+      .navbar .login-button:hover {
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Hero Section with Background Image and Gradient Overlay */
+      .hero-section {
+        position: relative;
+        height: 100vh;
         background-image: url("background.jpeg");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        height: 100vh;
-        position: relative;
+        background-attachment: fixed; /* Make the background image sticky */
+        overflow: hidden;
+      }
+
+      .hero-section::after {
+        content: "";
+        position: fixed; /* Fix the gradient overlay with the background */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh; /* Match the height of the hero section */
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.1),
+          rgba(0, 0, 0, 0.7)
+        );
+        z-index: 1;
+      }
+
+      #particles-js {
+        position: fixed; /* Fix the particles with the background */
+        width: 100%;
+        height: 100vh; /* Match the height of the hero section */
+        top: 0;
+        left: 0;
+        z-index: 2;
       }
 
       .text-container {
-        position: absolute;
+        position: fixed; /* Fix the text with the background */
         bottom: 20%;
         left: 5%;
         color: white;
         text-align: left;
+        z-index: 3;
       }
 
       .welcome-text {
@@ -49,16 +172,18 @@
         border-radius: 20px;
         padding: 10px 20px;
         text-decoration: none;
-        transition: background 0.3s;
+        transition: background 0.3s, transform 0.3s;
         font-size: 8px;
         font-family: "Open Sans", sans-serif;
         display: inline-block;
         margin-top: 10px;
         position: relative;
+        animation: pulse 2s infinite;
       }
 
       .sink-button:hover {
         background-color: rgba(255, 255, 255, 0.4);
+        transform: scale(1.1);
       }
 
       .arrow {
@@ -66,40 +191,277 @@
         font-size: 16px;
       }
 
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* Content Container with White Background */
+      .content-container {
+        background: #fff;
+        position: relative;
+        z-index: 4; /* Ensure it stays above the hero section */
+      }
+
+      /* Image-Text Section (Left Image) */
+      .image-text-section.left {
+        display: flex;
+        align-items: center;
+        padding: 50px 0;
+        min-height: 60vh;
+      }
+
+      .image-text-section.left .image-container {
+        flex: 1;
+        height: 60vh; /* Fixed height for visibility */
+        overflow: hidden;
+        opacity: 0;
+        transform: translateX(-50px); /* Adjusted for smoother animation */
+        transition: transform 0.7s ease, opacity 0.7s ease;
+      }
+
+      .image-text-section.left .image-container.visible {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .image-text-section.left .image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+      }
+
+      .image-text-section.left .text-content {
+        flex: 1;
+        padding: 0 50px;
+        opacity: 0;
+        transform: translateY(50px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+
+      .image-text-section.left .text-content.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Image-Text Section (Right Image) */
+      .image-text-section.right {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        padding: 50px 0;
+        min-height: 60vh;
+      }
+
+      .image-text-section.right .image-container {
+        flex: 1;
+        height: 60vh; /* Fixed height for visibility */
+        overflow: hidden;
+        opacity: 0;
+        transform: translateX(50px); /* Adjusted for smoother animation */
+        transition: transform 0.7s ease, opacity 0.7s ease;
+      }
+
+      .image-text-section.right .image-container.visible {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .image-text-section.right .image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-top-left-radius: 20px;
+        border-bottom-left-radius: 20px;
+      }
+
+      .image-text-section.right .text-content {
+        flex: 1;
+        padding: 0 50px;
+        opacity: 0;
+        transform: translateY(50px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+
+      .image-text-section.right .text-content.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .text-content h2 {
+        font-size: 36px;
+        font-family: "DM Serif Text", serif;
+        font-style: italic;
+        margin-bottom: 20px;
+      }
+
+      .text-content p {
+        font-size: 18px;
+        font-family: "Raleway", sans-serif;
+        color: #333;
+      }
+
+      /* Fun Quotes Section */
+      .quotes-section {
+        background: #fff;
+        padding: 50px 20px;
+        text-align: center;
+      }
+
+      .quotes-section h2 {
+        font-size: 36px;
+        font-family: "DM Serif Text", serif;
+        font-style: italic;
+        margin-bottom: 40px;
+      }
+
+      .quotes-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .quote-card {
+        background: #f9f9f9;
+        border-radius: 15px;
+        padding: 20px;
+        width: 300px;
+        text-align: center;
+        transform: rotate(-2deg);
+        transition: transform 0.5s ease, opacity 0.5s ease;
+        opacity: 0; /* Start hidden for staggered animation */
+      }
+
+      .quote-card:nth-child(even) {
+        transform: rotate(2deg);
+      }
+
+      .quote-card.visible {
+        opacity: 1;
+        transform: rotate(0);
+      }
+
+      .quote-card p {
+        font-size: 18px;
+        font-family: "Raleway", sans-serif;
+        color: #555;
+      }
+
+      /* Big Black Footer */
+      .footer {
+        background: #000;
+        color: white;
+        padding: 50px 60px; /* Increased left and right padding */
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 70px;
+        margin-top: 0px;
+      }
+
+      .footer-left {
+        text-align: left;
+        flex: 1;
+        min-width: 200px; /* Ensures readability on smaller screens */
+      }
+
+      .footer-left .logo {
+        font-size: 24px;
+        font-family: "DM Serif Text", serif;
+        font-style: italic;
+        margin-bottom: 10px;
+      }
+
+      .footer-left .features-link {
+        color: white;
+        text-decoration: none; /* Highlight with underline */
+        font-family: "Raleway", sans-serif;
+        font-size: 16px;
+        padding-top: 20px;
+        display: block;
+        margin-bottom: 10px;
+        transition: color 0.3s ease;
+      }
+
+      .footer-left .features-link:hover {
+        color: #ccc; /* Lighter shade on hover */
+      }
+
+      .footer-left .copyright {
+        font-size: 14px;
+        font-family: "Raleway", sans-serif;
+        color: #aaa; /* Lighter shade for less emphasis */
+      }
+
+      .footer-right {
+        text-align: right;
+        flex: 1;
+        min-width: 200px; /* Ensures readability on smaller screens */
+      }
+
+      .footer-right ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .footer-right li {
+        margin-bottom: 10px;
+      }
+
+      .footer-right a {
+        color: white;
+        text-decoration: none;
+        font-family: "Raleway", sans-serif;
+        font-size: 16px;
+        transition: color 0.3s ease;
+      }
+
+      .footer-right a:hover {
+        color: #ccc; /* Lighter shade on hover */
+      }
+
       /* Modal Styles */
       .modal {
-        display: block; /* Always block, but hidden via opacity/transform */
+        display: none; /* Initially hidden */
         position: fixed;
         z-index: 1000;
         border-radius: 10px;
-        top: 20px; /* Position it near the top */
-        right: 20px; /* Align to the right */
-        width: auto; /* Adjust width dynamically */
-        max-width: 400px; /* Control max width */
-        background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+        top: 20px;
+        right: 20px;
+        width: auto;
+        max-width: 400px;
+        background-color: rgba(0, 0, 0, 0.5);
         transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        transform: translateX(100%); /* Start off-screen (right side) */
+        transform: translateX(100%);
         opacity: 0;
-        pointer-events: none; /* Prevent interaction when hidden */
+        pointer-events: none;
       }
 
       .modal-content {
-        background: rgba(
-          255,
-          255,
-          255,
-          0.01
-        ); /* Increased transparency (lower alpha value) */
-        backdrop-filter: blur(10px); /* Stronger blur effect */
-        -webkit-backdrop-filter: blur(15px); /* For Safari */
+        background: rgba(255, 255, 255, 0.01);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(15px);
         padding: 20px;
         border-radius: 10px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        color: white; /* Keep text readable */
+        color: white;
       }
 
-      /* Close Button */
       .close-button {
         color: #aaa;
         float: right;
@@ -112,10 +474,9 @@
         color: white;
         text-decoration: none;
         cursor: pointer;
-        transition: 1s;
+        transition: color 0.3s; /* Fixed transition duration */
       }
 
-      /* OK Button */
       #modalOkButton {
         background-color: rgba(255, 255, 255, 0.2);
         color: white;
@@ -140,11 +501,89 @@
         font-family: "Raleway", sans-serif !important;
       }
 
-      /* Show modal with animation */
       .modal.show {
-        transform: translateX(0); /* Bring it into view */
+        display: block; /* Show modal */
+        transform: translateX(0);
         opacity: 1;
-        pointer-events: auto; /* Enable interaction when visible */
+        pointer-events: auto;
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        .welcome-text {
+          font-size: 50px;
+        }
+        .sub-text {
+          font-size: 16px;
+        }
+        .text-content h2 {
+          font-size: 28px;
+        }
+        .text-content p {
+          font-size: 16px;
+        }
+        .image-text-section {
+          flex-direction: column;
+          padding: 20px 0;
+        }
+        .image-text-section .image-container {
+          height: 50vh;
+          width: 100%;
+        }
+        .image-text-section.left .image-container img {
+          border-radius: 20px 20px 0 0;
+        }
+        .image-text-section.right .image-container img {
+          border-radius: 0 0 20px 20px;
+        }
+        .quotes-section h2 {
+          font-size: 28px;
+        }
+        .quotes-grid {
+          flex-direction: column;
+          align-items: center;
+        }
+        .quote-card {
+          width: 80%; /* More compact on smaller screens */
+          max-width: 300px;
+        }
+        .footer {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .footer-left,
+        .footer-right {
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .welcome-text {
+          font-size: 40px;
+        }
+        .sub-text {
+          font-size: 14px;
+        }
+        .text-content h2 {
+          font-size: 24px;
+        }
+        .text-content p {
+          font-size: 14px;
+        }
+        .quotes-section h2 {
+          font-size: 24px;
+        }
+        .quote-card p {
+          font-size: 16px;
+        }
+        .footer-left .logo {
+          font-size: 20px;
+        }
+        .footer-left .features-link,
+        .footer-right a {
+          font-size: 14px;
+        }
       }
     </style>
   </head>
@@ -155,8 +594,7 @@
           <ul>
             <li><div class="logo">Amourette</div></li>
             <li><div class="vertical-line"></div></li>
-            <li><a href="#" class="nav-link">Safety</a></li>
-            <li><a href="#" class="nav-link">About</a></li>
+            <li><a href="safety.html" class="nav-link">Safety</a></li>
           </ul>
         </nav>
         <nav class="right-nav">
@@ -171,15 +609,91 @@
       </div>
     </header>
 
-    <div class="rectangle-box"></div>
+    <!-- Hero Section with Background Image, Gradient Overlay, and Particles -->
+    <section class="hero-section">
+      <div id="particles-js"></div>
+      <div class="text-container">
+        <p class="welcome-text">Welcome to<br />SRM Dating,</p>
+        <p class="sub-text">
+          Where the Wi-Fi drops faster than your GPA, but the love stories
+          rise<br />
+          faster than the hostel fees!
+        </p>
+        <br />
+        <p class="sub-text">Already a user tehen just...</p>
+        <a href="#" class="sink-button">SINK IN<span class="arrow">→</span></a>
+      </div>
+    </section>
 
-    <div class="text-container">
-      <p class="welcome-text">Welcome to<br />SRM Dating,</p>
-      <p class="sub-text">
-        Where the Wi-Fi drops faster than your GPA, but the love stories rise<br />
-        faster than the hostel fees!
-      </p>
-      <a href="#" class="sink-button">SINK IN<span class="arrow">→</span></a>
+    <!-- Content Container with White Background -->
+    <div class="content-container">
+      <!-- Image-Text Section (Left Image) -->
+      <section class="image-text-section left">
+        <div class="image-container">
+          <img src="Couple1-image.jpg" alt="Left Image" />
+        </div>
+        <div class="text-content">
+          <h2>Find Your Kind of Crazy</h2>
+          <p>
+            College is all about making memories—why not make a few with someone
+            who gets your vibe? Whether you're into deep convos, campus
+            adventures, or just finding someone to survive exams with, there’s a
+            match waiting for you.
+          </p>
+        </div>
+      </section>
+
+      <!-- Image-Text Section (Right Image) -->
+      <section class="image-text-section right">
+        <div class="image-container">
+          <img src="couple2-image.jpg" alt="Right Image" />
+        </div>
+        <div class="text-content">
+          <h2>Make Friends, Make Mistakes, Make It Interesting</h2>
+          <p>
+            Chance to meet people who actually get you. Whether it’s someone to
+            fake attend morning lectures with or the reason you start liking
+            rainy walks across campus, it all starts with a conversation.
+          </p>
+        </div>
+      </section>
+
+      <!-- Fun Quotes Section -->
+      <section class="quotes-section">
+        <h2>Live a Little, Love a Lot</h2>
+        <div class="quotes-grid">
+          <div class="quote-card">
+            <p>
+              "Books? Sure. But have you tried kissing under the library
+              lights?"
+            </p>
+          </div>
+          <div class="quote-card">
+            <p>"GPA won't cuddle you at 2 AM—Amourette will."</p>
+          </div>
+          <div class="quote-card">
+            <p>"Skip the lecture, steal a glance—college is for living!"</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Big Black Footer -->
+      <footer class="footer" role="contentinfo">
+        <div class="footer-left">
+          <div class="logo">Amourette</div>
+          <a href="/features" class="features-link">See upcoming features >></a>
+          <p class="copyright">© 2025</p>
+        </div>
+        <div class="footer-right">
+          <ul>
+            <li><a href="/safety-tips">Safe Dating Tips</a></li>
+            <li><a href="/faq">FAQ</a></li>
+            <li><a href="/terms">Terms</a></li>
+            <li><a href="/privacy">Privacy</a></li>
+            <li><a href="/cookie-policy">Cookie Policy</a></li>
+          </ul>
+        </div>
+      </footer>
     </div>
 
     <!-- Custom Modal for Error Messages -->
@@ -191,7 +705,7 @@
       </div>
     </div>
 
-    <script src="js/navbar.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
       // Function to show the modal with animation
       function showModal(message) {
@@ -254,6 +768,119 @@
 
       // Call the function on page load
       window.onload = checkUrlParams;
+
+      // Particles.js Configuration
+      particlesJS("particles-js", {
+        particles: {
+          number: { value: 80, density: { enable: true, value_area: 800 } },
+          color: { value: "#ffffff" },
+          shape: { type: "circle", stroke: { width: 0, color: "#000000" } },
+          opacity: {
+            value: 0.5,
+            random: true,
+            anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false },
+          },
+          size: {
+            value: 3,
+            random: true,
+            anim: { enable: false, speed: 40, size_min: 0.1, sync: false },
+          },
+          line_linked: { enable: false },
+          move: {
+            enable: true,
+            speed: 1,
+            direction: "none",
+            random: true,
+            straight: false,
+            out_mode: "out",
+            bounce: false,
+          },
+        },
+        interactivity: {
+          detect_on: "canvas",
+          events: {
+            onhover: { enable: true, mode: "repulse" },
+            onclick: { enable: true, mode: "push" },
+            resize: true,
+          },
+          modes: {
+            repulse: { distance: 100, duration: 0.4 },
+            push: { particles_nb: 4 },
+          },
+        },
+        retina_detect: true,
+      });
+
+      // Scroll Animation for Image-Text Sections and Quotes
+      document.addEventListener("DOMContentLoaded", function () {
+        const navbar = document.querySelector(".navbar");
+        const imageContainers = document.querySelectorAll(".image-container");
+        const textContents = document.querySelectorAll(".text-content");
+        const quoteCards = document.querySelectorAll(".quote-card");
+
+        // Navbar scroll effect
+        window.addEventListener("scroll", function () {
+          if (window.scrollY > 50) {
+            navbar.classList.add("scrolled");
+          } else {
+            navbar.classList.remove("scrolled");
+          }
+        });
+
+        // Intersection Observer for Images
+        const imageObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                imageObserver.unobserve(entry.target); // Stop observing once visible
+              }
+            });
+          },
+          { threshold: 0.1 } // Lowered threshold for earlier trigger
+        );
+
+        imageContainers.forEach((container) => {
+          imageObserver.observe(container);
+        });
+
+        // Intersection Observer for Text
+        const textObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                textObserver.unobserve(entry.target); // Stop observing once visible
+              }
+            });
+          },
+          { threshold: 0.1 } // Lowered threshold for earlier trigger
+        );
+
+        textContents.forEach((text) => {
+          textObserver.observe(text);
+        });
+
+        // Intersection Observer for Quotes (Staggered Animation)
+        const quoteObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry, index) => {
+              if (entry.isIntersecting) {
+                // Add delay based on index to stagger the animation
+                setTimeout(() => {
+                  entry.target.classList.add("visible");
+                }, index * 500); // 500ms delay between each quote
+                quoteObserver.unobserve(entry.target); // Stop observing once visible
+              }
+            });
+          },
+          { threshold: 0.1 } // Lowered threshold for earlier trigger
+        );
+
+        quoteCards.forEach((card) => {
+          quoteObserver.observe(card);
+        });
+      });
     </script>
   </body>
 </html>

@@ -233,13 +233,16 @@
           <p class="email-note">
             Don't worry, no notifications will be sent to your email
           </p>
+          <p class="error-message" id="email-error">
+            Please use an @srmist.edu.in email address
+          </p>
         </div>
         <div class="form-group">
           <label>Birthday</label>
           <div class="birthday">
-            <input type="text" id="month" placeholder="MM" />
-            <input type="text" id="day" placeholder="DD" />
-            <input type="text" id="year" placeholder="YYYY" />
+            <input type="text" id="month" placeholder="MM" maxlength="2" />
+            <input type="text" id="day" placeholder="DD" maxlength="2" />
+            <input type="text" id="year" placeholder="YYYY" maxlength="4" />
           </div>
           <p class="error-message" id="birthday-error">
             Sorry, you are not allowed
@@ -344,39 +347,33 @@
         ".relationship-intent .relationship-option"
       );
 
-      genderButtons.forEach((button) => {
-        button.addEventListener("click", function () {
-          genderButtons.forEach((btn) => btn.classList.remove("selected"));
-          this.classList.add("selected");
-          if (this.textContent === "Man") {
-            interestedButtons.forEach((btn) =>
-              btn.classList.remove("selected")
-            );
-            interestedButtons[1].classList.add("selected");
-          } else if (this.textContent === "Woman") {
-            interestedButtons.forEach((btn) =>
-              btn.classList.remove("selected")
-            );
-            interestedButtons[0].classList.add("selected");
-          }
-          validateForm();
-        });
-      });
-
-      interestedButtons.forEach((button) => {
-        button.addEventListener("click", function () {
+      function selectGender(button) {
+        genderButtons.forEach((btn) => btn.classList.remove("selected"));
+        button.classList.add("selected");
+        // Automatically select opposite in "Interested in"
+        if (button.textContent.trim() === "Man") {
           interestedButtons.forEach((btn) => btn.classList.remove("selected"));
-          this.classList.add("selected");
-          if (this.textContent === "Men") {
-            genderButtons.forEach((btn) => btn.classList.remove("selected"));
-            genderButtons[1].classList.add("selected");
-          } else if (this.textContent === "Women") {
-            genderButtons.forEach((btn) => btn.classList.remove("selected"));
-            genderButtons[0].classList.add("selected");
-          }
-          validateForm();
-        });
-      });
+          interestedButtons[1].classList.add("selected"); // Select Women
+        } else if (button.textContent.trim() === "Woman") {
+          interestedButtons.forEach((btn) => btn.classList.remove("selected"));
+          interestedButtons[0].classList.add("selected"); // Select Men
+        }
+        validateForm();
+      }
+
+      function selectInterest(button) {
+        interestedButtons.forEach((btn) => btn.classList.remove("selected"));
+        button.classList.add("selected");
+        // Automatically select opposite in Gender
+        if (button.textContent.trim() === "Men") {
+          genderButtons.forEach((btn) => btn.classList.remove("selected"));
+          genderButtons[1].classList.add("selected"); // Select Woman
+        } else if (button.textContent.trim() === "Women") {
+          genderButtons.forEach((btn) => btn.classList.remove("selected"));
+          genderButtons[0].classList.add("selected"); // Select Man
+        }
+        validateForm();
+      }
 
       // Relationship intent selection functionality
       function selectRelationship(button) {
@@ -442,13 +439,40 @@
       const yearInput = document.getElementById("year");
       const nextButton = document.getElementById("nextButton");
       const birthdayError = document.getElementById("birthday-error");
+      const emailError = document.getElementById("email-error");
+
+      // Email validation for @srmist.edu.in
+      function validateEmail() {
+        const email = emailInput.value.trim();
+        const isEmailValid = email.endsWith("@srmist.edu.in");
+        if (email && !isEmailValid) {
+          emailError.style.display = "block";
+        } else {
+          emailError.style.display = "none";
+        }
+        return isEmailValid;
+      }
+
+      // Restrict birthday inputs to numbers only
+      function restrictToNumbers(input, maxLength) {
+        input.addEventListener("input", function () {
+          this.value = this.value.replace(/[^0-9]/g, "").slice(0, maxLength);
+          validateForm();
+        });
+      }
+
+      // Apply number restrictions to birthday inputs
+      restrictToNumbers(monthInput, 2);
+      restrictToNumbers(dayInput, 2);
+      restrictToNumbers(yearInput, 4);
 
       function validateForm() {
         const isFirstNameFilled = firstNameInput.value.trim() !== "";
         const isEmailFilled = emailInput.value.trim() !== "";
-        const isMonthFilled = monthInput.value.trim() !== "";
-        const isDayFilled = dayInput.value.trim() !== "";
-        const isYearFilled = yearInput.value.trim() !== "";
+        const isEmailValid = validateEmail();
+        const isMonthFilled = monthInput.value.trim().length === 2;
+        const isDayFilled = dayInput.value.trim().length === 2;
+        const isYearFilled = yearInput.value.trim().length === 4;
         const isGenderSelected = document.querySelector(
           ".gender .gender-option.selected"
         );
@@ -462,7 +486,7 @@
         // Validate birth year
         let isBirthYearValid = true;
         const year = yearInput.value.trim();
-        if (year) {
+        if (year && year.length === 4) {
           const yearNum = parseInt(year, 10);
           if (yearNum < 2000 || yearNum > 2010) {
             isBirthYearValid = false;
@@ -485,6 +509,7 @@
         const isFormValid =
           isFirstNameFilled &&
           isEmailFilled &&
+          isEmailValid &&
           isMonthFilled &&
           isDayFilled &&
           isYearFilled &&

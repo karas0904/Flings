@@ -74,7 +74,7 @@
         padding: 12px;
         background-color: white;
         border: 1px solid black;
-        border-radius: 5px;
+        border-radius: 0px;
         color: black;
         font-size: 16px;
         transition: border-color 0.3s, box-shadow 0.3s;
@@ -147,6 +147,11 @@
         color: white;
         transition: 1s;
       }
+      .form-note {
+        color: #888;
+        font-size: 12px;
+        margin-top: 5px;
+      }
     </style>
   </head>
   <body>
@@ -158,7 +163,7 @@
         <h2>Profile Details</h2>
         <div class="form-group">
           <label for="bio">Bio/Personal Statement</label>
-          <textarea id="bio" rows="4"></textarea>
+          <textarea id="bio" rows="4" maxlength="150"></textarea>
         </div>
         <div class="form-group">
           <label>Which Year</label>
@@ -191,6 +196,9 @@
         <div class="form-group">
           <label for="preferences">Music/Book/Movie Preferences</label>
           <input type="text" id="preferences" />
+          <p class="form-note">
+            Add only max 3 words for each separated by commas
+          </p>
         </div>
         <div class="electives-section" id="electives-section">
           <h2>Your Electives</h2>
@@ -228,6 +236,52 @@
           }
         });
       });
+
+      // Bio/Personal Statement limit to 2-3 lines
+      const bioTextarea = document.getElementById("bio");
+      bioTextarea.addEventListener("input", function () {
+        const lines = this.value.split("\n");
+        if (lines.length > 3) {
+          this.value = lines.slice(0, 3).join("\n");
+        }
+      });
+
+      // Restrict Relationship Insights to one word
+      const loveLanguagesInput = document.getElementById("love-languages");
+      const dealBreakersInput = document.getElementById("deal-breakers");
+
+      function restrictToOneWord(input) {
+        input.addEventListener("input", function () {
+          const words = this.value.trim().split(/\s+/);
+          if (words.length > 1) {
+            this.value = words[0];
+          }
+        });
+      }
+
+      restrictToOneWord(loveLanguagesInput);
+      restrictToOneWord(dealBreakersInput);
+
+      // Restrict Lifestyle and Interests to 3 comma-separated words/phrases
+      const hobbiesInput = document.getElementById("hobbies");
+      const activitiesInput = document.getElementById("activities");
+      const preferencesInput = document.getElementById("preferences");
+
+      function restrictToThreeCommaSeparated(input) {
+        input.addEventListener("input", function () {
+          const value = this.value.trim();
+          const items = value.split(",").map((item) => item.trim());
+          if (items.length > 3) {
+            this.value = items.slice(0, 3).join(", ");
+          } else {
+            this.value = items.join(", ");
+          }
+        });
+      }
+
+      restrictToThreeCommaSeparated(hobbiesInput);
+      restrictToThreeCommaSeparated(activitiesInput);
+      restrictToThreeCommaSeparated(preferencesInput);
 
       // Next button functionality
       document

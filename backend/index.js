@@ -8,11 +8,16 @@ import session from "express-session";
 import passport from "passport";
 import fileUpload from "express-fileupload";
 import MongoStore from "connect-mongo";
-import authRoutes from "./routes/authRoutes.js"; // Import your routes
-import discoveryRoutes from "./routes/discoveryRoutes.js";
-import interactionRoutes from "./routes/interactionRoutes.js";
-import messageRoutes from "./routes/messageRoutes.js";
-import profileRoutes from "./routes/profileRoutes.js";
+import { authRoutes } from "./routes/authRoutes.js"; // Named import
+import discoveryRoutes from "./routes/discoveryRoutes.js"; // Default import
+import interactionRoutes from "./routes/interactionRoutes.js"; // Default import
+import messageRoutes from "./routes/messageRoutes.js"; // Default import
+import profileRoutes from "./routes/profileRoutes.js"; // Default import
+import { createServer } from "http"; // Import HTTP server module
+import { Server } from "socket.io"; // Import Socket.IO
+import wrap from "./utils/wrap.js"; // Import a utility to wrap middleware for Socket.IO
+
+import "./config/passport.js";
 
 // Check if required environment variables are set
 console.log(
@@ -26,6 +31,18 @@ console.log(
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Create an HTTP server (needed for Socket.IO)
+const server = createServer(app);
+
+// Set up Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: "http://127.0.0.1:5500", // Allow your frontend origin
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 // CORS configuration - PLACE THIS BEFORE ROUTES
 app.use(
@@ -43,22 +60,22 @@ if (!process.env.SESSION_SECRET) {
   process.exit(1); // Exit the application if the secret is missing
 }
 
+const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET || "your-secret-key",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    sameSite: "lax", // Important for cross-site requests
+  },
+  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+});
+
 app.use(express.json());
 app.use(fileUpload());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your-secret-key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: false, // Set to true if using HTTPS
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-      sameSite: "lax", // Important for cross-site requests
-    },
-    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-  })
-);
+app.use(sessionMiddleware);
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -85,7 +102,73 @@ app.get("/", (req, res) => {
   res.send("College Dating App API is running!");
 });
 
-// Start the server
-app.listen(PORT, () => {
+// Socket.IO authentication middleware
+io.use(wrap(sessionMiddleware));
+io.use(wrap(passport.initialize()));
+io.use(wrap(passport.session()));
+
+io.use((socket, next) => {
+  if (socket.request.user) {
+    next(); // User is authenticated, allow connection
+  } else {
+    next(new Error("Unauthorized")); // User is not authenticated, reject connection
+  }
+});
+
+// Socket.IO connection handler
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+  console.log("Authenticated user:", socket.request.user);
+
+  // Join a room based on the user's ID
+  const userId = socket.request.user._id.toString();
+  socket.join(userId); // Each user joins a room named after their user ID
+  console.log(`User ${userId} joined room ${userId}`);
+
+  // Handle sending a message
+  socket.on("sendMessage", async (data, callback) => {
+    try {
+      const { recipientId, content } = data;
+
+      // Validate input
+      if (!recipientId || !content) {
+        return callback({ error: "Recipient ID and content are required" });
+      }
+
+      // Create and save the message to MongoDB
+      const message = new Message({
+        senderId: userId,
+        recipientId,
+        content,
+      });
+      await message.save();
+
+      // Populate sender and recipient details (optional, for richer message data)
+      const populatedMessage = await Message.findById(message._id)
+        .populate("senderId", "name email")
+        .populate("recipientId", "name email");
+
+      // Emit the message to the recipient's room
+      io.to(recipientId).emit("receiveMessage", populatedMessage);
+
+      // Emit the message back to the sender (for confirmation)
+      socket.emit("receiveMessage", populatedMessage);
+
+      // Callback to confirm message was sent
+      callback({ success: true, message: populatedMessage });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      callback({ error: "Failed to send message" });
+    }
+  });
+
+  // Handle disconnection
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.id);
+  });
+});
+
+// Start the server (use the HTTP server instead of app.listen)
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

@@ -170,6 +170,11 @@
         color: white;
         transition: 1s;
       }
+      .form-note {
+        color: #888;
+        font-size: 12px;
+        margin-top: 5px;
+      }
     </style>
   </head>
   <body>
@@ -202,6 +207,10 @@
             id="course-study"
             placeholder="Understanding academic interests can foster connections..."
           />
+          <p class="form-note">
+            Add only max 3 words for Campus Involvement separated by commas, and
+            1 word each for Favorite Campus Spot and Course of Study.
+          </p>
         </div>
         <h2>Privacy and Consent</h2>
         <div class="form-group">
@@ -245,6 +254,47 @@
       dataConsentCheckbox.addEventListener("change", function () {
         nextButton.disabled = !this.checked;
       });
+
+      // Next button redirect to questionaire.html
+      nextButton.addEventListener("click", function () {
+        if (!this.disabled) {
+          window.location.href = "questionaire.html";
+        }
+      });
+
+      // Restrict SRM Life inputs
+      const campusInvolvementInput =
+        document.getElementById("campus-involvement");
+      const favoriteSpotInput = document.getElementById("favorite-spot");
+      const courseStudyInput = document.getElementById("course-study");
+
+      // Restrict to one word
+      function restrictToOneWord(input) {
+        input.addEventListener("input", function () {
+          const words = this.value.trim().split(/\s+/);
+          if (words.length > 1) {
+            this.value = words[0];
+          }
+        });
+      }
+
+      // Restrict to three comma-separated words/phrases
+      function restrictToThreeCommaSeparated(input) {
+        input.addEventListener("input", function () {
+          const value = this.value.trim();
+          const items = value.split(",").map((item) => item.trim());
+          if (items.length > 3) {
+            this.value = items.slice(0, 3).join(", ");
+          } else {
+            this.value = items.join(", ");
+          }
+        });
+      }
+
+      // Apply restrictions to SRM Life inputs
+      restrictToThreeCommaSeparated(campusInvolvementInput);
+      restrictToOneWord(favoriteSpotInput);
+      restrictToOneWord(courseStudyInput);
     </script>
   </body>
 </html>

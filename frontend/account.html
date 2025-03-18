@@ -1413,7 +1413,12 @@
           <p></p>
           <div class="account-buttons">
             <button class="account-button" id="signOutButton">SIGN OUT</button>
-            <button class="account-button delete-button">DELETE ACCOUNT</button>
+            <button
+              class="account-button delete-button"
+              id="deleteAccountButton"
+            >
+              DELETE ACCOUNT
+            </button>
           </div>
         </div>
       </div>
@@ -1801,7 +1806,7 @@
         const token = localStorage.getItem("jwtToken");
         if (!token) {
           console.error("No JWT token found, redirecting to login");
-          window.location.href = "index.html";
+          window.location.href = "login.html";
           return;
         }
 
@@ -1824,7 +1829,7 @@
           updateProfileUI(userData);
         } catch (error) {
           console.error("Error fetching profile:", error);
-          window.location.href = "index.html"; // Redirect to login on error
+          window.location.href = "login.html"; // Redirect to login on error
         }
       }
 
@@ -2004,9 +2009,94 @@
       }
 
       // Sign out functionality
-      function signOut() {
+      // Sign out functionality
+      document
+        .getElementById("signOutButton")
+        .addEventListener("click", signOut);
+
+      async function signOut() {
+        const button = document.getElementById("signOutButton");
+        button.textContent = "Logging Out...";
+        button.disabled = true;
+
+        const token = localStorage.getItem("jwtToken");
+        if (token) {
+          try {
+            const response = await fetch("http://localhost:3000/api/logout", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (!response.ok) {
+              console.error("Logout failed on server:", response.status);
+            } else {
+              console.log("Successfully logged out on server");
+            }
+          } catch (error) {
+            console.error("Error during logout:", error);
+          }
+        }
+
         localStorage.removeItem("jwtToken");
-        window.location.href = "index.html";
+        window.location.href = "login.html";
+
+        // Reset button (though redirect makes this unlikely to be seen)
+        button.textContent = "SIGN OUT";
+        button.disabled = false;
+      }
+
+      // Delete account functionality
+      document
+        .getElementById("deleteAccountButton")
+        .addEventListener("click", deleteAccount);
+
+      async function deleteAccount() {
+        const button = document.getElementById("deleteAccountButton");
+        const confirmDelete = confirm(
+          "Are you sure you want to delete your account? This cannot be undone."
+        );
+        if (!confirmDelete) return;
+
+        button.textContent = "Deleting...";
+        button.disabled = true;
+
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          alert("You are not logged in!");
+          window.location.href = "login.html";
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/delete-account",
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to delete account");
+          }
+
+          alert("Your account has been deleted successfully.");
+          localStorage.removeItem("jwtToken");
+          window.location.href = "login.html";
+        } catch (error) {
+          console.error("Error deleting account:", error);
+          alert("Error deleting account: " + error.message);
+        } finally {
+          button.textContent = "DELETE ACCOUNT";
+          button.disabled = false;
+        }
       }
 
       // Enable editing for profile info fields

@@ -83,26 +83,25 @@
         -webkit-overflow-scrolling: touch;
         padding: 0;
         outline: none;
-        -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
-        scrollbar-width: none; /* Hide scrollbar in Firefox */
-        transition: filter 0.7s ease-in-out, opacity 0.7s ease-in-out; /* Add base transition for smoothness */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        transition: filter 0.7s ease-in-out, opacity 0.7s ease-in-out;
       }
 
-      /* Hide scrollbar in Chrome, Safari, and Opera */
       .profile-list::-webkit-scrollbar {
         display: none;
       }
 
       .profile-card {
-        background: #f5f5f5; /* Existing background */
-        border-radius: 0px;
+        background: #f5f5f5;
+        border-radius: 0;
         height: 700px;
         scroll-snap-align: start;
         scroll-snap-stop: always;
         display: flex;
         flex-direction: column;
-        justify-content: flex-end; /* Move content to the bottom */
-        align-items: flex-start; /* Align items to the left */
+        justify-content: flex-end;
+        align-items: flex-start;
         padding: 20px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease;
@@ -113,40 +112,39 @@
       .profile-card::before {
         content: "";
         position: absolute;
-        top: 0; /* Start from the top */
+        top: 0;
         left: 0;
         right: 0;
-        height: 100%; /* Full height of the card */
+        height: 100%;
         background-image: linear-gradient(
           to top,
-          /* Direction from bottom to top */ rgba(0, 0, 0, 0.8) 0%,
-          /* Semi-transparent black at the bottom */ rgba(0, 0, 0, 0.9) 35%,
-          /* Slightly lighter shade at 20% (140px) */ transparent 90%
-            /* Fully fade to transparent by 40% (280px) */
+          rgba(0, 0, 0, 0.8) 0%,
+          rgba(0, 0, 0, 0.9) 35%,
+          transparent 90%
         );
-        z-index: 1; /* Behind all content */
+        z-index: 1;
       }
 
       .profile-image {
-        width: 100%; /* Fill the full width of the phone-box */
-        height: 100%; /* Fill the full height of the phone-box */
-        object-fit: cover; /* Ensure the image fills the space without distortion */
-        position: absolute; /* Position the image absolutely within the profile card */
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
         top: 0;
         left: 0;
-        z-index: 0; /* Place the image behind other content */
+        z-index: 0;
       }
 
       .profile-info {
-        padding: 35px 10px; /* Reduced top padding from 90px to 10px */
+        padding: 35px 10px;
         text-align: left;
-        z-index: 2; /* Ensure it’s above the gradient and image */
-        margin-bottom: 60px; /* Add space above the buttons (adjust as needed) */
+        z-index: 2;
+        margin-bottom: 60px;
       }
 
       @font-face {
         font-family: "Agraham";
-        src: url("fonts/Agraham.otf") format("opentype"); /* OTF format */
+        src: url("fonts/Agraham.otf") format("opentype");
         font-weight: normal;
         font-style: normal;
       }
@@ -157,96 +155,109 @@
         font-family: "Agraham", sans-serif;
         color: #fbfafa;
       }
+
       .profile-age {
         font-family: "Noto Serif Display", serif;
         font-optical-sizing: auto;
         font-style: normal;
         font-variation-settings: "wdth" 100;
-        font-size: 20px; /* Match the h3 size */
-        color: #ffffff; /* Match the h3 color */
+        font-size: 20px;
+        color: #ffffff;
       }
 
       .profile-info p {
-        margin: 0px;
+        margin: 0;
         font-size: 13px;
-        padding-top: 0px;
+        padding-top: 0;
         padding-left: 10px;
         color: #ffffff;
       }
 
       .profile-details-box {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 360px;
+        height: 700px;
         background: #fff;
         border-radius: 20px;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
         z-index: 20;
         display: flex;
         flex-direction: column;
-        padding: 20px;
+        padding: 0;
         opacity: 0;
         visibility: hidden;
-        transform: translateY(20px);
-        transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out,
-          visibility 0.7s ease-in-out;
-        overflow-y: auto; /* Enable scrolling when content overflows */
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
+        transition: opacity 0.7s ease-in-out, visibility 0.7s ease-in-out;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       .profile-details-box.active {
-        opacity: 1; /* Fully visible */
-        visibility: visible; /* Fully interactive */
-        transform: translateY(0); /* Slide to original position */
-        transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out,
-          visibility 0.7s ease-in-out; /* Ensure matching transition for disappearance */
+        opacity: 1;
+        visibility: visible;
       }
 
-      /* Close Button in Profile Details Box */
-      .profile-details-close {
-        position: fixed !important;
-        width: 30px;
-        height: 30px;
-        background-color: rgba(2, 2, 2, 0.84); /* #f7e3e3d7 equivalent */
-        box-shadow: 5px 1px 20px rgba(0, 0, 0, 0.2); /* Added shadow color */
-        top: 15px;
-        right: 15px;
-        border-radius: 50%; /* Simplified */
-        display: flex; /* Enable flexbox */
-        justify-content: center; /* Center horizontally */
-        align-items: center; /* Center vertically */
-        font-size: 20px;
+      .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background-color: #ffffff;
+        position: sticky;
+        top: 0;
+        width: 100%;
+        z-index: 30;
+      }
+
+      .detail-header h3 {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+        padding-left: 10px;
+      }
+
+      .detail-header .profile-details-close {
+        width: 35px;
+        height: 35px;
+        background-color: rgba(2, 2, 2, 0.84);
+        box-shadow: 5px 1px 20px rgba(0, 0, 0, 0.2);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 22px;
         color: #f9f7f7;
         cursor: pointer;
-        z-index: 25;
+        line-height: 35px;
       }
 
-      /* Profile List Blur and Fade */
       .profile-list.blur {
         filter: blur(10px);
         opacity: 0.3;
         transition: filter 0.7s ease-in-out, opacity 0.9s ease-in-out;
-        pointer-events: none; /* Disable interactions while blurred */
+        pointer-events: none;
       }
 
-      /* Profile Details Content */
       .profile-details-content {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        padding-top: 50px;
+        padding-top: 20px;
         padding-bottom: 50px;
         text-align: center;
+        width: 100%;
       }
 
       .profile-details-box::-webkit-scrollbar {
-        display: none; /* Hide scrollbar in Chrome, Safari, and Opera */
+        display: none;
       }
+
       .profile-details-box {
-        -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
-        scrollbar-width: none; /* Hide scrollbar in Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
       }
 
       .profile-details-content h3 {
@@ -261,7 +272,92 @@
         margin-bottom: 10px;
       }
 
-      /* Ensure profile text is clickable */
+      .detail-section img {
+        display: block;
+        width: 90%;
+        border-radius: 10px;
+        height: auto;
+        margin: 0 auto;
+        max-width: 360px;
+        object-fit: cover;
+      }
+
+      .detail-section {
+        margin: 20px 0;
+      }
+
+      .detail-section h3 {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin: 0;
+      }
+
+      .detail-section .placeholder {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        background: #f0f0f0;
+        padding: 15px;
+        border-radius: 10px;
+      }
+
+      .detail-section p {
+        font-size: 16px;
+        color: #555;
+        text-align: center;
+        margin: 0;
+      }
+
+      .detail-section .quote {
+        font-style: italic;
+        color: #444;
+        text-align: center;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 5px;
+      }
+
+      /* Adjust the details section to be smaller and stick below the image */
+      #detailsSection {
+        margin: 0; /* Remove margin to stick it right below the image */
+        padding: 5px 0; /* Reduce padding for a tighter fit */
+        position: sticky; /* Optional: sticks it relative to scrolling content */
+        top: 0; /* Adjust based on image height if needed */
+      }
+
+      /* Ensure the scroll container is horizontally scrollable and smaller */
+      .scroll-container {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 10px;
+        height: 30px;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 5px;
+        width: 100%; /* Full width of the container */
+        max-height: 30px; /* Reduce height to make it smaller */
+      }
+
+      .scroll-container::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, and Opera */
+      }
+
+      /* Make the text smaller and inline */
+      .scroll-container p {
+        display: inline;
+        font-size: 18px; /* Smaller font size */
+        color: #555;
+        padding: 0 10px;
+        margin: 0;
+        line-height: 20px; /* Adjust line height to fit container */
+      }
+
+      /* Ensure the image section doesn’t interfere */
+      #imageSection {
+        margin-bottom: 0; /* Remove bottom margin to connect with details */
+      }
+
       .profile-info h3,
       .profile-info p {
         cursor: pointer;
@@ -323,7 +419,6 @@
         transition: 0.3s;
       }
 
-      /* Modify the .comment-inbox class to add a 3d effect */
       .comment-inbox {
         flex-grow: 1;
         margin: 0 10px;
@@ -335,37 +430,31 @@
         font-size: 14px;
         color: #666;
         font-style: italic;
-
-        transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
 
-      /* Add hover effect to enhance 3D feel */
       .comment-inbox:hover {
-        transform: perspective(1000px) rotateX(0deg); /* Straighten on hover */
+        transform: perspective(1000px) rotateX(0deg);
         box-shadow: 7px 7px 20px rgba(0, 0, 0, 0.25),
-          -2px -2px 10px rgba(251, 249, 249, 0.8); /* Enhance shadow on hover */
+          -2px -2px 10px rgba(251, 249, 249, 0.8);
       }
 
-      /* Modify the .comment-input class to match the 3D style */
       .comment-input {
         width: 100%;
         height: 40px;
         padding: 10px;
-        border-radius: 20px; /* Match the parent border-radius */
+        border-radius: 20px;
         font-size: 14px;
         color: #333;
-        border: none; /* Remove border for a cleaner look */
-        background: #e0e0e0; /* Slightly darker background for depth */
-
-        transition: box-shadow 0.3s ease; /* Smooth transition for focus */
+        border: none;
+        background: #e0e0e0;
+        transition: box-shadow 0.3s ease;
       }
 
-      /* Enhance focus state for 3D effect */
       .comment-input:focus {
         outline: none;
       }
 
-      /* Rest of your CSS remains unchanged */
       .external-buttons {
         position: absolute;
         top: calc(50% + 190px);
@@ -396,16 +485,15 @@
         background: rgba(255, 255, 255, 0.4);
       }
 
-      /* Default Save Button */
       .external-buttons button[title="Save"] {
         background: radial-gradient(
           circle at 30% 30%,
           rgba(255, 255, 255, 0.25),
           rgba(255, 255, 255, 0.1) 70%,
           rgba(255, 255, 255, 0.05)
-        ); /* Radial gradient for dome effect */
-        border: none; /* No border */
-        border-radius: 50%; /* Perfect circle for droplet shape */
+        );
+        border: none;
+        border-radius: 50%;
         width: 50px;
         height: 50px;
         cursor: pointer;
@@ -416,51 +504,44 @@
         color: #fff;
         transition: background 0.3s ease, transform 0.3s ease,
           box-shadow 0.3s ease;
-        backdrop-filter: blur(
-          10px
-        ); /* Stronger blur for frosted glass effect */
+        backdrop-filter: blur(10px);
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
-          /* Outer shadow for depth */ inset 0 4px 8px rgba(255, 255, 255, 0.5),
-          /* Stronger inner highlight for dome */ inset 0 -2px 6px rgba(0, 0, 0, 0.15); /* Inner shadow for depth */
-        transform: perspective(500px) translateZ(5px); /* Slight 3D perspective for dome */
+          inset 0 4px 8px rgba(255, 255, 255, 0.5),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.15);
+        transform: perspective(500px) translateZ(5px);
       }
 
-      /* Save Button Icon (Default - Border Only) */
       .external-buttons button[title="Save"] i {
-        font-weight: 400; /* Ensures outline style for unfilled icon */
+        font-weight: 400;
       }
 
-      /* Save Button Active (Filled Icon) */
       .external-buttons button[title="Save"].saved {
         background: radial-gradient(
           circle at 30% 30%,
           rgba(255, 255, 255, 0.45),
           rgba(255, 255, 255, 0.2) 70%,
           rgba(255, 255, 255, 0.05)
-        ); /* Even brighter gradient when saved */
+        );
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
-          /* Stronger outer shadow for depth */ inset 0 4px 12px
-            rgba(255, 255, 255, 0.7),
-          /* Very bright highlight */ inset 0 -2px 6px rgba(0, 0, 0, 0.25); /* Darker inner shadow */
-        transform: perspective(500px) translateZ(3px); /* Slightly pressed down for interaction */
+          inset 0 4px 12px rgba(255, 255, 255, 0.7),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.25);
+        transform: perspective(500px) translateZ(3px);
       }
 
-      /* Save Button Icon (Filled) */
       .external-buttons button[title="Save"].saved i {
-        font-weight: 900; /* Filled icon style */
-        color: #fff; /* Ensure filled icon is visible */
+        font-weight: 900;
+        color: #fff;
       }
 
-      /* Share Button */
       .external-buttons button[title="Share"] {
         background: radial-gradient(
           circle at 30% 30%,
           rgba(255, 255, 255, 0.25),
           rgba(255, 255, 255, 0.1) 70%,
           rgba(255, 255, 255, 0.05)
-        ); /* Radial gradient for dome effect */
-        border: none; /* No border */
-        border-radius: 50%; /* Perfect circle for droplet shape */
+        );
+        border: none;
+        border-radius: 50%;
         width: 50px;
         height: 50px;
         display: flex;
@@ -470,22 +551,19 @@
         cursor: pointer;
         transition: background 0.3s ease, transform 0.3s ease,
           box-shadow 0.3s ease;
-        backdrop-filter: blur(
-          10px
-        ); /* Stronger blur for frosted glass effect */
+        backdrop-filter: blur(10px);
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
-          /* Outer shadow for depth */ inset 0 4px 8px rgba(255, 255, 255, 0.5),
-          /* Stronger inner highlight for dome */ inset 0 -2px 6px rgba(0, 0, 0, 0.15); /* Inner shadow for depth */
-        transform: perspective(500px) translateZ(5px); /* Slight 3D perspective for dome */
+          inset 0 4px 8px rgba(255, 255, 255, 0.5),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.15);
+        transform: perspective(500px) translateZ(5px);
       }
 
-      /* Updated Share options popup (the "slide") to appear on top of phone-box */
       .share-options {
         position: absolute;
         bottom: 0;
         left: 0;
         width: 360px;
-        background: rgba(233, 237, 233, 0.992); /* Light green grassy effect */
+        background: rgba(233, 237, 233, 0.992);
         border-radius: 15px 15px 0 0;
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
         padding: 15px;
@@ -493,22 +571,20 @@
         justify-content: center;
         gap: 20px;
         z-index: 20;
-        transform: translateY(100%); /* Start below phone-box */
-        opacity: 0; /* Fully transparent */
-        max-height: 0; /* Collapsed height */
-        overflow: hidden; /* Prevent content from showing when collapsed */
-        transition: transform 0.5s ease, opacity 0.5s ease, max-height 0.5s ease; /* Animate all */
+        transform: translateY(100%);
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: transform 0.5s ease, opacity 0.5s ease, max-height 0.5s ease;
         border: 1px solid rgba(235, 241, 235, 0.465);
       }
 
-      /* Active state for share options (slide up) */
       .share-options.active {
         max-height: 150px;
         opacity: 1;
-        transform: translateY(0); /* Slide up to be fully visible */
+        transform: translateY(0);
       }
 
-      /* Individual share options (WhatsApp and Twitter) */
       .share-option {
         background: transparent;
         border: none;
@@ -523,63 +599,47 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        position: relative; /* For underline effect */
-      }
-
-      /* Hover state for share options */
-      .share-option:hover {
-        color: #000000; /* Change text color on hover */
-        transform: translateY(-5px); /* Slight lift for interaction */
-      }
-
-      /* Icon styling (if icons are added) */
-      .share-option i {
-        font-size: 18px; /* Adjust icon size */
-        color: inherit; /* Inherit color from parent */
-      }
-
-      /* Specific styling for WhatsApp */
-      .share-option.whatsapp {
         position: relative;
       }
 
-      /* Underline effect for WhatsApp on hover */
+      .share-option:hover {
+        color: #000000;
+        transform: translateY(-5px);
+      }
+
+      .share-option i {
+        font-size: 18px;
+        color: inherit;
+      }
+
       .share-option.whatsapp::after {
         content: "";
         position: absolute;
-        bottom: 5px; /* Position the line below the text */
+        bottom: 5px;
         left: 0;
-        width: 0; /* Start with no width */
-        height: 2px; /* Thickness of the line */
-        background: #25d366; /* WhatsApp green color */
-        transition: width 0.4s ease; /* Smooth width transition */
+        width: 0;
+        height: 2px;
+        background: #25d366;
+        transition: width 0.4s ease;
       }
 
-      /* Expand the line on hover for WhatsApp */
       .share-option.whatsapp:hover::after {
-        width: 100%; /* Expand to full width */
+        width: 100%;
       }
 
-      /* Specific styling for Twitter */
-      .share-option.twitter {
-        position: relative;
-      }
-
-      /* Optional: Underline effect for Twitter on hover (if desired) */
       .share-option.twitter::after {
         content: "";
         position: absolute;
-        bottom: 5px; /* Position the line below the text */
+        bottom: 5px;
         left: 0;
-        width: 0; /* Start with no width */
-        height: 2px; /* Thickness of the line */
-        background: #1da1f2; /* Twitter blue color */
-        transition: width 0.4s ease; /* Smooth width transition */
+        width: 0;
+        height: 2px;
+        background: #1da1f2;
+        transition: width 0.4s ease;
       }
 
-      /* Expand the line on hover for Twitter (if desired) */
       .share-option.twitter:hover::after {
-        width: 100%; /* Expand to full width */
+        width: 100%;
       }
 
       .navbar {
@@ -666,7 +726,7 @@
       }
 
       .side-navbar.active {
-        right: 0 !important;
+        right: 0;
         z-index: 1200;
       }
 
@@ -700,10 +760,6 @@
 
       .side-navbar .top-items a:hover {
         transform: scale(1.05);
-      }
-
-      .side-navbar .top-items a {
-        filter: none;
       }
 
       .side-navbar .top-items .description {
@@ -803,112 +859,8 @@
         margin-bottom: 8px;
       }
 
-      /* Default Rose Button */
       .rose-button {
-        background: rgba(
-          255,
-          119,
-          144,
-          0.8
-        ) !important; /* Exact pink shade as original */
-        border: none; /* No border */
-        border-radius: 50%; /* Perfect circle for droplet shape */
-        width: 50px;
-        height: 50px;
-        cursor: pointer;
-        display: flex;
-        backdrop-filter: none;
-        justify-content: center;
-        align-items: center;
-        font-size: 18px;
-        color: #fff;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        backdrop-filter: blur(
-          10px
-        ); /* Stronger blur for frosted glass effect */
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
-          /* Outer shadow for depth */ inset 0 4px 8px rgba(255, 255, 255, 0.3),
-          /* Stronger inner highlight for dome */ inset 0 -2px 6px rgba(0, 0, 0, 0.15); /* Inner shadow for depth */
-        transform: perspective(500px) translateZ(5px); /* Slight 3D perspective for dome */
-        overflow: hidden;
-        position: relative;
-        z-index: 20;
-      }
-
-      /* Rose Button Icon */
-      .rose-button .rose-icon {
-        width: 40px;
-        height: 40px;
-        transition: transform 0.3s ease; /* Smooth icon scaling on hover */
-      }
-
-      /* Rose Button Hover */
-      .rose-button:hover {
-        transform: perspective(500px) translateZ(10px) scale(1.1); /* Lift and scale for 3D effect */
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
-          /* Enhanced outer shadow */ inset 0 4px 10px rgba(255, 255, 255, 0.6),
-          /* Brighter inner highlight */ inset 0 -2px 6px rgba(0, 0, 0, 0.2); /* Slightly darker inner shadow */
-      }
-
-      /* Rose Button Active */
-      .rose-button.active {
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
-          /* Stronger outer shadow for depth */ inset 0 4px 12px
-            rgba(255, 255, 255, 0.7),
-          /* Very bright highlight */ inset 0 -2px 6px rgba(0, 0, 0, 0.25); /* Darker inner shadow */
-        transform: perspective(500px) translateZ(3px); /* Slightly pressed down for interaction */
-      }
-
-      /* Rose Button Active Icon */
-      .rose-button.active .rose-icon {
-        transform: scale(1.1); /* Slight scale up for feedback */
-      }
-
-      /* Shine Effect on Click */
-      .rose-button::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%; /* Start off-screen to the left */
-        width: 30%; /* Width of the shine */
-        height: 100%;
-        background: linear-gradient(
-          120deg,
-          transparent,
-          rgba(255, 255, 255, 0.8) 50%,
-          transparent
-        ); /* Sharp shine gradient */
-        transform: skewX(-20deg); /* Skew for a dynamic shine effect */
-        transition: none; /* No transition by default */
-        pointer-events: none; /* Ensure shine doesn't interfere with clicks */
-      }
-
-      /* Trigger Shine Animation on Click */
-      .rose-button.shine::after {
-        animation: shine 0.6s linear forwards; /* Run shine animation */
-      }
-
-      /* Shine Animation Keyframes */
-      @keyframes shine {
-        0% {
-          left: -100%;
-        }
-        60% {
-          left: 100%; /* Move across the button */
-        }
-        100% {
-          left: 100%; /* Stay off-screen to the right */
-        }
-      }
-
-      /* Default Buddy Button */
-      .buddy-button {
-        background: radial-gradient(
-          circle at 30% 30%,
-          rgba(255, 255, 255, 0.25),
-          rgba(255, 255, 255, 0.1) 70%,
-          rgba(255, 255, 255, 0.05) x
-        ) !important; /* Radial gradient for dome effect */
+        background: rgba(255, 119, 144, 0.8);
         border: none;
         border-radius: 50%;
         width: 50px;
@@ -918,7 +870,93 @@
         justify-content: center;
         align-items: center;
         font-size: 18px;
-        color: #fff !important;
+        color: #fff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
+          inset 0 4px 8px rgba(255, 255, 255, 0.3),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.15);
+        transform: perspective(500px) translateZ(5px);
+        overflow: hidden;
+        position: relative;
+        z-index: 20;
+      }
+
+      .rose-button .rose-icon {
+        width: 40px;
+        height: 40px;
+        transition: transform 0.3s ease;
+      }
+
+      .rose-button:hover {
+        transform: perspective(500px) translateZ(10px) scale(1.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
+          inset 0 4px 10px rgba(255, 255, 255, 0.6),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      .rose-button.active {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
+          inset 0 4px 12px rgba(255, 255, 255, 0.7),
+          inset 0 -2px 6px rgba(0, 0, 0, 0.25);
+        transform: perspective(500px) translateZ(3px);
+      }
+
+      .rose-button.active .rose-icon {
+        transform: scale(1.1);
+      }
+
+      .rose-button::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 30%;
+        height: 100%;
+        background: linear-gradient(
+          120deg,
+          transparent,
+          rgba(255, 255, 255, 0.8) 50%,
+          transparent
+        );
+        transform: skewX(-20deg);
+        transition: none;
+        pointer-events: none;
+      }
+
+      .rose-button.shine::after {
+        animation: shine 0.6s linear forwards;
+      }
+
+      @keyframes shine {
+        0% {
+          left: -100%;
+        }
+        60% {
+          left: 100%;
+        }
+        100% {
+          left: 100%;
+        }
+      }
+
+      .buddy-button {
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(255, 255, 255, 0.25),
+          rgba(255, 255, 255, 0.1) 70%,
+          rgba(255, 255, 255, 0.05)
+        );
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #fff;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         backdrop-filter: blur(5px);
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
@@ -930,14 +968,12 @@
         z-index: 21;
       }
 
-      /* Buddy Button Icon */
       .buddy-button .buddy-icon {
         width: 30px;
         height: 30px;
         transition: transform 0.3s ease;
       }
 
-      /* Buddy Button Hover */
       .buddy-button:hover {
         transform: perspective(500px) translateZ(10px) scale(1.1);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
@@ -945,7 +981,6 @@
           inset 0 -2px 6px rgba(0, 0, 0, 0.2);
       }
 
-      /* Buddy Button Active */
       .buddy-button.active {
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
           inset 0 4px 12px rgba(255, 255, 255, 0.7),
@@ -953,12 +988,10 @@
         transform: perspective(500px) translateZ(3px);
       }
 
-      /* Buddy Button Active Icon */
       .buddy-button.active .buddy-icon {
         transform: scale(1.1);
       }
 
-      /* Shine Effect on Click for Buddy Button */
       .buddy-button::after {
         content: "";
         position: absolute;
@@ -977,7 +1010,6 @@
         pointer-events: none;
       }
 
-      /* Trigger Shine Animation on Click for Buddy Button */
       .buddy-button.shine::after {
         animation: shine 0.6s linear forwards;
       }
@@ -1002,32 +1034,6 @@
           transform: scale(1.2);
         }
       }
-
-      .rose-button-container {
-        position: relative;
-      }
-
-      @keyframes slideInBeside {
-        0% {
-          opacity: 0;
-          right: -50px;
-        }
-        100% {
-          opacity: 1;
-          right: -100px;
-        }
-      }
-
-      @keyframes slideOutBeside {
-        0% {
-          opacity: 1;
-          right: -100px;
-        }
-        100% {
-          opacity: 0;
-          right: -50px;
-        }
-      }
     </style>
   </head>
   <body>
@@ -1037,12 +1043,47 @@
     <div class="phone-box">
       <div class="profile-list" id="profileList" tabindex="0"></div>
       <div class="profile-details-box" id="profileDetailsBox">
-        <div class="profile-details-close" onclick="closeProfileDetails()">
-          ✕
+        <div class="detail-header" id="detailHeader">
+          <h3 id="profileName"></h3>
+          <div class="profile-details-close" onclick="closeProfileDetails()">
+            ✕
+          </div>
         </div>
-        <div class="profile-details-content" id="profileDetailsContent"></div>
+        <div class="profile-details-content" id="profileDetailsContent">
+          <div class="detail-section" id="imageSection">
+            <img id="profileImage" alt="Profile Image" />
+          </div>
+          <div class="detail-section" id="detailsSection">
+            <div class="scroll-container">
+              <p id="profileDetails">
+                <!-- Initial content will be overwritten by JS, but adding this for testing -->
+                25, Reading, Hiking, Coding, Swimming, Traveling, Photography,
+                Gaming, Cooking, Music, 4th Year, CSE, New York, Loves exploring
+                new places and trying out exotic cuisines from around the world,
+                Enjoys late-night coding sessions and weekend adventures
+              </p>
+            </div>
+          </div>
+          <div class="detail-section" id="gifSection">
+            <p class="placeholder">
+              [GIF Placeholder - Add GIF URL in profile data]
+            </p>
+          </div>
+          <div class="detail-section" id="quote1Section">
+            <p class="quote" id="quote1"></p>
+          </div>
+          <div class="detail-section" id="image2Section">
+            <p class="placeholder">
+              [Image 2 Placeholder - Add second image URL in profile data]
+            </p>
+          </div>
+          <div class="detail-section" id="quote2Section">
+            <p class="quote placeholder">
+              <strong>Quote 2:</strong> "[Add second quote in profile data]"
+            </p>
+          </div>
+        </div>
       </div>
-      <!-- Moved share-options inside phone-box -->
       <div class="share-options" id="shareOptions">
         <div class="share-option whatsapp" data-platform="whatsapp">
           <i class="fab fa-whatsapp"></i> WhatsApp
@@ -1054,11 +1095,9 @@
     </div>
 
     <div class="external-buttons">
-      <div class="rose-button-container">
-        <button title="Rose" class="rose-button">
-          <img src="rose-icon.svg" alt="Rose" class="rose-icon" />
-        </button>
-      </div>
+      <button title="Rose" class="rose-button">
+        <img src="rose-icon.svg" alt="Rose" class="rose-icon" />
+      </button>
       <div class="buddy-button-container">
         <button title="Buddy" class="buddy-button">
           <img
@@ -1121,7 +1160,6 @@
       </div>
     </div>
 
-    <!-- Keep all HTML and CSS as is, only replace the <script> section -->
     <script>
       // Function to clear URL parameters
       function clearUrlParams() {
@@ -1207,7 +1245,6 @@
         const accountName = document.querySelector(".account-name");
         const accountDetails = document.querySelector(".account-details");
 
-        // Use the first photo from the photos array, if available
         if (userData.photos && userData.photos.length > 0) {
           accountImage.src = userData.photos[0];
         } else {
@@ -1219,16 +1256,99 @@
         }`;
       }
 
+      // Logout function
+      async function logout() {
+        const button = document.querySelector(
+          ".side-navbar .bottom-buttons button"
+        );
+        button.textContent = "Logging Out...";
+        button.disabled = true;
+
+        const token = localStorage.getItem("jwtToken");
+        if (token) {
+          try {
+            const response = await fetch("http://localhost:3000/api/logout", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (!response.ok) {
+              console.error("Logout failed on server:", response.status);
+            } else {
+              console.log("Successfully logged out on server");
+            }
+          } catch (error) {
+            console.error("Error during logout:", error);
+          }
+        }
+
+        localStorage.removeItem("jwtToken");
+        window.location.href = "login.html";
+
+        button.textContent = "Logout";
+        button.disabled = false;
+      }
+
+      // Delete Account function
+      async function deleteAccount() {
+        const button = document.querySelector(
+          ".side-navbar .bottom-buttons .delete-account"
+        );
+        const confirmDelete = confirm(
+          "Are you sure you want to delete your account? This cannot be undone."
+        );
+        if (!confirmDelete) return;
+
+        button.textContent = "Deleting...";
+        button.disabled = true;
+
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          alert("You are not logged in!");
+          window.location.href = "login.html";
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/delete-account",
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to delete account");
+          }
+
+          alert("Your account has been deleted successfully.");
+          localStorage.removeItem("jwtToken");
+          window.location.href = "login.html";
+        } catch (error) {
+          console.error("Error deleting account:", error);
+          alert("Error deleting account: " + error.message);
+        } finally {
+          button.textContent = "Delete Account";
+          button.disabled = false;
+        }
+      }
+
       document.addEventListener("DOMContentLoaded", async function () {
-        // Call storeToken and fetchUserProfile on page load
         storeToken();
         fetchUserProfile();
 
         let loadedProfiles = 0;
         const profilesPerPage = 1;
-        let profiles = []; // Array to store fetched profiles
+        let profiles = [];
 
-        // Fetch profiles when the page loads
         profiles = await fetchProfiles();
 
         function loadProfiles() {
@@ -1419,15 +1539,6 @@
         document.getElementById("profileList").setAttribute("tabindex", "0");
         document.getElementById("profileList").focus();
 
-        function logout() {
-          localStorage.removeItem("jwtToken");
-          window.location.href = "index.html"; // Redirect to login page
-        }
-
-        function deleteAccount() {
-          alert("Delete Account button clicked!"); // Implement actual deletion later
-        }
-
         document
           .querySelectorAll(".side-navbar .top-items a")
           .forEach((link) => {
@@ -1450,57 +1561,28 @@
             });
           });
 
-        document
-          .querySelector(".rose-button")
-          .addEventListener("click", function () {
-            this.classList.toggle("active");
-          });
-
         function showProfileDetails(profile) {
           const profileList = document.getElementById("profileList");
           const profileDetailsBox =
             document.getElementById("profileDetailsBox");
-          const profileDetailsContent = document.getElementById(
-            "profileDetailsContent"
-          );
+          const profileName = document.getElementById("profileName");
+          const profileImage = document.getElementById("profileImage");
+          const profileDetails = document.getElementById("profileDetails");
+          const quote1 = document.getElementById("quote1");
 
           profileList.classList.add("blur");
 
-          profileDetailsContent.innerHTML = `
-              <h3>${profile.name}, ${profile.age}</h3>
-              <p>${profile.hometown} | ${profile.year} | ${
-            profile.department
-          }</p>
-              <p><strong>Bio:</strong> ${profile.bio}</p>
-              <img src="${profile.image}" alt="${
-            profile.name
-          }'s profile image" style="width: 150px; height: 150px; border-radius: 50%; margin: 20px auto;">
-              ${
-                profile.interests
-                  ? `<p><strong>Interests:</strong> ${profile.interests.join(
-                      ", "
-                    )}</p>`
-                  : ""
-              }
-              ${
-                profile.hobbies
-                  ? `<p><strong>Hobbies:</strong> ${profile.hobbies.join(
-                      ", "
-                    )}</p>`
-                  : ""
-              }
-              ${
-                profile.favoriteQuote
-                  ? `<p><strong>Favorite Quote:</strong> "${profile.favoriteQuote}"</p>`
-                  : ""
-              }
-              ${
-                profile.additionalInfo
-                  ? `<p><strong>About Me:</strong> ${profile.additionalInfo}</p>`
-                  : ""
-              }
-              <p style="margin-bottom: 100px;"> </p>
-            `;
+          profileName.textContent = profile.name;
+          profileImage.src = profile.image;
+          profileImage.alt = `${profile.name}'s image 1`;
+          profileDetails.textContent = `${profile.age || "N/A"}, ${
+            profile.hobbies ? profile.hobbies.join(", ") : "N/A"
+          }, ${profile.year || "N/A"}, ${profile.department || "CSE"}, ${
+            profile.hometown || "N/A"
+          }, Enjoys long walks on the beach, Passionate about technology and innovation, Favorite book is 'The Alchemist', Loves coffee and rainy days, Aspires to travel the world`;
+          quote1.innerHTML = `<strong>Quote 1:</strong> "${
+            profile.favoriteQuote || "No quote available"
+          }"`;
 
           profileDetailsBox.classList.add("active");
         }
@@ -1509,8 +1591,17 @@
           const profileList = document.getElementById("profileList");
           const profileDetailsBox =
             document.getElementById("profileDetailsBox");
+          const profileName = document.getElementById("profileName");
+          const profileImage = document.getElementById("profileImage");
+          const profileDetails = document.getElementById("profileDetails");
+          const quote1 = document.getElementById("quote1");
 
           profileDetailsBox.classList.remove("active");
+          profileName.textContent = "";
+          profileImage.src = "";
+          profileImage.alt = "";
+          profileDetails.textContent = "";
+          quote1.innerHTML = "";
 
           setTimeout(() => {
             profileList.classList.remove("blur");
@@ -1593,19 +1684,15 @@
             "Share button or share options container not found in the DOM."
           );
         }
+
         function saveProfile(category, profile) {
-          // Get existing profiles from localStorage, or initialize an empty array
           const existingProfiles =
             JSON.parse(localStorage.getItem(category)) || [];
-
-          // Check if the profile is already saved (to avoid duplicates)
           const isAlreadySaved = existingProfiles.some(
             (p) => p.id === profile.id
           );
           if (!isAlreadySaved) {
-            // Add the new profile to the array
             existingProfiles.push(profile);
-            // Save the updated array back to localStorage
             localStorage.setItem(category, JSON.stringify(existingProfiles));
             console.log(`Profile saved to ${category}:`, profile);
           } else {
@@ -1613,7 +1700,6 @@
           }
         }
 
-        // Modify the rose-button event listener
         document
           .querySelector(".rose-button")
           .addEventListener("click", function () {
@@ -1623,7 +1709,6 @@
               this.classList.remove("shine");
             }, 600);
 
-            // Save the current profile to "efforts"
             const currentProfile = profiles[currentProfileIndex];
             if (currentProfile) {
               saveProfile("efforts", currentProfile);
@@ -1632,7 +1717,6 @@
             }
           });
 
-        // Modify the buddy-button event listener
         document
           .querySelector(".buddy-button")
           .addEventListener("click", function () {
@@ -1642,7 +1726,6 @@
               this.classList.remove("shine");
             }, 600);
 
-            // Save the current profile to "buddyUp"
             const currentProfile = profiles[currentProfileIndex];
             if (currentProfile) {
               saveProfile("buddyUp", currentProfile);

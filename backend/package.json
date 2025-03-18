@@ -21,6 +21,7 @@
     "express-fileupload": "^1.5.1",
     "express-session": "^1.18.1",
     "face-api.js": "^0.20.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",

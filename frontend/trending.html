@@ -294,7 +294,7 @@
         }
 
         .carousel-card {
-          width: calc((100% - 40px) / 1.5);
+          width: calc((100% - 5px) / 1.5);
           height: 30%;
         }
 
@@ -324,7 +324,7 @@
         }
 
         .carousel-card {
-          width: 80%;
+          width: calc((100% - 5px) / 1.5);
           height: 25%;
         }
 
@@ -436,6 +436,8 @@
         const storedImage = localStorage.getItem("profileImage");
         if (storedImage) {
           profileIcon.src = storedImage;
+        } else {
+          fetchUserProfile();
         }
 
         // Sample card data (replace with real data or API fetch)
@@ -608,6 +610,32 @@
             updateCarousel();
           }, 500); // Match the transition duration (0.5s)
         }
+
+        async function fetchUserProfile() {
+          const token = localStorage.getItem("jwtToken");
+          if (!token) return;
+
+          try {
+            const response = await fetch("http://localhost:3000/api/profile", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            const userData = await response.json();
+            if (userData.photo) {
+              document.getElementById("profileImage").src = userData.photo;
+            }
+          } catch (error) {
+            console.error("Error fetching profile:", error);
+          }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+          fetchUserProfile();
+          // Existing code...
+        });
 
         // Initial setup
         updateCarousel();

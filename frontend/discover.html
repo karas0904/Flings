@@ -240,8 +240,8 @@
         <div class="form-group">
           <label>Birthday</label>
           <div class="birthday">
-            <input type="text" id="month" placeholder="MM" maxlength="2" />
             <input type="text" id="day" placeholder="DD" maxlength="2" />
+            <input type="text" id="month" placeholder="MM" maxlength="2" />
             <input type="text" id="year" placeholder="YYYY" maxlength="4" />
           </div>
           <p class="error-message" id="birthday-error">
@@ -350,7 +350,6 @@
       function selectGender(button) {
         genderButtons.forEach((btn) => btn.classList.remove("selected"));
         button.classList.add("selected");
-        // Automatically select opposite in "Interested in"
         if (button.textContent.trim() === "Man") {
           interestedButtons.forEach((btn) => btn.classList.remove("selected"));
           interestedButtons[1].classList.add("selected"); // Select Women
@@ -364,7 +363,6 @@
       function selectInterest(button) {
         interestedButtons.forEach((btn) => btn.classList.remove("selected"));
         button.classList.add("selected");
-        // Automatically select opposite in Gender
         if (button.textContent.trim() === "Men") {
           genderButtons.forEach((btn) => btn.classList.remove("selected"));
           genderButtons[1].classList.add("selected"); // Select Woman
@@ -375,7 +373,6 @@
         validateForm();
       }
 
-      // Relationship intent selection functionality
       function selectRelationship(button) {
         relationshipButtons.forEach((btn) => btn.classList.remove("selected"));
         button.classList.add("selected");
@@ -401,7 +398,7 @@
           if (!box.classList.contains("disabled")) {
             fileInput.click();
           } else {
-            event.preventDefault(); // Prevent click on disabled boxes
+            event.preventDefault();
           }
         });
 
@@ -418,12 +415,14 @@
               }
               img.src = e.target.result;
 
-              // If this is the first box (index === 0), save the image to localStorage
               if (index === 0) {
                 enableAllPhotoBoxes();
-                // Store the image data in localStorage
-                localStorage.setItem("profileImage", e.target.result);
+                localStorage.setItem("profileImage", e.target.result); // Store first image
               }
+              let photos =
+                JSON.parse(localStorage.getItem("profilePhotos")) || [];
+              photos[index] = e.target.result;
+              localStorage.setItem("profilePhotos", JSON.stringify(photos));
             };
             reader.readAsDataURL(file);
           }
@@ -441,7 +440,6 @@
       const birthdayError = document.getElementById("birthday-error");
       const emailError = document.getElementById("email-error");
 
-      // Email validation for @srmist.edu.in
       function validateEmail() {
         const email = emailInput.value.trim();
         const isEmailValid = email.endsWith("@srmist.edu.in");
@@ -453,7 +451,6 @@
         return isEmailValid;
       }
 
-      // Restrict birthday inputs to numbers only
       function restrictToNumbers(input, maxLength) {
         input.addEventListener("input", function () {
           this.value = this.value.replace(/[^0-9]/g, "").slice(0, maxLength);
@@ -461,7 +458,6 @@
         });
       }
 
-      // Apply number restrictions to birthday inputs
       restrictToNumbers(monthInput, 2);
       restrictToNumbers(dayInput, 2);
       restrictToNumbers(yearInput, 4);
@@ -483,7 +479,6 @@
           ".relationship-intent .relationship-option.selected"
         );
 
-        // Validate birth year
         let isBirthYearValid = true;
         const year = yearInput.value.trim();
         if (year && year.length === 4) {
@@ -498,7 +493,6 @@
           birthdayError.style.display = "none";
         }
 
-        // Validate if at least one image is uploaded
         let isImageUploaded = false;
         fileInputs.forEach((input) => {
           if (input.files && input.files.length > 0) {
@@ -522,19 +516,58 @@
         nextButton.disabled = !isFormValid;
       }
 
-      // Add event listeners to inputs
       firstNameInput.addEventListener("input", validateForm);
       emailInput.addEventListener("input", validateForm);
       monthInput.addEventListener("input", validateForm);
       dayInput.addEventListener("input", validateForm);
       yearInput.addEventListener("input", validateForm);
 
-      // Next button functionality
+      // Next button functionality with data storage
       nextButton.addEventListener("click", function () {
         if (!this.disabled) {
+          const profileData = {
+            firstName: firstNameInput.value.trim(),
+            email: emailInput.value.trim(),
+            birthday: {
+              month: monthInput.value.trim(),
+              day: dayInput.value.trim(),
+              year: yearInput.value.trim(),
+            },
+            gender: document.querySelector(".gender .gender-option.selected")
+              .textContent,
+            interestedIn: document.querySelector(
+              ".interested-in .interested-option.selected"
+            ).textContent,
+            relationshipIntent: document.querySelector(
+              ".relationship-intent .relationship-option.selected"
+            ).textContent,
+          };
+
+          localStorage.setItem("profileData", JSON.stringify(profileData));
           window.location.href = "discover2.html";
         }
       });
+
+      // Function to clear URL parameters
+      function clearUrlParams() {
+        const url = new URL(window.location);
+        url.search = ""; // Clear all query parameters
+        window.history.replaceState({}, document.title, url);
+      }
+
+      // Function to store the JWT token
+      function storeToken() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        if (token) {
+          localStorage.setItem("jwtToken", token);
+          console.log("JWT token stored:", token);
+          clearUrlParams(); // Clear the token from the URL for security
+        }
+      }
+
+      // Call the function on page load
+      window.onload = storeToken;
     </script>
   </body>
 </html>

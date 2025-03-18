@@ -600,7 +600,9 @@
         <nav class="right-nav">
           <ul>
             <li>
-              <a href="http://localhost:3000/auth/google" class="login-button"
+              <a
+                href="http://localhost:3000/auth/google?flow=login"
+                class="login-button"
                 >Login</a
               >
             </li>
@@ -621,7 +623,11 @@
         </p>
         <br />
         <p class="sub-text">Already a user tehen just...</p>
-        <a href="#" class="sink-button">SINK IN<span class="arrow">→</span></a>
+        <a
+          href="http://localhost:3000/auth/google?flow=sinkin"
+          class="sink-button"
+          >SINK IN<span class="arrow">→</span></a
+        >
       </div>
     </section>
 
@@ -706,6 +712,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
       // Function to show the modal with animation
       function showModal(message) {
@@ -728,7 +735,18 @@
         window.history.replaceState({}, document.title, url);
       }
 
-      // Check for URL parameters (e.g., error messages from auth)
+      // Function to store the JWT token
+      function storeToken() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        if (token) {
+          localStorage.setItem("jwtToken", token);
+          console.log("JWT token stored:", token);
+          clearUrlParams(); // Clear the token from the URL for security
+        }
+      }
+
+      // Check for URL parameters (e.g., error messages or token)
       function checkUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get("error");
@@ -739,8 +757,9 @@
           } else {
             showModal("Authentication failed. Please try again.");
           }
-          // Clear URL parameters after showing the modal to prevent re-triggering
           clearUrlParams();
+        } else {
+          storeToken(); // Store the JWT token if present
         }
       }
 

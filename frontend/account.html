@@ -472,22 +472,6 @@
         color: #333;
       }
 
-      .open-button {
-        background-color: rgba(0, 0, 0, 0.1);
-        color: #333;
-        border: none;
-        border-radius: 20px;
-        padding: 6px 16px;
-        font-size: 11px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-
-      .open-button:hover {
-        background-color: rgba(0, 0, 0, 0.2);
-      }
-
       .square-box {
         flex: 2;
         background-color: rgba(255, 255, 255, 0.95);
@@ -1214,6 +1198,167 @@
           margin-bottom: 10px; /* Reduce margin between sections */
         }
       }
+
+      /* Modal styles (add or modify) */
+      .photo-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+        backdrop-filter: blur(5px); /* Blur the background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000; /* Ensure modal is above everything */
+      }
+
+      .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        width: 600px;
+        max-width: 90%;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+        color: #333;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+
+      .modal-header h2 {
+        font-size: 20px;
+        margin: 0;
+      }
+
+      .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+      }
+
+      .close-modal:hover {
+        color: #333;
+      }
+
+      .photo-upload-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+      }
+
+      .photo-slot {
+        position: relative;
+        width: 100%;
+        padding-top: 100%; /* Maintain 1:1 aspect ratio */
+      }
+
+      .photo-preview {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        overflow: hidden;
+        transition: background 0.3s;
+      }
+
+      .photo-preview:hover {
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .photo-placeholder {
+        font-size: 14px;
+        color: #666;
+        font-family: "Raleway", sans-serif;
+        text-align: center;
+        pointer-events: none; /* Prevent placeholder from interfering with clicks */
+      }
+
+      .photo-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+
+      .remove-photo {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        background: rgba(255, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 14px;
+        transition: background 0.3s;
+      }
+
+      .remove-photo:hover {
+        background: rgba(255, 0, 0, 1);
+      }
+
+      .modal-footer {
+        text-align: right;
+        margin-top: 20px;
+      }
+
+      .save-photos {
+        background-color: #000000;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-family: "Raleway", sans-serif;
+        transition: background-color 0.3s;
+      }
+
+      .save-photos:hover {
+        background-color: #272727;
+      }
+
+      /* Styling for Set as Profile button in modal */
+      .set-profile-btn {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 12px;
+        font-family: "Raleway", sans-serif;
+        transition: background 0.3s;
+      }
+
+      .set-profile-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+      }
     </style>
   </head>
   <body>
@@ -1224,14 +1369,12 @@
     <!-- Page title in top left -->
     <div class="page-title">
       <h1>ACCOUNT</h1>
-      <div class="account-name">(your.email@example.com)</div>
+      <div class="account-name"></div>
     </div>
 
     <!-- Sidebar (left fixed sidebar) -->
     <div class="sidebar">
       <span class="brand">Amourette</span>
-
-      <!-- Icon container with the three new icons -->
       <div class="icon-container">
         <a href="explore.html" class="sidebar-icon">
           <i class="fa-solid fa-heart"></i>
@@ -1245,9 +1388,8 @@
           <i class="fa-solid fa-comment"></i>
         </a>
       </div>
-
       <div class="profile-icon">
-        <img src="boy-account.svg" alt="Profile" id="profileImage" />
+        <img src="default-profile.jpg" alt="Profile" id="profileImage" />
       </div>
     </div>
 
@@ -1255,7 +1397,7 @@
     <div class="account-content">
       <div class="account-header">
         <div class="account-avatar">
-          <img src="boy-account.svg" alt="Profile" id="accountAvatar" />
+          <img src="default-profile.jpg" alt="Profile" id="accountAvatar" />
           <div class="avatar-overlay">
             <span class="avatar-text" id="changeAvatarText">Change</span>
             <input
@@ -1267,10 +1409,10 @@
           </div>
         </div>
         <div class="account-info">
-          <h1>Your Name</h1>
-          <p>your.email@example.com</p>
+          <h1></h1>
+          <p></p>
           <div class="account-buttons">
-            <button class="account-button">SIGN OUT</button>
+            <button class="account-button" id="signOutButton">SIGN OUT</button>
             <button class="account-button delete-button">DELETE ACCOUNT</button>
           </div>
         </div>
@@ -1283,8 +1425,6 @@
               <span class="photo-text">PHOTO</span>
               <span class="stack-text">Stack</span>
             </div>
-
-            <!-- Card stack effect -->
             <div class="card-stack">
               <div class="card card-left"></div>
               <div class="card card-middle"></div>
@@ -1294,30 +1434,26 @@
           <div class="rectangle-divider"></div>
           <div class="rectangle-bottom">
             <button class="add-button"><i class="fa-solid fa-plus"></i></button>
-            <button class="open-button">OPEN</button>
           </div>
         </div>
 
-        <!-- Square box with info -->
         <div class="square-box-container">
           <button class="floating-edit-btn" id="squareBoxEdit">EDIT</button>
           <div class="square-box">
             <div class="info-content">
               <div class="info-item">
                 <span class="info-label">Age:</span>
-                <span class="info-value" data-field="age">22</span>
+                <span class="info-value" data-field="age"></span>
               </div>
               <div class="divider"></div>
-
               <div class="info-item">
                 <span class="info-label">Year:</span>
-                <span class="info-value" data-field="year">3rd Year</span>
+                <span class="info-value" data-field="year"></span>
               </div>
               <div class="divider"></div>
-
               <div class="info-item">
                 <span class="info-label">Height:</span>
-                <span class="info-value" data-field="height">6'1"</span>
+                <span class="info-value" data-field="height"></span>
               </div>
               <div class="divider"></div>
             </div>
@@ -1336,20 +1472,21 @@
           </button>
           <div class="quote-text">Quotes</div>
         </div>
-
         <div class="quote-box">
           <button class="corner-plus-btn" onclick="enableQuoteEdit(this)">
             <i class="fa-solid fa-plus"></i>
           </button>
           <div class="quote-text">Quotes</div>
         </div>
-
         <div class="quote-box">
           <button class="corner-plus-btn" onclick="enableQuoteEdit(this)">
             <i class="fa-solid fa-plus"></i>
           </button>
           <div class="quote-text">Quotes</div>
         </div>
+      </div>
+      <div class="gif-note">
+        Note: Only 30 characters allowed so choose carefully!!
       </div>
 
       <div class="profile-info-container">
@@ -1361,10 +1498,9 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">Software Engineer</span>
+            <span class="info-label" data-field="job"></span>
           </div>
           <div class="separator"></div>
-
           <div class="info-item">
             <div class="info-row">
               <span class="info-value">Plan to</span>
@@ -1372,10 +1508,9 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">Travel the World</span>
+            <span class="info-label" data-field="planTo"></span>
           </div>
           <div class="separator"></div>
-
           <div class="info-item">
             <div class="info-row">
               <span class="info-value">Hometown</span>
@@ -1383,10 +1518,9 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">New York</span>
+            <span class="info-label" data-field="hometown"></span>
           </div>
           <div class="separator"></div>
-
           <div class="info-item">
             <div class="info-row">
               <span class="info-value">Dating Intention</span>
@@ -1394,7 +1528,7 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">Long Term</span>
+            <span class="info-label" data-field="datingIntention"></span>
           </div>
         </div>
 
@@ -1408,10 +1542,9 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">John Doe</span>
+            <span class="info-label" data-field="name"></span>
           </div>
           <div class="separator"></div>
-
           <div class="info-item">
             <div class="info-row">
               <span class="info-value">Pets</span>
@@ -1419,10 +1552,9 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">Dog Lover</span>
+            <span class="info-label" data-field="pets"></span>
           </div>
           <div class="separator"></div>
-
           <div class="info-item">
             <div class="info-row">
               <span class="info-value">Language</span>
@@ -1430,7 +1562,7 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">English, Spanish</span>
+            <span class="info-label" data-field="language"></span>
           </div>
         </div>
 
@@ -1444,10 +1576,9 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">Social Drinker</span>
+            <span class="info-label" data-field="drinking"></span>
           </div>
           <div class="separator"></div>
-
           <div class="info-item">
             <div class="info-row">
               <span class="info-value">Smoking</span>
@@ -1455,10 +1586,9 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">Non-Smoker</span>
+            <span class="info-label" data-field="smoking"></span>
           </div>
           <div class="separator"></div>
-
           <div class="info-item">
             <div class="info-row">
               <span class="info-value">Party Person</span>
@@ -1466,7 +1596,7 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            <span class="info-label">Moderate</span>
+            <span class="info-label" data-field="partyPerson"></span>
           </div>
         </div>
       </div>
@@ -1543,20 +1673,385 @@
           </div>
         </div>
       </div>
+      <!-- Photo Upload Modal -->
+      <div class="photo-modal" id="photoModal" style="display: none">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Upload Photos</h2>
+            <button class="close-modal" id="closeModal">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="photo-upload-container">
+              <!-- 6 Photo Upload Slots -->
+              <div class="photo-slot" data-index="1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="photo-upload-input"
+                  hidden
+                />
+                <div class="photo-preview" onclick="triggerPhotoUpload(this)">
+                  <div class="photo-placeholder">Add Photo</div>
+                </div>
+                <button class="remove-photo" style="display: none">×</button>
+                <button class="set-profile-btn" style="display: none">
+                  Set as Profile
+                </button>
+              </div>
+              <div class="photo-slot" data-index="2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="photo-upload-input"
+                  hidden
+                />
+                <div class="photo-preview" onclick="triggerPhotoUpload(this)">
+                  <div class="photo-placeholder">Add Photo</div>
+                </div>
+                <button class="remove-photo" style="display: none">×</button>
+                <button class="set-profile-btn" style="display: none">
+                  Set as Profile
+                </button>
+              </div>
+              <div class="photo-slot" data-index="3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="photo-upload-input"
+                  hidden
+                />
+                <div class="photo-preview" onclick="triggerPhotoUpload(this)">
+                  <div class="photo-placeholder">Add Photo</div>
+                </div>
+                <button class="remove-photo" style="display: none">×</button>
+                <button class="set-profile-btn" style="display: none">
+                  Set as Profile
+                </button>
+              </div>
+              <div class="photo-slot" data-index="4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="photo-upload-input"
+                  hidden
+                />
+                <div class="photo-preview" onclick="triggerPhotoUpload(this)">
+                  <div class="photo-placeholder">Add Photo</div>
+                </div>
+                <button class="remove-photo" style="display: none">×</button>
+                <button class="set-profile-btn" style="display: none">
+                  Set as Profile
+                </button>
+              </div>
+              <div class="photo-slot" data-index="5">
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="photo-upload-input"
+                  hidden
+                />
+                <div class="photo-preview" onclick="triggerPhotoUpload(this)">
+                  <div class="photo-placeholder">Add Photo</div>
+                </div>
+                <button class="remove-photo" style="display: none">×</button>
+                <button class="set-profile-btn" style="display: none">
+                  Set as Profile
+                </button>
+              </div>
+              <div class="photo-slot" data-index="6">
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="photo-upload-input"
+                  hidden
+                />
+                <div class="photo-preview" onclick="triggerPhotoUpload(this)">
+                  <div class="photo-placeholder">Add Photo</div>
+                </div>
+                <button class="remove-photo" style="display: none">×</button>
+                <button class="set-profile-btn" style="display: none">
+                  Set as Profile
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="save-photos" id="savePhotos">Save</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-      // Check if there's a stored profile image
-      window.onload = function () {
-        const storedImage = localStorage.getItem("profileImage");
-        if (storedImage) {
-          document.getElementById("profileImage").src = storedImage;
-          document.getElementById("accountAvatar").src = storedImage;
+      // Function to store JWT token from URL params (if redirected)
+      function storeToken() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        if (token) {
+          localStorage.setItem("jwtToken", token);
+          console.log("JWT token stored:", token);
+          const url = new URL(window.location);
+          url.search = ""; // Clear URL params
+          window.history.replaceState({}, document.title, url);
+        }
+      }
+
+      // Function to fetch user profile from MongoDB
+      async function fetchUserProfile() {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found, redirecting to login");
+          window.location.href = "index.html";
+          return;
         }
 
-        // Add hover effect for sidebar icons
-        const icons = document.querySelectorAll(".sidebar-icon");
+        try {
+          const response = await fetch("http://localhost:3000/api/profile", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch profile");
+          }
+
+          const userData = await response.json();
+          console.log("Fetched user profile:", userData);
+          updateProfileUI(userData);
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          window.location.href = "index.html"; // Redirect to login on error
+        }
+      }
+
+      function updateProfileUI(userData) {
+        const profileImage = document.getElementById("profileImage");
+        const accountAvatar = document.getElementById("accountAvatar");
+        const accountName = document.querySelector(".account-info h1");
+        const accountEmail = document.querySelector(".account-info p");
+        const pageTitleEmail = document.querySelector(".account-name");
+        const ageValue = document.querySelector(
+          ".info-value[data-field='age']"
+        );
+        const yearValue = document.querySelector(
+          ".info-value[data-field='year']"
+        );
+        const heightValue = document.querySelector(
+          ".info-value[data-field='height']"
+        );
+        const profileName = document.querySelector(
+          ".info-label[data-field='name']"
+        );
+        const jobValue = document.querySelector(
+          ".info-label[data-field='job']"
+        );
+        const planToValue = document.querySelector(
+          ".info-label[data-field='planTo']"
+        );
+        const hometownValue = document.querySelector(
+          ".info-label[data-field='hometown']"
+        );
+        const datingIntentionValue = document.querySelector(
+          ".info-label[data-field='datingIntention']"
+        );
+        const petsValue = document.querySelector(
+          ".info-label[data-field='pets']"
+        );
+        const languageValue = document.querySelector(
+          ".info-label[data-field='language']"
+        );
+        const drinkingValue = document.querySelector(
+          ".info-label[data-field='drinking']"
+        );
+        const smokingValue = document.querySelector(
+          ".info-label[data-field='smoking']"
+        );
+        const partyPersonValue = document.querySelector(
+          ".info-label[data-field='partyPerson']"
+        );
+
+        // Update profile image and avatar
+        if (userData.photos && userData.photos.length > 0) {
+          profileImage.src = userData.photos[0];
+          accountAvatar.src = userData.photos[0];
+        } else {
+          profileImage.src = "default-profile.jpg";
+          accountAvatar.src = "default-profile.jpg";
+        }
+
+        // Update name
+        accountName.textContent = userData.firstName || "Unknown";
+        profileName.textContent = userData.firstName || "Unknown";
+
+        // Update email with debugging
+        console.log("Email from userData:", userData.email);
+        console.log("accountEmail element:", accountEmail);
+        console.log("pageTitleEmail element:", pageTitleEmail);
+        accountEmail.textContent = userData.email || "your.email@example.com";
+        pageTitleEmail.textContent = `(${
+          userData.email || "your.email@example.com"
+        })`;
+
+        // Update square box fields
+        ageValue.textContent = userData.age || "N/A";
+        yearValue.textContent = userData.year || "N/A";
+        heightValue.textContent = userData.height || "None";
+
+        // Update profile info fields (default to "None" if not provided)
+        jobValue.textContent = userData.job || "None";
+        planToValue.textContent = userData.planTo || "None";
+        hometownValue.textContent = userData.hometown || "None";
+        datingIntentionValue.textContent = userData.datingIntention || "None";
+        petsValue.textContent = userData.pets || "None";
+        languageValue.textContent = userData.language || "None";
+        drinkingValue.textContent = userData.drinking || "None";
+        smokingValue.textContent = userData.smoking || "None";
+        partyPersonValue.textContent = userData.partyPerson || "None";
+
+        // Populate photos in modal and card stack
+        populatePhotos(userData.photos || []);
+      }
+
+      function populatePhotos(photos) {
+        const slots = document.querySelectorAll(".photo-slot");
+        const cardLeft = document.querySelector(".card-left");
+        const cardMiddle = document.querySelector(".card-middle");
+        const cardRight = document.querySelector(".card-right");
+
+        // Reset all slots
+        slots.forEach((slot) => {
+          const preview = slot.querySelector(".photo-preview");
+          const removeButton = slot.querySelector(".remove-photo");
+          const setProfileButton = slot.querySelector(".set-profile-btn");
+          preview.innerHTML = '<div class="photo-placeholder">Add Photo</div>';
+          removeButton.style.display = "none";
+          setProfileButton.style.display = "none";
+        });
+
+        // Populate slots with photos from MongoDB
+        photos.forEach((photoUrl, index) => {
+          if (index < slots.length) {
+            const slot = slots[index];
+            const preview = slot.querySelector(".photo-preview");
+            const removeButton = slot.querySelector(".remove-photo");
+            const setProfileButton = slot.querySelector(".set-profile-btn");
+
+            const img = document.createElement("img");
+            img.src = photoUrl;
+            preview.innerHTML = "";
+            preview.appendChild(img);
+            removeButton.style.display = "block";
+            setProfileButton.style.display = "block";
+            setProfileButton.onclick = () => setProfilePicture(photoUrl);
+            removeButton.onclick = () => removePhoto(slot);
+          }
+        });
+
+        // Update card stack with first three photos
+        cardLeft.style.backgroundImage = photos[0]
+          ? `url(${photos[0]})`
+          : "none";
+        cardLeft.style.backgroundSize = photos[0] ? "cover" : "auto";
+        cardLeft.style.backgroundPosition = photos[0] ? "center" : "auto";
+        cardLeft.style.backgroundColor = photos[0] ? "transparent" : "#f8f8f8";
+
+        cardMiddle.style.backgroundImage = photos[1]
+          ? `url(${photos[1]})`
+          : "none";
+        cardMiddle.style.backgroundSize = photos[1] ? "cover" : "auto";
+        cardMiddle.style.backgroundPosition = photos[1] ? "center" : "auto";
+        cardMiddle.style.backgroundColor = photos[1] ? "transparent" : "white";
+
+        cardRight.style.backgroundImage = photos[2]
+          ? `url(${photos[2]})`
+          : "none";
+        cardRight.style.backgroundSize = photos[2] ? "cover" : "auto";
+        cardRight.style.backgroundPosition = photos[2] ? "center" : "auto";
+        cardRight.style.backgroundColor = photos[2] ? "transparent" : "#f8f8f8";
+      }
+
+      // Function to save updated profile data to MongoDB
+      async function saveProfileData(field, value) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found");
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:3000/api/profile", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ [field]: value }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to save profile data");
+          }
+
+          console.log(`Saved ${field}: ${value}`);
+        } catch (error) {
+          console.error("Error saving profile data:", error);
+        }
+      }
+
+      // Sign out functionality
+      function signOut() {
+        localStorage.removeItem("jwtToken");
+        window.location.href = "index.html";
+      }
+
+      // Enable editing for profile info fields
+      function enableEdit(button) {
+        const infoItem = button.closest(".info-item");
+        const infoLabel = infoItem.querySelector(".info-label");
+        const currentText = infoLabel.textContent;
+        const field = infoLabel.dataset.field;
+
+        // Replace text with input
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = currentText === "None" ? "" : currentText;
+        input.className = "edit-input";
+        input.style.width = "100%";
+        infoLabel.innerHTML = "";
+        infoLabel.appendChild(input);
+        input.focus();
+
+        // Change button to save icon
+        button.innerHTML = '<i class="fa-solid fa-check"></i>';
+        button.onclick = () => saveEdit(infoItem, field);
+      }
+
+      // Save edited profile info field
+      function saveEdit(infoItem, field) {
+        const infoLabel = infoItem.querySelector(".info-label");
+        const input = infoLabel.querySelector("input");
+        const newValue = input.value.trim() || "None";
+        infoLabel.textContent = newValue;
+
+        const button = infoItem.querySelector(".arrow-btn");
+        button.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        button.onclick = () => enableEdit(button);
+
+        // Save to MongoDB
+        saveProfileData(field, newValue);
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        storeToken();
+        fetchUserProfile();
+
+        // Sidebar icon hover effects
+        const icons = document.querySelectorAll(".sidebar-icon");
         icons.forEach((icon) => {
           icon.addEventListener("mouseenter", () => {
             icons.forEach((otherIcon) => {
@@ -1568,7 +2063,6 @@
               }
             });
           });
-
           icon.addEventListener("mouseleave", () => {
             icons.forEach((otherIcon) => {
               otherIcon.style.filter = "none";
@@ -1578,68 +2072,37 @@
           });
         });
 
-        // Update the email in the page title
-        const email = document
-          .querySelector(".account-info p")
-          .textContent.trim();
-        document.querySelector(".account-name").textContent = "(" + email + ")";
-      };
+        // Sign out button
+        document
+          .getElementById("signOutButton")
+          .addEventListener("click", signOut);
 
-      function enableQuoteEdit(button) {
-        const quoteBox = button.parentElement;
-        const quoteText = quoteBox.querySelector(".quote-text");
+        // Avatar upload
+        document
+          .getElementById("changeAvatarText")
+          .addEventListener("click", function () {
+            document.getElementById("avatarUpload").click();
+          });
 
-        // Create input if it doesn't exist
-        let input = quoteBox.querySelector(".quote-input");
-        if (!input) {
-          input = document.createElement("textarea");
-          input.className = "quote-input";
-          quoteBox.appendChild(input);
-
-          input.addEventListener("keydown", function (e) {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              saveQuote(quoteBox);
+        document
+          .getElementById("avatarUpload")
+          .addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = function (e) {
+                document.getElementById("accountAvatar").src = e.target.result;
+                document.getElementById("profileImage").src = e.target.result;
+                // Optionally save to backend here (POST /api/profile with photo)
+              };
+              reader.readAsDataURL(file);
             }
           });
-        }
 
-        // Fade out text and fade in input
-        quoteText.style.opacity = "0";
-        input.style.display = "block";
-        setTimeout(() => {
-          input.style.opacity = "1";
-        }, 10);
-
-        input.value =
-          quoteText.textContent === "Quotes" ? "" : quoteText.textContent;
-        input.focus();
-
-        button.innerHTML = '<i class="fa-solid fa-check"></i>';
-        button.onclick = () => saveQuote(quoteBox);
-      }
-
-      function saveQuote(quoteBox) {
-        const input = quoteBox.querySelector(".quote-input");
-        const quoteText = quoteBox.querySelector(".quote-text");
-        const button = quoteBox.querySelector(".corner-plus-btn");
-
-        // Fade out input and fade in text
-        input.style.opacity = "0";
-        setTimeout(() => {
-          input.style.display = "none";
-          quoteText.textContent = input.value.trim() || "Quotes";
-          quoteText.style.opacity = "1";
-        }, 300);
-
-        button.innerHTML = '<i class="fa-solid fa-plus"></i>';
-        button.onclick = () => enableQuoteEdit(button);
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
+        // Square box edit functionality
         const editBtn = document.getElementById("squareBoxEdit");
         const squareBox = document.querySelector(".square-box");
-        const infoValues = squareBox.querySelectorAll(".info-value"); // Only select values within square box
+        const infoValues = squareBox.querySelectorAll(".info-value");
         let isEditing = false;
 
         editBtn.addEventListener("click", function () {
@@ -1648,36 +2111,108 @@
 
           if (isEditing) {
             editBtn.textContent = "SAVE";
-            // Make only square box values editable
             infoValues.forEach((value) => {
               const currentText = value.textContent;
               const input = document.createElement("input");
               input.type = "text";
-              input.value = currentText;
+              input.value =
+                currentText === "N/A" || currentText === "None"
+                  ? ""
+                  : currentText;
               input.className = "edit-input";
               value.innerHTML = "";
               value.appendChild(input);
             });
           } else {
             editBtn.textContent = "EDIT";
-            // Save only square box values
             infoValues.forEach((value) => {
               const input = value.querySelector("input");
-              const newText = input.value;
+              const newText = input.value.trim() || "None";
               value.innerHTML = newText;
-
-              // Here you can add code to save to backend
-              console.log(`Saving ${value.dataset.field}: ${newText}`);
+              const field = value.dataset.field;
+              saveProfileData(field, newText);
             });
           }
         });
+
+        // Photo stack modal
+        document
+          .querySelector(".add-button")
+          .addEventListener("click", function () {
+            document.getElementById("photoModal").style.display = "flex";
+          });
+
+        document
+          .getElementById("closeModal")
+          .addEventListener("click", function () {
+            document.getElementById("photoModal").style.display = "none";
+          });
+
+        document
+          .getElementById("savePhotos")
+          .addEventListener("click", function () {
+            document.getElementById("photoModal").style.display = "none";
+            savePhotosToStack();
+          });
+
+        document
+          .getElementById("photoModal")
+          .addEventListener("click", function (e) {
+            if (e.target === this) {
+              this.style.display = "none";
+            }
+          });
       });
 
+      // Quote editing functionality
+      function enableQuoteEdit(button) {
+        const quoteBox = button.parentElement;
+        const quoteText = quoteBox.querySelector(".quote-text");
+        let input = quoteBox.querySelector(".quote-input");
+        if (!input) {
+          input = document.createElement("input");
+          input.type = "text";
+          input.className = "quote-input";
+          input.maxLength = 30;
+          quoteBox.appendChild(input);
+          input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              saveQuote(quoteBox);
+            }
+          });
+        }
+        quoteText.style.opacity = "0";
+        input.style.display = "block";
+        setTimeout(() => {
+          input.style.opacity = "1";
+        }, 10);
+        input.value =
+          quoteText.textContent === "Quotes" ? "" : quoteText.textContent;
+        input.focus();
+        button.innerHTML = '<i class="fa-solid fa-check"></i>';
+        button.onclick = () => saveQuote(quoteBox);
+      }
+
+      function saveQuote(quoteBox) {
+        const input = quoteBox.querySelector(".quote-input");
+        const quoteText = quoteBox.querySelector(".quote-text");
+        const button = quoteBox.querySelector(".corner-plus-btn");
+        input.style.opacity = "0";
+        setTimeout(() => {
+          input.style.display = "none";
+          quoteText.textContent = input.value.trim() || "Quotes";
+          quoteText.style.opacity = "1";
+        }, 300);
+        button.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        button.onclick = () => enableQuoteEdit(button);
+      }
+
+      // GIF upload functionality
       function triggerGifUpload(button) {
         const gifBox = button.parentElement;
         const fileInput = gifBox.querySelector(".gif-upload");
         fileInput.click();
-
         fileInput.onchange = function () {
           const file = this.files[0];
           if (file) {
@@ -1685,14 +2220,11 @@
               alert("File size too large. Please upload a smaller file.");
               return;
             }
-
             const video = gifBox.querySelector(".gif-video");
             gifBox.classList.add("loading");
             button.innerHTML = '<i class="fa-solid fa-spinner"></i>';
-
             const url = URL.createObjectURL(file);
             video.src = url;
-
             video.onloadedmetadata = function () {
               if (this.duration > 3) {
                 alert("Video must be 3 seconds or shorter");
@@ -1700,12 +2232,10 @@
                 resetGifBox(gifBox);
                 return;
               }
-
               video.hidden = false;
               gifBox.classList.remove("loading");
               gifBox.classList.add("has-video");
               video.play();
-
               button.innerHTML = '<i class="fa-solid fa-trash"></i>';
               button.onclick = () => resetGifBox(gifBox);
             };
@@ -1717,7 +2247,6 @@
         const video = gifBox.querySelector(".gif-video");
         const button = gifBox.querySelector(".corner-plus-btn");
         const fileInput = gifBox.querySelector(".gif-upload");
-
         video.hidden = true;
         video.src = "";
         gifBox.classList.remove("has-video");
@@ -1726,61 +2255,119 @@
         fileInput.value = "";
       }
 
-      function enableEdit(button) {
-        const infoItem = button.closest(".info-item");
-        const infoLabel = infoItem.querySelector(".info-label");
-        const currentText = infoLabel.textContent;
+      // Photo stack upload functionality
+      function triggerPhotoUpload(preview) {
+        const slot = preview.parentElement;
+        const fileInput = slot.querySelector(".photo-upload-input");
+        const removeButton = slot.querySelector(".remove-photo");
+        const setProfileButton = slot.querySelector(".set-profile-btn");
 
-        // Create input if it doesn't exist
-        let input = infoItem.querySelector(".edit-input");
-        if (!input) {
-          input = document.createElement("input");
-          input.type = "text";
-          input.value = currentText;
-          input.className = "edit-input";
-          input.style.border = "none"; // Prevent any border from appearing
-          input.style.outline = "none"; // Prevent outline on focus
-          infoLabel.innerHTML = ""; // Clear the label
-          infoLabel.appendChild(input);
-          input.focus();
-
-          input.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              saveEdit(infoItem);
-            }
-          });
-        }
-      }
-
-      function saveEdit(infoItem) {
-        const input = infoItem.querySelector(".edit-input");
-        const infoLabel = infoItem.querySelector(".info-label");
-
-        // Save the new value
-        const newText = input.value.trim();
-        infoLabel.innerHTML = newText || "N/A"; // Default to 'N/A' if empty
-      }
-
-      document
-        .getElementById("changeAvatarText")
-        .addEventListener("click", function () {
-          document.getElementById("avatarUpload").click(); // Trigger the file input click
-        });
-
-      document
-        .getElementById("avatarUpload")
-        .addEventListener("change", function (event) {
-          const file = event.target.files[0];
+        fileInput.click();
+        fileInput.onchange = function () {
+          const file = this.files[0];
           if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+              alert(
+                "File size too large. Please upload a file smaller than 5MB."
+              );
+              return;
+            }
             const reader = new FileReader();
             reader.onload = function (e) {
-              document.getElementById("accountAvatar").src = e.target.result; // Update the avatar image
-              localStorage.setItem("profileImage", e.target.result); // Store the image in local storage
+              const img = document.createElement("img");
+              img.src = e.target.result;
+              preview.innerHTML = "";
+              preview.appendChild(img);
+              removeButton.style.display = "block";
+              setProfileButton.style.display = "block";
+              setProfileButton.onclick = function () {
+                setProfilePicture(e.target.result);
+              };
             };
-            reader.readAsDataURL(file); // Read the file as a data URL
+            reader.readAsDataURL(file);
+            removeButton.onclick = function () {
+              removePhoto(slot);
+            };
+          }
+        };
+      }
+
+      function removePhoto(slot) {
+        const preview = slot.querySelector(".photo-preview");
+        const fileInput = slot.querySelector(".photo-upload-input");
+        const removeButton = slot.querySelector(".remove-photo");
+        const setProfileButton = slot.querySelector(".set-profile-btn");
+        preview.innerHTML = '<div class="photo-placeholder">Add Photo</div>';
+        fileInput.value = "";
+        removeButton.style.display = "none";
+        setProfileButton.style.display = "none";
+        savePhotosToStack();
+      }
+
+      function setProfilePicture(imageSrc) {
+        const profileImage = document.getElementById("profileImage");
+        const accountAvatar = document.getElementById("accountAvatar");
+        profileImage.src = imageSrc;
+        accountAvatar.src = imageSrc;
+        // Optionally save to backend here (POST /api/profile with photo)
+        alert("Profile picture updated successfully!");
+      }
+
+      async function savePhotosToStack() {
+        const slots = document.querySelectorAll(".photo-slot");
+        const uploadedImages = [];
+        slots.forEach((slot) => {
+          const img = slot.querySelector(".photo-preview img");
+          if (img) {
+            uploadedImages.push(img.src);
           }
         });
+
+        // Update card stack
+        const cardLeft = document.querySelector(".card-left");
+        const cardMiddle = document.querySelector(".card-middle");
+        const cardRight = document.querySelector(".card-right");
+
+        cardLeft.style.backgroundImage = uploadedImages[0]
+          ? `url(${uploadedImages[0]})`
+          : "none";
+        cardLeft.style.backgroundSize = uploadedImages[0] ? "cover" : "auto";
+        cardLeft.style.backgroundPosition = uploadedImages[0]
+          ? "center"
+          : "auto";
+        cardLeft.style.backgroundColor = uploadedImages[0]
+          ? "transparent"
+          : "#f8f8f8";
+
+        cardMiddle.style.backgroundImage = uploadedImages[1]
+          ? `url(${uploadedImages[1]})`
+          : "none";
+        cardMiddle.style.backgroundSize = uploadedImages[1] ? "cover" : "auto";
+        cardMiddle.style.backgroundPosition = uploadedImages[1]
+          ? "center"
+          : "auto";
+        cardMiddle.style.backgroundColor = uploadedImages[1]
+          ? "transparent"
+          : "white";
+
+        cardRight.style.backgroundImage = uploadedImages[2]
+          ? `url(${uploadedImages[2]})`
+          : "none";
+        cardRight.style.backgroundSize = uploadedImages[2] ? "cover" : "auto";
+        cardRight.style.backgroundPosition = uploadedImages[2]
+          ? "center"
+          : "auto";
+        cardRight.style.backgroundColor = uploadedImages[2]
+          ? "transparent"
+          : "#f8f8f8";
+
+        console.log("Uploaded images:", uploadedImages);
+
+        // Optionally save to MongoDB
+        if (uploadedImages.length > 0) {
+          await saveProfileData("photos", uploadedImages);
+        }
+      }
     </script>
   </body>
 </html>

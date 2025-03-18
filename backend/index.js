@@ -8,7 +8,7 @@ import session from "express-session";
 import passport from "passport";
 import fileUpload from "express-fileupload";
 import MongoStore from "connect-mongo";
-import { authRoutes } from "./routes/authRoutes.js"; // Named import
+import authRoutes from "./routes/authRoutes.js"; // Named import
 import discoveryRoutes from "./routes/discoveryRoutes.js"; // Default import
 import interactionRoutes from "./routes/interactionRoutes.js"; // Default import
 import messageRoutes from "./routes/messageRoutes.js"; // Default import
@@ -73,7 +73,9 @@ const sessionMiddleware = session({
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
 });
 
-app.use(express.json());
+// Middleware
+app.use(express.json({ limit: "50mb" })); // Increase payload size limit
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(fileUpload());
 app.use(sessionMiddleware);
 
@@ -89,7 +91,7 @@ mongoose
 
 // Routes
 app.use("/auth", authRoutes);
-app.use("/api/profile", profileRoutes);
+app.use("/api", profileRoutes); // Changed from /api/profile to /api
 app.use("/api/discover", discoveryRoutes);
 app.use("/api/interactions", interactionRoutes);
 app.use("/api/messages", messageRoutes);

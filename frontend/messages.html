@@ -11,6 +11,7 @@
     <script src="http://127.0.0.1:3000/socket.io/socket.io.js"></script>
 
     <style>
+      /* Your existing CSS remains unchanged */
       * {
         margin: 0;
         padding: 0;
@@ -82,7 +83,7 @@
         height: 100%;
         background: linear-gradient(
           to bottom,
-          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 251, 251, 0) 0%,
           rgba(255, 255, 255, 0) 20%,
           rgba(255, 255, 255, 0.8) 50%,
           rgba(255, 255, 255, 0) 80%,
@@ -206,7 +207,6 @@
 
       .dropdown-header .arrow {
         font-size: 14px;
-
         color: rgba(255, 255, 255, 0.8);
         transition: transform 0.3s ease-in-out;
       }
@@ -390,6 +390,7 @@
       .chat-header .actions {
         display: flex;
         gap: 10px;
+        position: relative; /* Ensure dropdown positions relative to this */
       }
 
       .chat-header .actions .icon {
@@ -446,6 +447,26 @@
 
       .chat-footer .send-btn:hover {
         color: #fff;
+      }
+
+      .send-btn {
+        background-color: transparent; /* Default background color */
+        border-radius: 50%; /* Makes it circular */
+        width: 35px; /* Fixed width */
+        height: 35px; /* Fixed height */
+        display: flex; /* Use flexbox to center content */
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
+        border: none; /* Remove default border (optional) */
+        cursor: pointer; /* Indicate it's clickable */
+        transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+      }
+
+      .send-btn:hover {
+        background-color: rgb(188, 188, 188); /* Lighter background on hover */
+        transform: scale(1.1); /* Slightly enlarge the button (optional) */
+        color: black;
+        transition: 0.5s;
       }
 
       /* Plus Button (Not blurred, positioned absolutely within chat-section) */
@@ -542,6 +563,103 @@
         outline: 5px solid rgba(144, 136, 136, 0.432);
         transition: 0.5s;
       }
+
+      .message {
+        max-width: 70%;
+        margin: 10px;
+        padding: 10px 15px;
+        border-radius: 15px;
+        position: relative;
+      }
+
+      .message.sent {
+        background: rgba(255, 255, 255, 0.1);
+        margin-left: auto;
+        border-bottom-right-radius: 5px;
+      }
+
+      .message.received {
+        background: rgba(255, 255, 255, 0.2);
+        margin-right: auto;
+        border-bottom-left-radius: 5px;
+      }
+
+      .message .timestamp {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.5);
+        position: absolute;
+        bottom: -15px;
+        right: 5px;
+      }
+
+      /* Chat Actions Dropdown */
+      .chat-actions-dropdown {
+        position: absolute;
+        top: 100%; /* Position below the ellipsis icon */
+        right: 0;
+        width: 150px;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden; /* Added for better control */
+        transform: translateY(10px);
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out,
+          visibility 0.3s ease-in-out;
+        z-index: 1000; /* Ensure it appears above other elements */
+      }
+
+      .chat-actions-dropdown.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .chat-actions-dropdown .action-item {
+        padding: 10px 15px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        transition: background 0.3s, color 0.3s;
+      }
+
+      .chat-actions-dropdown .action-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+      /* Style for the remove button */
+      .remove-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 16px;
+        cursor: pointer;
+        padding: 0 10px;
+        transition: color 0.3s ease;
+      }
+
+      .remove-btn:hover {
+        color: #ff4d4d; /* Red color on hover to indicate removal */
+      }
+
+      /* Ensure the name and remove button are aligned nicely */
+      .message-item.simplified {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: default; /* Remove pointer cursor since clicking the item doesn't do anything */
+      }
+
+      .message-item.simplified .name {
+        flex: 1; /* Allow the name to take up remaining space */
+      }
     </style>
   </head>
   <body>
@@ -625,8 +743,13 @@
               <div class="icon">
                 <i class="fas fa-phone"></i>
               </div>
-              <div class="icon">
+              <div class="icon actions-icon" id="actionsIcon">
                 <i class="fas fa-ellipsis-vertical"></i>
+                <div class="chat-actions-dropdown" id="chatActionsDropdown">
+                  <div class="action-item" data-action="mute">Mute</div>
+                  <div class="action-item" data-action="block">Block</div>
+                  <div class="action-item" data-action="report">Report</div>
+                </div>
               </div>
             </div>
           </div>
@@ -712,14 +835,13 @@
         const messageInput = document.querySelector(".message-input");
         const sendBtn = document.querySelector(".send-btn");
 
-        const effortsData = [
-          { name: "Effort User 1" },
-          { name: "Effort User 2" },
-        ];
-        const buddyUpData = [
-          { name: "Buddy User 1" },
-          { name: "Buddy User 2" },
-        ];
+        function getEffortsData() {
+          return JSON.parse(localStorage.getItem("efforts")) || [];
+        }
+
+        function getBuddyUpData() {
+          return JSON.parse(localStorage.getItem("buddyUp")) || [];
+        }
         const messagesData = [
           {
             matchId: "67d5827fe677150f33b2adbf", // Your latest matchId
@@ -745,10 +867,7 @@
             );
             item.textContent = option;
             dropdownMenu.appendChild(item);
-          });
-
-          const dropdownItems = document.querySelectorAll(".dropdown-item");
-          dropdownItems.forEach((item) => {
+            // Add event listener to each new dropdown item
             item.addEventListener("click", handleDropdownSelection);
           });
         }
@@ -757,44 +876,85 @@
           messageList.innerHTML = "";
           let data;
           if (selectedOption.toLowerCase() === "efforts") {
-            data = effortsData;
+            data = getEffortsData();
           } else if (selectedOption.toLowerCase() === "buddy up") {
-            data = buddyUpData;
+            data = getBuddyUpData();
           } else {
             data = messagesData;
           }
 
-          data.forEach((item) => {
+          if (data.length === 0) {
+            const noDataMessage = document.createElement("div");
+            noDataMessage.classList.add("message-item", "simplified");
+            noDataMessage.textContent = "No profiles saved yet.";
+            messageList.appendChild(noDataMessage);
+            return;
+          }
+
+          data.forEach((item, index) => {
             const messageDiv = document.createElement("div");
             if (selectedOption.toLowerCase() === "messages") {
               messageDiv.classList.add("message-item");
               messageDiv.dataset.matchId = item.matchId;
               messageDiv.innerHTML = `
-                <div class="avatar"></div>
-                <div class="details">
-                  <div class="name">${item.name}</div>
-                  <div class="snippet">${item.snippet}</div>
-                </div>
-                <div class="time">${item.time}</div>
-              `;
+        <div class="avatar"></div>
+        <div class="details">
+          <div class="name">${item.name}</div>
+          <div class="snippet">${item.snippet}</div>
+        </div>
+        <div class="time">${item.time}</div>
+      `;
             } else {
               messageDiv.classList.add("message-item", "simplified");
               messageDiv.innerHTML = `
-                <div class="name">${item.name}</div>
-              `;
+        <div class="name">${item.name}</div>
+        <button class="remove-btn" data-index="${index}" data-category="${selectedOption
+                .toLowerCase()
+                .replace(" ", "")}">✕</button>
+      `;
             }
             messageList.appendChild(messageDiv);
           });
 
+          // Add event listeners to message items after they are added to the DOM
           const messageItems = document.querySelectorAll(".message-item");
           messageItems.forEach((item) => {
-            item.addEventListener("click", () => {
+            item.addEventListener("click", (event) => {
+              // Prevent the click on the remove button from triggering the message item click
+              if (event.target.classList.contains("remove-btn")) return;
               const matchId = item.dataset.matchId;
               const name = item.querySelector(".name").textContent;
               currentMatchId = matchId;
               loadMessages(matchId, name);
             });
           });
+
+          // Add event listeners to remove buttons
+          const removeButtons = document.querySelectorAll(".remove-btn");
+          removeButtons.forEach((button) => {
+            button.addEventListener("click", (event) => {
+              event.stopPropagation(); // Prevent the click from triggering the message item click
+              const index = parseInt(button.dataset.index, 10);
+              const category = button.dataset.category;
+              removeProfile(category, index);
+              updateMessageList(selectedOption); // Refresh the list after removal
+            });
+          });
+        }
+
+        function removeProfile(category, index) {
+          // Get the existing profiles from localStorage
+          const profiles = JSON.parse(localStorage.getItem(category)) || [];
+
+          // Remove the profile at the specified index
+          if (index >= 0 && index < profiles.length) {
+            profiles.splice(index, 1);
+            // Save the updated array back to localStorage
+            localStorage.setItem(category, JSON.stringify(profiles));
+            console.log(`Profile removed from ${category} at index ${index}`);
+          } else {
+            console.error(`Invalid index ${index} for category ${category}`);
+          }
         }
 
         function handleDropdownSelection(event) {
@@ -815,11 +975,6 @@
             dropdownArrow.classList.toggle("active", !isActive);
           });
 
-          const dropdownItems = document.querySelectorAll(".dropdown-item");
-          dropdownItems.forEach((item) => {
-            item.addEventListener("click", handleDropdownSelection);
-          });
-
           document.addEventListener("click", (event) => {
             if (
               !dropdownHeader.contains(event.target) &&
@@ -831,6 +986,66 @@
           });
 
           updateMessageList("Messages");
+          updateDropdownOptions("Messages");
+        }
+
+        // Chat Actions Dropdown Functionality
+        const actionsIcon = document.getElementById("actionsIcon");
+        const chatActionsDropdown = document.getElementById(
+          "chatActionsDropdown"
+        );
+
+        if (actionsIcon && chatActionsDropdown) {
+          actionsIcon.addEventListener("click", (event) => {
+            event.stopPropagation(); // Prevent click from bubbling up
+            chatActionsDropdown.classList.toggle("active");
+          });
+
+          // Handle action item clicks
+          const actionItems = document.querySelectorAll(".action-item");
+          actionItems.forEach((item) => {
+            item.addEventListener("click", (event) => {
+              event.stopPropagation(); // Prevent click from closing dropdown prematurely
+              const action = item.getAttribute("data-action");
+              handleChatAction(action);
+              chatActionsDropdown.classList.remove("active");
+            });
+          });
+
+          // Close dropdown when clicking outside
+          document.addEventListener("click", (event) => {
+            if (
+              !actionsIcon.contains(event.target) &&
+              !chatActionsDropdown.contains(event.target)
+            ) {
+              chatActionsDropdown.classList.remove("active");
+            }
+          });
+        } else {
+          console.error("Chat actions elements not found:", {
+            actionsIcon,
+            chatActionsDropdown,
+          });
+        }
+
+        // Handle chat actions
+        function handleChatAction(action) {
+          switch (action) {
+            case "mute":
+              alert("User muted");
+              // Add your mute logic here
+              break;
+            case "block":
+              alert("User blocked");
+              // Add your block logic here
+              break;
+            case "report":
+              alert("User reported");
+              // Add your report logic here
+              break;
+            default:
+              console.log("Unknown action:", action);
+          }
         }
 
         // Fetch and display messages for a match
@@ -852,9 +1067,7 @@
             chatBody.innerHTML = "";
 
             messages.forEach((msg) => {
-              const messageDiv = document.createElement("div");
-              messageDiv.textContent = `${msg.senderId}: ${msg.message}`;
-              chatBody.appendChild(messageDiv);
+              appendMessage(msg);
             });
 
             chatHeaderName.textContent = name;
@@ -864,7 +1077,6 @@
           }
         }
 
-        // Send a new message
         async function sendMessage() {
           const content = messageInput.value.trim();
           if (!content || !currentMatchId) return;
@@ -887,45 +1099,68 @@
             }
 
             const newMessage = await response.json();
-            const messageDiv = document.createElement("div");
-            messageDiv.textContent = `${newMessage.senderId}: ${newMessage.message}`;
-            chatBody.appendChild(messageDiv);
+            appendMessage(newMessage);
             messageInput.value = "";
           } catch (error) {
             console.error("Error sending message:", error);
-            chatBody.innerHTML += "<p>Error sending message</p>";
+            alert("Failed to send message");
           }
         }
 
+        // Keep only one set of event listeners
         sendBtn.addEventListener("click", sendMessage);
         messageInput.addEventListener("keypress", (e) => {
           if (e.key === "Enter") sendMessage();
         });
 
-        // Connect to the Socket.IO server
+        // Update the Socket.IO connection setup
         const socket = io("http://127.0.0.1:3000", {
-          withCredentials: true, // Include credentials for CORS
+          withCredentials: true,
+          auth: {
+            userId: JSON.parse(localStorage.getItem("user"))?._id,
+          },
         });
 
-        // Log when connected
+        socket.on("new-message", (message) => {
+          if (message.matchId === currentMatchId) {
+            appendMessage(message);
+          }
+        });
+
         socket.on("connect", () => {
           console.log("Connected to Socket.IO server!");
         });
 
-        // Log when disconnected
         socket.on("disconnect", () => {
           console.log("Disconnected from Socket.IO server!");
         });
 
-        // Handle connection errors (e.g., unauthorized)
         socket.on("connect_error", (error) => {
           console.log("Connection error:", error.message);
           if (error.message === "Unauthorized") {
             console.log("You need to log in to use the chat!");
-            // Optionally, redirect to login page
-            // window.location.href = "http://127.0.0.1:5500/login.html";
           }
         });
+
+        // Add this function to append messages
+        function appendMessage(message) {
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add("message");
+          messageDiv.classList.add(
+            message.senderId._id ===
+              JSON.parse(localStorage.getItem("user"))?._id
+              ? "sent"
+              : "received"
+          );
+          messageDiv.innerHTML = `
+            <p>${message.content}</p>
+            <span class="timestamp">${new Date(
+              message.createdAt
+            ).toLocaleTimeString()}</span>
+          `;
+          chatBody.appendChild(messageDiv);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }
       });
     </script>
   </body>

@@ -34,6 +34,8 @@ const userSchema = new mongoose.Schema({
   profileVisibility: { type: String },
   dataConsent: { type: Boolean },
   photos: { type: [String], default: [] },
+  quotes: { type: [String], default: ["", "", ""] },
+  gif: { type: String, default: "" }, // Store GIF as Base64 string
 });
 
 const User = mongoose.model("User", userSchema);

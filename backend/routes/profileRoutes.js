@@ -45,28 +45,34 @@ router.post("/profile", authenticateToken, async (req, res) => {
       profileVisibility,
       dataConsent,
       photos,
+      quotes, // Added quotes
     } = req.body;
 
-    user.firstName = firstName;
-    user.email = email;
-    user.birthday = birthday;
-    user.gender = gender;
-    user.interestedIn = interestedIn;
-    user.relationshipIntent = relationshipIntent;
-    user.bio = bio;
-    user.year = year;
-    user.loveLanguages = loveLanguages;
-    user.dealBreakers = dealBreakers;
-    user.hobbies = hobbies;
-    user.activities = activities;
-    user.preferences = preferences;
-    user.electives = electives;
-    user.campusInvolvement = campusInvolvement;
-    user.favoriteSpot = favoriteSpot;
-    user.courseStudy = courseStudy;
-    user.profileVisibility = profileVisibility;
-    user.dataConsent = dataConsent;
-    user.photos = photos;
+    // Update fields only if they’re provided in the request
+    if (firstName !== undefined) user.firstName = firstName;
+    if (email !== undefined) user.email = email;
+    if (birthday !== undefined) user.birthday = birthday;
+    if (gender !== undefined) user.gender = gender;
+    if (interestedIn !== undefined) user.interestedIn = interestedIn;
+    if (relationshipIntent !== undefined)
+      user.relationshipIntent = relationshipIntent;
+    if (bio !== undefined) user.bio = bio;
+    if (year !== undefined) user.year = year;
+    if (loveLanguages !== undefined) user.loveLanguages = loveLanguages;
+    if (dealBreakers !== undefined) user.dealBreakers = dealBreakers;
+    if (hobbies !== undefined) user.hobbies = hobbies;
+    if (activities !== undefined) user.activities = activities;
+    if (preferences !== undefined) user.preferences = preferences;
+    if (electives !== undefined) user.electives = electives;
+    if (campusInvolvement !== undefined)
+      user.campusInvolvement = campusInvolvement;
+    if (favoriteSpot !== undefined) user.favoriteSpot = favoriteSpot;
+    if (courseStudy !== undefined) user.courseStudy = courseStudy;
+    if (profileVisibility !== undefined)
+      user.profileVisibility = profileVisibility;
+    if (dataConsent !== undefined) user.dataConsent = dataConsent;
+    if (photos !== undefined) user.photos = photos;
+    if (quotes !== undefined) user.quotes = quotes; // Added quotes update
     user.profileCompleted = true;
 
     await user.save();
@@ -78,16 +84,41 @@ router.post("/profile", authenticateToken, async (req, res) => {
 });
 
 // GET /api/profile - Fetch authenticated user's profile (existing route)
+// POST /api/profile
+router.post("/profile", authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.user.id });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { quotes /* other fields */ } = req.body;
+    console.log("POST - User ID:", req.user.id, "Quotes to save:", quotes); // Add this
+    if (quotes !== undefined) user.quotes = quotes;
+    // ... other fields ...
+    user.profileCompleted = true;
+
+    await user.save();
+    console.log("POST - Saved user:", user); // Add this
+    res.status(200).json({ message: "Profile updated successfully" });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// GET /api/profile
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id }).select(
-      "firstName birthday year photos email"
+      "firstName birthday year photos email quotes"
     );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Calculate age from birthday
+    console.log("GET - User ID:", req.user.id, "Raw user data:", user); // Add this
+
     const today = new Date();
     const birthDate = new Date(
       `${user.birthday.year}-${user.birthday.month}-${user.birthday.day}`
@@ -101,13 +132,16 @@ router.get("/profile", authenticateToken, async (req, res) => {
       age--;
     }
 
-    res.status(200).json({
+    const responseData = {
       firstName: user.firstName,
       age: age,
       year: user.year,
       email: user.email,
       photos: user.photos || [],
-    });
+      quotes: user.quotes,
+    };
+    console.log("Sending profile data:", responseData);
+    res.status(200).json(responseData);
   } catch (error) {
     console.error("Error fetching profile:", error);
     res.status(500).json({ message: "Server error", error: error.message });

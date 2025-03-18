@@ -1819,17 +1819,17 @@
             },
           });
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to fetch profile");
-          }
-
           const userData = await response.json();
           console.log("Fetched user profile:", userData);
+          console.log("Quotes specifically:", userData.quotes); // Add this
+          if (!response.ok) {
+            throw new Error(userData.message || "Failed to fetch profile");
+          }
+
           updateProfileUI(userData);
         } catch (error) {
           console.error("Error fetching profile:", error);
-          window.location.href = "login.html"; // Redirect to login on error
+          window.location.href = "login.html";
         }
       }
 
@@ -1848,36 +1848,8 @@
         const heightValue = document.querySelector(
           ".info-value[data-field='height']"
         );
-        const profileName = document.querySelector(
-          ".info-label[data-field='name']"
-        );
-        const jobValue = document.querySelector(
-          ".info-label[data-field='job']"
-        );
-        const planToValue = document.querySelector(
-          ".info-label[data-field='planTo']"
-        );
-        const hometownValue = document.querySelector(
-          ".info-label[data-field='hometown']"
-        );
-        const datingIntentionValue = document.querySelector(
-          ".info-label[data-field='datingIntention']"
-        );
-        const petsValue = document.querySelector(
-          ".info-label[data-field='pets']"
-        );
-        const languageValue = document.querySelector(
-          ".info-label[data-field='language']"
-        );
-        const drinkingValue = document.querySelector(
-          ".info-label[data-field='drinking']"
-        );
-        const smokingValue = document.querySelector(
-          ".info-label[data-field='smoking']"
-        );
-        const partyPersonValue = document.querySelector(
-          ".info-label[data-field='partyPerson']"
-        );
+
+        console.log("Updating UI with quotes:", userData.quotes); // Log quotes specifically
 
         // Update profile image and avatar
         if (userData.photos && userData.photos.length > 0) {
@@ -1888,14 +1860,8 @@
           accountAvatar.src = "default-profile.jpg";
         }
 
-        // Update name
+        // Update name and email
         accountName.textContent = userData.firstName || "Unknown";
-        profileName.textContent = userData.firstName || "Unknown";
-
-        // Update email with debugging
-        console.log("Email from userData:", userData.email);
-        console.log("accountEmail element:", accountEmail);
-        console.log("pageTitleEmail element:", pageTitleEmail);
         accountEmail.textContent = userData.email || "your.email@example.com";
         pageTitleEmail.textContent = `(${
           userData.email || "your.email@example.com"
@@ -1904,18 +1870,18 @@
         // Update square box fields
         ageValue.textContent = userData.age || "N/A";
         yearValue.textContent = userData.year || "N/A";
-        heightValue.textContent = userData.height || "None";
+        heightValue.textContent = "None";
 
-        // Update profile info fields (default to "None" if not provided)
-        jobValue.textContent = userData.job || "None";
-        planToValue.textContent = userData.planTo || "None";
-        hometownValue.textContent = userData.hometown || "None";
-        datingIntentionValue.textContent = userData.datingIntention || "None";
-        petsValue.textContent = userData.pets || "None";
-        languageValue.textContent = userData.language || "None";
-        drinkingValue.textContent = userData.drinking || "None";
-        smokingValue.textContent = userData.smoking || "None";
-        partyPersonValue.textContent = userData.partyPerson || "None";
+        // Update quotesx
+        const quoteBoxes = document.querySelectorAll(".quote-box");
+        console.log("Number of quote boxes found:", quoteBoxes.length); // Check if boxes are found
+        userData.quotes.forEach((quote, index) => {
+          if (quoteBoxes[index]) {
+            const quoteText = quoteBoxes[index].querySelector(".quote-text");
+            console.log(`Setting quote ${index}:`, quote); // Log each quote being set
+            quoteText.textContent = quote || "Quotes";
+          }
+        });
 
         // Populate photos in modal and card stack
         populatePhotos(userData.photos || []);
@@ -2008,7 +1974,6 @@
         }
       }
 
-      // Sign out functionality
       // Sign out functionality
       document
         .getElementById("signOutButton")
@@ -2284,18 +2249,67 @@
         button.onclick = () => saveQuote(quoteBox);
       }
 
-      function saveQuote(quoteBox) {
+      async function saveQuote(quoteBox) {
         const input = quoteBox.querySelector(".quote-input");
         const quoteText = quoteBox.querySelector(".quote-text");
         const button = quoteBox.querySelector(".corner-plus-btn");
+
+        console.log("Input value:", input.value); // Should show "hi"
+
+        // Update the UI and collect quotes after the update
         input.style.opacity = "0";
-        setTimeout(() => {
-          input.style.display = "none";
-          quoteText.textContent = input.value.trim() || "Quotes";
-          quoteText.style.opacity = "1";
-        }, 300);
+        await new Promise((resolve) => {
+          setTimeout(() => {
+            input.style.display = "none";
+            quoteText.textContent = input.value.trim() || "Quotes";
+            quoteText.style.opacity = "1";
+
+            // Collect all quotes from the page *after* UI update
+            const allQuoteBoxes = document.querySelectorAll(".quote-box");
+            const quotes = Array.from(allQuoteBoxes).map((box) => {
+              const text = box.querySelector(".quote-text").textContent;
+              return text === "Quotes" ? "" : text;
+            });
+
+            console.log("Quotes array to send:", quotes); // Should now show ["hi", "", ""]
+
+            // Send quotes to the backend
+            saveQuotesToProfile(quotes).then(resolve); // Chain the promise
+          }, 300);
+        });
+
+        // Reset button after everything
         button.innerHTML = '<i class="fa-solid fa-plus"></i>';
         button.onclick = () => enableQuoteEdit(button);
+      }
+
+      // New function to send quotes to the server
+      async function saveQuotesToProfile(quotes) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found");
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:3000/api/profile", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ quotes: quotes }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to save quotes");
+          }
+
+          console.log("Quotes saved successfully:", quotes);
+        } catch (error) {
+          console.error("Error saving quotes:", error);
+        }
       }
 
       // GIF upload functionality

@@ -1264,7 +1264,7 @@
           }
 
           const profiles = await response.json();
-          console.log("Fetched profiles:", profiles);
+          console.log("Raw profiles from /api/profiles:", profiles); // Add this
           return profiles;
         } catch (error) {
           console.error("Error fetching profiles:", error);
@@ -1792,13 +1792,47 @@
               console.error("No profile selected to save under Buddy Up.");
             }
           });
-      });
+        document
+          .querySelector('button[title="Save"]')
+          .addEventListener("click", async function () {
+            this.classList.toggle("saved");
+            const currentProfile = profiles[currentProfileIndex];
+            console.log("Profile to save:", currentProfile);
 
-      document
-        .querySelector('button[title="Save"]')
-        .addEventListener("click", function () {
-          this.classList.toggle("saved");
-        });
+            const token = localStorage.getItem("jwtToken");
+            if (!token) {
+              console.error("No JWT token found");
+              alert("Please log in to save profiles!");
+              return;
+            }
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/save-profile",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ profileId: currentProfile._id }), // Use _id here
+                }
+              );
+
+              const result = await response.json();
+              if (response.ok) {
+                console.log("Save successful:", result);
+                alert("Profile saved successfully!");
+              } else {
+                console.error("Save failed:", result);
+                alert("Failed to save profile: " + result.message);
+              }
+            } catch (error) {
+              console.error("Error saving profile:", error);
+              alert("An error occurred while saving the profile.");
+            }
+          });
+      });
 
       document
         .querySelector(".buddy-button")

@@ -162,7 +162,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "No profiles found" });
     }
 
-    const formattedProfiles = profiles.map((profile, index) => {
+    const formattedProfiles = profiles.map((profile) => {
       const today = new Date();
       const birthDate = new Date(
         `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
@@ -177,7 +177,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
       }
 
       return {
-        id: index + 1,
+        _id: profile._id, // Use the MongoDB _id
         name: profile.firstName,
         age: age || "N/A",
         hometown: "N/A",
@@ -190,15 +190,56 @@ router.get("/profiles", authenticateToken, async (req, res) => {
             : "https://via.placeholder.com/200",
         interests: profile.interestedIn ? [profile.interestedIn] : [],
         hobbies: profile.hobbies ? [profile.hobbies] : [],
-        favoriteQuote: profile.quotes?.[0] || "N/A", // Use first quote as favoriteQuote
+        favoriteQuote: profile.quotes?.[0] || "N/A",
         additionalInfo: "N/A",
-        quotes: profile.quotes || [], // Include all quotes here
+        quotes: profile.quotes || [],
       };
     });
 
     res.status(200).json(formattedProfiles);
   } catch (error) {
     console.error("Error fetching profiles:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// POST /api/save-profile - Save a profile
+router.post("/save-profile", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // The authenticated user's ID from JWT
+    const { profileId } = req.body; // The ID of the profile to save
+
+    if (!profileId) {
+      return res.status(400).json({ message: "Profile ID is required" });
+    }
+
+    // Find the authenticated user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the profile exists
+    const profileToSave = await User.findById(profileId);
+    if (!profileToSave) {
+      return res.status(404).json({ message: "Profile to save not found" });
+    }
+
+    // Check if the profile is already saved (avoid duplicates)
+    const isAlreadySaved = user.savedProfiles.some(
+      (saved) => saved.profileId.toString() === profileId
+    );
+    if (isAlreadySaved) {
+      return res.status(400).json({ message: "Profile already saved" });
+    }
+
+    // Add the profile to savedProfiles
+    user.savedProfiles.push({ profileId });
+    await user.save();
+
+    res.status(200).json({ message: "Profile saved successfully" });
+  } catch (error) {
+    console.error("Error saving profile:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });

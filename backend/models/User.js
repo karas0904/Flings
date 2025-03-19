@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema({
   photos: { type: [String], default: [] },
   quotes: { type: [String], default: ["", "", ""] },
   gif: { type: String, default: "" }, // Store GIF as Base64 string
+  savedProfiles: [
+    {
+      profileId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Reference to another User
+      saveDate: { type: Date, default: Date.now },
+    },
+  ],
 });
 
 const User = mongoose.model("User", userSchema);

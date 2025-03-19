@@ -155,16 +155,14 @@ router.get("/profiles", authenticateToken, async (req, res) => {
   try {
     // Fetch profiles where profileCompleted is true
     const profiles = await User.find({ profileCompleted: true }).select(
-      "firstName photos bio courseStudy hobbies gender interestedIn birthday year" // Changed 'photo' to 'photos'
+      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes" // Add 'quotes' here
     );
 
     if (!profiles || profiles.length === 0) {
       return res.status(404).json({ message: "No profiles found" });
     }
 
-    // Map the data to match the structure your frontend expects
     const formattedProfiles = profiles.map((profile, index) => {
-      // Calculate age from birthday
       const today = new Date();
       const birthDate = new Date(
         `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
@@ -179,21 +177,22 @@ router.get("/profiles", authenticateToken, async (req, res) => {
       }
 
       return {
-        id: index + 1, // Temporary ID for frontend (you can use _id if preferred)
+        id: index + 1,
         name: profile.firstName,
         age: age || "N/A",
-        hometown: "N/A", // Add this if you store it in the schema
+        hometown: "N/A",
         year: profile.year || "N/A",
         department: profile.courseStudy || "N/A",
         bio: profile.bio || "No bio provided",
         image:
           profile.photos && profile.photos.length > 0
             ? profile.photos[0]
-            : "https://via.placeholder.com/200", // Use the first photo from photos array
+            : "https://via.placeholder.com/200",
         interests: profile.interestedIn ? [profile.interestedIn] : [],
         hobbies: profile.hobbies ? [profile.hobbies] : [],
-        favoriteQuote: "N/A", // Add this if you store it in the schema
-        additionalInfo: "N/A", // Add this if you store it in the schema
+        favoriteQuote: profile.quotes?.[0] || "N/A", // Use first quote as favoriteQuote
+        additionalInfo: "N/A",
+        quotes: profile.quotes || [], // Include all quotes here
       };
     });
 

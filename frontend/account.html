@@ -63,7 +63,17 @@
         top: 20px;
         left: 80px; /* Positioned to the right of the sidebar */
         color: white;
+        right: 20px;
+        justify-content: space-between;
         z-index: 99;
+        display: flex; /* Flexbox for horizontal alignment */
+        align-items: flex-start; /* Aligns items at the top */
+        gap: 20px; /* Space between text-container and bell */
+      }
+
+      .page-title .text-container {
+        display: flex;
+        flex-direction: column; /* Stacks h1 and account-name vertically */
       }
 
       .page-title h1 {
@@ -77,6 +87,10 @@
         font-size: 12px;
         color: #ccc;
         margin-top: 5px;
+      }
+
+      .fa-bell {
+        font-size: 25px; /* Adjust bell icon size */
       }
 
       /* Sidebar (left fixed sidebar) */
@@ -1368,8 +1382,11 @@
 
     <!-- Page title in top left -->
     <div class="page-title">
-      <h1>ACCOUNT</h1>
-      <div class="account-name"></div>
+      <div class="text-container">
+        <h1>ACCOUNT</h1>
+        <div class="account-name"></div>
+      </div>
+      <i class="fa fa-bell"></i>
     </div>
 
     <!-- Sidebar (left fixed sidebar) -->

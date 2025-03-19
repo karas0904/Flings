@@ -356,7 +356,7 @@
               console.log("Profile submitted successfully to backend");
               localStorage.removeItem("profileData");
               localStorage.removeItem("profilePhotos");
-              window.location.href = "explore.html";
+              window.location.href = "account.html";
             } else {
               const errorData = await response.json();
               console.error("Submission error:", errorData);

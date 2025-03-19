@@ -136,7 +136,7 @@
       }
 
       .profile-info {
-        padding: 35px 10px;
+        padding: 25px 5px;
         text-align: left;
         z-index: 2;
         margin-bottom: 60px;
@@ -168,7 +168,6 @@
       .profile-info p {
         margin: 0;
         font-size: 13px;
-        padding-top: 0;
         padding-left: 10px;
         color: #ffffff;
       }
@@ -275,7 +274,7 @@
       .detail-section img {
         display: block;
         width: 90%;
-        border-radius: 10px;
+        border-radius: 10px 10px 0px 0px;
         height: auto;
         margin: 0 auto;
         max-width: 360px;
@@ -295,12 +294,19 @@
       }
 
       .detail-section .placeholder {
-        text-align: center;
-        color: #888;
         font-style: italic;
-        background: #f0f0f0;
-        padding: 15px;
+        color: #444;
+        text-align: center;
+        padding: 10px 70px;
+        background: #e6e6e662;
+        height: 150px;
+        width: auto; /* Automatically adjusts the width to content */
+        max-width: 90%; /* Optional: limits the width of the box */
         border-radius: 10px;
+        display: flex;
+        align-items: center; /* Vertically center the text */
+        justify-content: center; /* Horizontally center the text */
+        margin: 0 auto; /* Horizontally center the box within its container */
       }
 
       .detail-section p {
@@ -314,9 +320,16 @@
         font-style: italic;
         color: #444;
         text-align: center;
-        padding: 10px;
-        background: #f9f9f9;
-        border-radius: 5px;
+        padding: 10px 70px;
+        background: #e6e6e662;
+        height: 200px;
+        width: auto; /* Automatically adjusts the width to content */
+        max-width: 90%; /* Optional: limits the width of the box */
+        border-radius: 10px;
+        display: flex;
+        align-items: center; /* Vertically center the text */
+        justify-content: center; /* Horizontally center the text */
+        margin: 0 auto; /* Horizontally center the box within its container */
       }
 
       /* Adjust the details section to be smaller and stick below the image */
@@ -331,26 +344,30 @@
       .scroll-container {
         overflow-x: auto;
         white-space: nowrap;
-        padding: 10px;
-        height: 30px;
+        border-radius: 0px 0px 10px 10px;
+        padding: 15px; /* Increased padding around the container */
+        height: 50px; /* Increased height of the container */
+        max-width: 90%; /* Optional: limits the width of the box */
+        max-height: 50px; /* Increased max-height to match new height */
         -webkit-overflow-scrolling: touch;
-        padding-bottom: 5px;
-        width: 100%; /* Full width of the container */
-        max-height: 30px; /* Reduce height to make it smaller */
+        background-color: #d5d5d56d;
+        display: flex;
+        margin-top: -1.4% !important;
+        align-items: center; /* Vertically center the text */
+        margin: 0 auto; /* Horizontally center the box within its container */
       }
 
       .scroll-container::-webkit-scrollbar {
         display: none; /* Chrome, Safari, and Opera */
       }
 
-      /* Make the text smaller and inline */
       .scroll-container p {
         display: inline;
         font-size: 18px; /* Smaller font size */
         color: #555;
-        padding: 0 10px;
+        padding: 0 20px; /* Adjusted horizontal padding */
         margin: 0;
-        line-height: 20px; /* Adjust line height to fit container */
+        line-height: 30px; /* Increased line height for better spacing */
       }
 
       /* Ensure the image section doesn’t interfere */
@@ -377,16 +394,14 @@
       .heart-button {
         width: 50px;
         height: 50px;
-        background: #ffd1d1;
+        background: #fd9999; /* Light pink */
         border: none;
         border-radius: 50%;
         cursor: pointer;
-        font-size: 24px;
-        color: white;
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: transform 0.3s ease, color 0.3s ease;
+        transition: transform 0.3s ease, background 0.3s ease; /* Added background transition */
       }
 
       .heart-button:hover {
@@ -396,7 +411,24 @@
       }
 
       .heart-button.active {
-        color: #ff4d4d;
+        background: rgba(
+          255,
+          58,
+          94,
+          0.8
+        ); /* Change background to red when active */
+      }
+
+      .heart-icon {
+        width: 24px;
+        height: 24px;
+        filter: brightness(0) invert(1); /* Make SVG white by default */
+        transition: filter 0.3s ease; /* Smooth color transition */
+      }
+
+      .heart-button.active .heart-icon {
+        filter: brightness(100%) saturate(100%) invert(100%) sepia(100%)
+          hue-rotate(0deg); /* Red when active */
       }
 
       .no-named-button {
@@ -860,7 +892,7 @@
       }
 
       .rose-button {
-        background: rgba(255, 119, 144, 0.8);
+        background: rgba(255, 58, 94, 0.8) !important;
         border: none;
         border-radius: 50%;
         width: 50px;
@@ -1065,7 +1097,7 @@
             </div>
           </div>
           <div class="detail-section" id="gifSection">
-            <p class="placeholder">
+            <p class="placeholder" id="gif1">
               [GIF Placeholder - Add GIF URL in profile data]
             </p>
           </div>
@@ -1413,7 +1445,15 @@
 
             const heartButton = document.createElement("button");
             heartButton.classList.add("heart-button");
-            heartButton.innerHTML = '<i class="fa-solid fa-heart"></i>';
+            const heartIcon = document.createElement("img");
+            heartIcon.src = "heart-icon.svg"; // Ensure correct path
+            heartIcon.alt = "Heart Icon";
+            heartIcon.classList.add("heart-icon");
+            heartIcon.onerror = () => {
+              console.error("Failed to load heart-icon.svg, using fallback");
+              heartButton.innerHTML = '<i class="fa-solid fa-heart"></i>'; // Fallback
+            };
+            heartButton.appendChild(heartIcon);
 
             buttonContainer.appendChild(noNamedButton);
             buttonContainer.appendChild(commentInbox);
@@ -1569,6 +1609,7 @@
           const profileImage = document.getElementById("profileImage");
           const profileDetails = document.getElementById("profileDetails");
           const quote1 = document.getElementById("quote1");
+          const quote2Section = document.getElementById("quote2Section");
 
           profileList.classList.add("blur");
 
@@ -1580,9 +1621,27 @@
           }, ${profile.year || "N/A"}, ${profile.department || "CSE"}, ${
             profile.hometown || "N/A"
           }, Enjoys long walks on the beach, Passionate about technology and innovation, Favorite book is 'The Alchemist', Loves coffee and rainy days, Aspires to travel the world`;
-          quote1.innerHTML = `<strong>Quote 1:</strong> "${
-            profile.favoriteQuote || "No quote available"
-          }"`;
+
+          // Display quotes if they exist
+          if (profile.quotes && profile.quotes.length > 0) {
+            quote1.innerHTML = `<strong></strong> "${
+              profile.quotes[0] || "No quote available"
+            }"`;
+            if (profile.quotes.length > 1) {
+              quote2Section.querySelector(
+                ".quote"
+              ).innerHTML = `<strong>Quote 2:</strong> "${profile.quotes[1]}"`;
+            } else {
+              quote2Section.querySelector(
+                ".quote"
+              ).innerHTML = `<strong></strong> "No second quote available"`;
+            }
+          } else {
+            quote1.innerHTML = `<strong></strong> "No quotes available"`;
+            quote2Section.querySelector(
+              ".quote"
+            ).innerHTML = `<strong>Quote 2:</strong> "No quotes available"`;
+          }
 
           profileDetailsBox.classList.add("active");
         }

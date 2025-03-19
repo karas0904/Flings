@@ -118,8 +118,8 @@
         height: 100%;
         background-image: linear-gradient(
           to top,
-          rgba(0, 0, 0, 0.8) 0%,
-          rgba(0, 0, 0, 0.9) 35%,
+          rgba(0, 0, 0, 8) 0%,
+          rgba(0, 0, 0, 0.9) 25%,
           transparent 90%
         );
         z-index: 1;
@@ -188,7 +188,7 @@
         padding: 0;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.7s ease-in-out, visibility 0.7s ease-in-out;
+        transition: opacity 0.7s ease-in-out, visibility 0s linear 0.7s;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
       }
@@ -196,6 +196,7 @@
       .profile-details-box.active {
         opacity: 1;
         visibility: visible;
+        transition: opacity 0.7s ease-in-out, visibility 0s linear 0s;
       }
 
       .detail-header {
@@ -297,6 +298,7 @@
         font-style: italic;
         color: #444;
         text-align: center;
+        box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.243);
         padding: 10px 70px;
         background: #e6e6e662;
         height: 150px;
@@ -322,6 +324,7 @@
         text-align: center;
         padding: 10px 70px;
         background: #e6e6e662;
+        box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.243);
         height: 200px;
         width: auto; /* Automatically adjusts the width to content */
         max-width: 90%; /* Optional: limits the width of the box */
@@ -330,6 +333,46 @@
         align-items: center; /* Vertically center the text */
         justify-content: center; /* Horizontally center the text */
         margin: 0 auto; /* Horizontally center the box within its container */
+      }
+
+      .detail-heart-button {
+        position: absolute;
+        bottom: 20px; /* Adjusted to be at the bottom-right of the image */
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        background: #fd9999; /* Light pink */
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0px 7px 20px #000000a4;
+        transition: transform 0.3s ease, background 0.3s ease;
+        z-index: 10; /* Ensure it stays above the image */
+      }
+
+      .detail-heart-button:hover {
+        width: 55px;
+        height: 55px;
+        transition: 0.3s;
+      }
+
+      .detail-heart-button.active {
+        background: rgba(255, 58, 94, 0.8); /* Red when active */
+      }
+
+      .detail-heart-button .heart-icon {
+        width: 24px;
+        height: 24px;
+        filter: brightness(0) invert(1); /* White by default */
+        transition: filter 0.3s ease;
+      }
+
+      .detail-heart-button.active .heart-icon {
+        filter: brightness(100%) saturate(100%) invert(100%) sepia(100%)
+          hue-rotate(0deg); /* Red when active */
       }
 
       /* Adjust the details section to be smaller and stick below the image */
@@ -345,20 +388,42 @@
         overflow-x: auto;
         white-space: nowrap;
         border-radius: 0px 0px 10px 10px;
-        padding: 15px; /* Increased padding around the container */
-        height: 50px; /* Increased height of the container */
-        max-width: 90%; /* Optional: limits the width of the box */
-        max-height: 50px; /* Increased max-height to match new height */
+        padding: 15px;
+        height: 50px;
+        max-width: 90%;
+        max-height: 50px;
         -webkit-overflow-scrolling: touch;
         background-color: #d5d5d56d;
         display: flex;
+        align-items: center;
         margin-top: -1.4% !important;
-        align-items: center; /* Vertically center the text */
-        margin: 0 auto; /* Horizontally center the box within its container */
+        margin: 0 auto;
       }
 
       .scroll-container::-webkit-scrollbar {
         display: none; /* Chrome, Safari, and Opera */
+      }
+
+      .scroll-container .scroll-item {
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+        color: #555;
+        margin: 0;
+        padding: 0 15px; /* Increased padding for good gap between items */
+      }
+
+      .scroll-container .scroll-item i {
+        margin-right: 12px; /* Space between icon and text */
+        font-size: 12px;
+        margin-left: 5px;
+        color: #333;
+      }
+
+      .scroll-container .scroll-item:not(:last-child)::after {
+        content: "|";
+        margin-left: 30px; /* Space after the vertical bar */
+        color: #888;
       }
 
       .scroll-container p {
@@ -372,6 +437,7 @@
 
       /* Ensure the image section doesn’t interfere */
       #imageSection {
+        position: relative;
         margin-bottom: 0; /* Remove bottom margin to connect with details */
       }
 
@@ -1084,16 +1150,13 @@
         <div class="profile-details-content" id="profileDetailsContent">
           <div class="detail-section" id="imageSection">
             <img id="profileImage" alt="Profile Image" />
+            <button class="heart-button detail-heart-button">
+              <img src="heart-icon.svg" alt="Heart Icon" class="heart-icon" />
+            </button>
           </div>
           <div class="detail-section" id="detailsSection">
-            <div class="scroll-container">
-              <p id="profileDetails">
-                <!-- Initial content will be overwritten by JS, but adding this for testing -->
-                25, Reading, Hiking, Coding, Swimming, Traveling, Photography,
-                Gaming, Cooking, Music, 4th Year, CSE, New York, Loves exploring
-                new places and trying out exotic cuisines from around the world,
-                Enjoys late-night coding sessions and weekend adventures
-              </p>
+            <div class="scroll-container" id="scrollContainer">
+              <!-- Content will be dynamically added via JS -->
             </div>
           </div>
           <div class="detail-section" id="gifSection">
@@ -1111,7 +1174,7 @@
           </div>
           <div class="detail-section" id="quote2Section">
             <p class="quote placeholder">
-              <strong>Quote 2:</strong> "[Add second quote in profile data]"
+              <strong></strong> "[Add second quote in profile data]"
             </p>
           </div>
         </div>
@@ -1607,7 +1670,7 @@
             document.getElementById("profileDetailsBox");
           const profileName = document.getElementById("profileName");
           const profileImage = document.getElementById("profileImage");
-          const profileDetails = document.getElementById("profileDetails");
+          const scrollContainer = document.getElementById("scrollContainer");
           const quote1 = document.getElementById("quote1");
           const quote2Section = document.getElementById("quote2Section");
 
@@ -1616,11 +1679,32 @@
           profileName.textContent = profile.name;
           profileImage.src = profile.image;
           profileImage.alt = `${profile.name}'s image 1`;
-          profileDetails.textContent = `${profile.age || "N/A"}, ${
-            profile.hobbies ? profile.hobbies.join(", ") : "N/A"
-          }, ${profile.year || "N/A"}, ${profile.department || "CSE"}, ${
-            profile.hometown || "N/A"
-          }, Enjoys long walks on the beach, Passionate about technology and innovation, Favorite book is 'The Alchemist', Loves coffee and rainy days, Aspires to travel the world`;
+
+          // Clear existing content in scroll container
+          scrollContainer.innerHTML = "";
+
+          // Define the items with icons (using Font Awesome icons as an example)
+          const details = [
+            { icon: "fa-regular fa-user", text: profile.age || "N/A" }, // Age (already working)
+            {
+              icon: "fa-solid fa-graduation-cap",
+              text: profile.year || "N/A",
+            }, // Year (should work, but confirm)
+            {
+              icon: "fa-solid fa-book-open",
+              text: profile.department || "N/A",
+            }, // Course of Study (changed from fa-book)
+            { icon: "fa-solid fa-ruler", text: profile.height || "N/A" }, // Height (changed from fa-ruler-vertical)
+            { icon: "fa-solid fa-house", text: profile.hometown || "N/A" }, // Hometown (changed from fa-home)
+          ];
+
+          // Populate the scroll container
+          details.forEach((item) => {
+            const span = document.createElement("span");
+            span.classList.add("scroll-item");
+            span.innerHTML = `<i class="${item.icon}"></i>${item.text}`;
+            scrollContainer.appendChild(span);
+          });
 
           // Display quotes if they exist
           if (profile.quotes && profile.quotes.length > 0) {
@@ -1630,7 +1714,7 @@
             if (profile.quotes.length > 1) {
               quote2Section.querySelector(
                 ".quote"
-              ).innerHTML = `<strong>Quote 2:</strong> "${profile.quotes[1]}"`;
+              ).innerHTML = `<strong></strong> "${profile.quotes[1]}"`;
             } else {
               quote2Section.querySelector(
                 ".quote"
@@ -1644,6 +1728,24 @@
           }
 
           profileDetailsBox.classList.add("active");
+
+          // Add event listener for the heart button in the details box
+          const detailHeartButton = document.querySelector(
+            ".detail-heart-button"
+          );
+          detailHeartButton.addEventListener("click", function () {
+            this.classList.toggle("active");
+            setTimeout(() => {
+              this.style.animation = "heartbeat 1s ease";
+              this.addEventListener(
+                "animationend",
+                () => {
+                  this.style.animation = "";
+                },
+                { once: true }
+              );
+            }, 100);
+          });
         }
 
         window.closeProfileDetails = function () {
@@ -1652,19 +1754,21 @@
             document.getElementById("profileDetailsBox");
           const profileName = document.getElementById("profileName");
           const profileImage = document.getElementById("profileImage");
-          const profileDetails = document.getElementById("profileDetails");
+          const scrollContainer = document.getElementById("scrollContainer");
           const quote1 = document.getElementById("quote1");
 
+          // Remove active class to start fade-out transition
           profileDetailsBox.classList.remove("active");
+
+          // Clear content immediately (won’t affect transition)
           profileName.textContent = "";
           profileImage.src = "";
           profileImage.alt = "";
-          profileDetails.textContent = "";
+          scrollContainer.innerHTML = "";
           quote1.innerHTML = "";
 
-          setTimeout(() => {
-            profileList.classList.remove("blur");
-          }, 700);
+          // Remove blur class immediately; CSS transition will handle the fade
+          profileList.classList.remove("blur");
         };
 
         const profileDetailsBox = document.getElementById("profileDetailsBox");

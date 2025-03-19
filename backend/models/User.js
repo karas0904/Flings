@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
     day: { type: String },
     year: { type: String },
   },
+  hometown: { type: String }, // Add this
   gender: { type: String },
   interestedIn: { type: String },
   relationshipIntent: { type: String },
@@ -35,15 +36,13 @@ const userSchema = new mongoose.Schema({
   dataConsent: { type: Boolean },
   photos: { type: [String], default: [] },
   quotes: { type: [String], default: ["", "", ""] },
-  gif: { type: String, default: "" }, // Store GIF as Base64 string
   savedProfiles: [
     {
-      profileId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Reference to another User
+      profileId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       saveDate: { type: Date, default: Date.now },
     },
   ],
 });
 
 const User = mongoose.model("User", userSchema);
-
 export default User;

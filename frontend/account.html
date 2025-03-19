@@ -1865,8 +1865,9 @@
         const heightValue = document.querySelector(
           ".info-value[data-field='height']"
         );
-
-        console.log("Updating UI with quotes:", userData.quotes); // Log quotes specifically
+        const hometownValue = document.querySelector(
+          ".info-label[data-field='hometown']"
+        ); // Add this
 
         // Update profile image and avatar
         if (userData.photos && userData.photos.length > 0) {
@@ -1888,14 +1889,13 @@
         ageValue.textContent = userData.age || "N/A";
         yearValue.textContent = userData.year || "N/A";
         heightValue.textContent = "None";
+        hometownValue.textContent = userData.hometown || "None"; // Add this
 
-        // Update quotesx
+        // Update quotes
         const quoteBoxes = document.querySelectorAll(".quote-box");
-        console.log("Number of quote boxes found:", quoteBoxes.length); // Check if boxes are found
         userData.quotes.forEach((quote, index) => {
           if (quoteBoxes[index]) {
             const quoteText = quoteBoxes[index].querySelector(".quote-text");
-            console.log(`Setting quote ${index}:`, quote); // Log each quote being set
             quoteText.textContent = quote || "Quotes";
           }
         });

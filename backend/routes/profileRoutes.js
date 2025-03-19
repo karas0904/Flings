@@ -28,6 +28,7 @@ router.post("/profile", authenticateToken, async (req, res) => {
       firstName,
       email,
       birthday,
+      hometown, // Add this
       gender,
       interestedIn,
       relationshipIntent,
@@ -51,6 +52,7 @@ router.post("/profile", authenticateToken, async (req, res) => {
     if (firstName !== undefined) user.firstName = firstName;
     if (email !== undefined) user.email = email;
     if (birthday !== undefined) user.birthday = birthday;
+    if (hometown !== undefined) user.hometown = hometown; // Add this
     if (gender !== undefined) user.gender = gender;
     if (interestedIn !== undefined) user.interestedIn = interestedIn;
     if (relationshipIntent !== undefined)
@@ -86,7 +88,7 @@ router.post("/profile", authenticateToken, async (req, res) => {
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id }).select(
-      "firstName birthday year photos email quotes"
+      "firstName birthday year photos email quotes hometown" // Add hometown
     );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -112,6 +114,7 @@ router.get("/profile", authenticateToken, async (req, res) => {
       email: user.email,
       photos: user.photos || [],
       quotes: user.quotes,
+      hometown: user.hometown || "N/A", // Add this
     };
     res.status(200).json(responseData);
   } catch (error) {
@@ -121,10 +124,11 @@ router.get("/profile", authenticateToken, async (req, res) => {
 });
 
 // GET /api/profiles - Fetch all completed profiles
+// GET /api/profiles - Fetch all completed profiles
 router.get("/profiles", authenticateToken, async (req, res) => {
   try {
     const profiles = await User.find({ profileCompleted: true }).select(
-      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes"
+      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes hometown" // Add hometown here
     );
 
     if (!profiles || profiles.length === 0) {
@@ -149,7 +153,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
         _id: profile._id,
         name: profile.firstName,
         age: age || "N/A",
-        hometown: "N/A",
+        hometown: profile.hometown || "N/A", // Use actual hometown value
         year: profile.year || "N/A",
         department: profile.courseStudy || "N/A",
         bio: profile.bio || "No bio provided",

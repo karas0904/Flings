@@ -249,6 +249,13 @@
           </p>
         </div>
         <div class="form-group">
+          <label for="hometown">Hometown</label>
+          <input type="text" id="hometown" placeholder="Your Hometown" />
+          <p class="error-message" id="hometown-error">
+            Please enter your hometown
+          </p>
+        </div>
+        <div class="form-group">
           <label>Gender</label>
           <div class="gender">
             <button class="gender-option selected" onclick="selectGender(this)">
@@ -469,6 +476,8 @@
         const isMonthFilled = monthInput.value.trim().length === 2;
         const isDayFilled = dayInput.value.trim().length === 2;
         const isYearFilled = yearInput.value.trim().length === 4;
+        const isHometownFilled =
+          document.getElementById("hometown").value.trim() !== ""; // Add this
         const isGenderSelected = document.querySelector(
           ".gender .gender-option.selected"
         );
@@ -507,6 +516,7 @@
           isMonthFilled &&
           isDayFilled &&
           isYearFilled &&
+          isHometownFilled && // Add this
           isGenderSelected &&
           isInterestedSelected &&
           isRelationshipSelected &&
@@ -533,6 +543,7 @@
               day: dayInput.value.trim(),
               year: yearInput.value.trim(),
             },
+            hometown: document.getElementById("hometown").value.trim(), // Add this
             gender: document.querySelector(".gender .gender-option.selected")
               .textContent,
             interestedIn: document.querySelector(
@@ -547,6 +558,9 @@
           window.location.href = "discover2.html";
         }
       });
+
+      const hometownInput = document.getElementById("hometown");
+      hometownInput.addEventListener("input", validateForm);
 
       // Function to clear URL parameters
       function clearUrlParams() {

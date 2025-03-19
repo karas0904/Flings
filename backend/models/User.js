@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     day: { type: String },
     year: { type: String },
   },
-  hometown: { type: String }, // Add this
+  hometown: { type: String },
   gender: { type: String },
   interestedIn: { type: String },
   relationshipIntent: { type: String },
@@ -42,6 +42,17 @@ const userSchema = new mongoose.Schema({
       saveDate: { type: Date, default: Date.now },
     },
   ],
+  job: { type: String, default: "None" },
+  planTo: { type: String, default: "None" },
+  datingIntention: { type: String, default: "None" },
+  pets: { type: String, default: "None" },
+  language: { type: String, default: "None" },
+  drinking: { type: String, default: "None" },
+  smoking: { type: String, default: "None" },
+  partyPerson: { type: String, default: "None" },
+  // New fields for square-box
+  age: { type: Number, default: null }, // Store as Number, nullable
+  height: { type: String, default: "None" }, // e.g., "5'10\""
 });
 
 const User = mongoose.model("User", userSchema);

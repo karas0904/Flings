@@ -28,7 +28,7 @@ router.post("/profile", authenticateToken, async (req, res) => {
       firstName,
       email,
       birthday,
-      hometown, // Add this
+      hometown,
       gender,
       interestedIn,
       relationshipIntent,
@@ -47,12 +47,22 @@ router.post("/profile", authenticateToken, async (req, res) => {
       dataConsent,
       photos,
       quotes,
+      job, // New
+      planTo, // New
+      datingIntention, // New
+      pets, // New
+      language, // New
+      drinking, // New
+      smoking, // New
+      partyPerson, // New
+      age,
+      height,
     } = req.body;
 
     if (firstName !== undefined) user.firstName = firstName;
     if (email !== undefined) user.email = email;
     if (birthday !== undefined) user.birthday = birthday;
-    if (hometown !== undefined) user.hometown = hometown; // Add this
+    if (hometown !== undefined) user.hometown = hometown;
     if (gender !== undefined) user.gender = gender;
     if (interestedIn !== undefined) user.interestedIn = interestedIn;
     if (relationshipIntent !== undefined)
@@ -74,6 +84,17 @@ router.post("/profile", authenticateToken, async (req, res) => {
     if (dataConsent !== undefined) user.dataConsent = dataConsent;
     if (photos !== undefined) user.photos = photos;
     if (quotes !== undefined) user.quotes = quotes;
+    if (job !== undefined) user.job = job; // New
+    if (planTo !== undefined) user.planTo = planTo; // New
+    if (datingIntention !== undefined) user.datingIntention = datingIntention; // New
+    if (pets !== undefined) user.pets = pets; // New
+    if (language !== undefined) user.language = language; // New
+    if (drinking !== undefined) user.drinking = drinking; // New
+    if (smoking !== undefined) user.smoking = smoking; // New
+    if (partyPerson !== undefined) user.partyPerson = partyPerson; // New
+    if (age !== undefined) user.age = age; // New
+    if (height !== undefined) user.height = height; // New
+
     user.profileCompleted = true;
 
     await user.save();
@@ -88,7 +109,7 @@ router.post("/profile", authenticateToken, async (req, res) => {
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id }).select(
-      "firstName birthday year photos email quotes hometown" // Add hometown
+      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson age height" // Updated
     );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -109,12 +130,21 @@ router.get("/profile", authenticateToken, async (req, res) => {
 
     const responseData = {
       firstName: user.firstName,
-      age: age,
+      age: user.age !== null ? user.age : age,
       year: user.year,
       email: user.email,
       photos: user.photos || [],
       quotes: user.quotes,
-      hometown: user.hometown || "N/A", // Add this
+      hometown: user.hometown || "N/A",
+      job: user.job || "None", // New
+      planTo: user.planTo || "None", // New
+      datingIntention: user.datingIntention || "None", // New
+      pets: user.pets || "None", // New
+      language: user.language || "None", // New
+      drinking: user.drinking || "None", // New
+      smoking: user.smoking || "None", // New
+      partyPerson: user.partyPerson || "None", // New
+      height: user.height || "None", // New
     };
     res.status(200).json(responseData);
   } catch (error) {
@@ -128,7 +158,7 @@ router.get("/profile", authenticateToken, async (req, res) => {
 router.get("/profiles", authenticateToken, async (req, res) => {
   try {
     const profiles = await User.find({ profileCompleted: true }).select(
-      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes hometown" // Add hometown here
+      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes height hometown" // Add hometown here
     );
 
     if (!profiles || profiles.length === 0) {
@@ -165,6 +195,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
         hobbies: profile.hobbies ? [profile.hobbies] : [],
         favoriteQuote: profile.quotes?.[0] || "N/A",
         additionalInfo: "N/A",
+        height: profile.height || "N/A",
         quotes: profile.quotes || [],
       };
     });
@@ -222,7 +253,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const user = await User.findById(userId).populate(
       "savedProfiles.profileId",
-      "firstName photos bio courseStudy hobbies birthday year quotes"
+      "firstName photos bio courseStudy hobbies birthday year quotes height age"
     );
     if (!user) {
       return res.status(404).json({ message: "User not found" });

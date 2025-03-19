@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Explore</title>
+    <link rel="icon" type="image/svg" href="Frame 1.svg" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -1683,19 +1684,16 @@
           // Clear existing content in scroll container
           scrollContainer.innerHTML = "";
 
-          // Define the items with icons (using Font Awesome icons as an example)
+          // Define the items with icons (including height)
           const details = [
-            { icon: "fa-regular fa-user", text: profile.age || "N/A" }, // Age (already working)
-            {
-              icon: "fa-solid fa-graduation-cap",
-              text: profile.year || "N/A",
-            }, // Year (should work, but confirm)
+            { icon: "fa-regular fa-user", text: profile.age || "N/A" }, // Age
+            { icon: "fa-solid fa-graduation-cap", text: profile.year || "N/A" }, // Year
             {
               icon: "fa-solid fa-book-open",
               text: profile.department || "N/A",
-            }, // Course of Study (changed from fa-book)
-            { icon: "fa-solid fa-ruler", text: profile.height || "N/A" }, // Height (changed from fa-ruler-vertical)
-            { icon: "fa-solid fa-house", text: profile.hometown || "N/A" }, // Hometown (changed from fa-home)
+            }, // Department
+            { icon: "fa-solid fa-ruler", text: profile.height || "N/A" }, // Height (already present)
+            { icon: "fa-solid fa-house", text: profile.hometown || "N/A" }, // Hometown
           ];
 
           // Populate the scroll container
@@ -1724,7 +1722,7 @@
             quote1.innerHTML = `<strong></strong> "No quotes available"`;
             quote2Section.querySelector(
               ".quote"
-            ).innerHTML = `<strong>Quote 2:</strong> "No quotes available"`;
+            ).innerHTML = `<strong></strong> "No quotes available"`;
           }
 
           profileDetailsBox.classList.add("active");

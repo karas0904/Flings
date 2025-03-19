@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Amourette - Account</title>
+    <link rel="icon" type="image/svg" href="Frame 1.svg" />
     <!-- Font Awesome CSS -->
     <link
       rel="stylesheet"
@@ -1865,9 +1866,38 @@
         const heightValue = document.querySelector(
           ".info-value[data-field='height']"
         );
+
+        // Profile info container fields
+        const jobValue = document.querySelector(
+          ".info-label[data-field='job']"
+        );
+        const planToValue = document.querySelector(
+          ".info-label[data-field='planTo']"
+        );
         const hometownValue = document.querySelector(
           ".info-label[data-field='hometown']"
-        ); // Add this
+        );
+        const datingIntentionValue = document.querySelector(
+          ".info-label[data-field='datingIntention']"
+        );
+        const nameValue = document.querySelector(
+          ".info-label[data-field='name']"
+        );
+        const petsValue = document.querySelector(
+          ".info-label[data-field='pets']"
+        );
+        const languageValue = document.querySelector(
+          ".info-label[data-field='language']"
+        );
+        const drinkingValue = document.querySelector(
+          ".info-label[data-field='drinking']"
+        );
+        const smokingValue = document.querySelector(
+          ".info-label[data-field='smoking']"
+        );
+        const partyPersonValue = document.querySelector(
+          ".info-label[data-field='partyPerson']"
+        );
 
         // Update profile image and avatar
         if (userData.photos && userData.photos.length > 0) {
@@ -1886,10 +1916,21 @@
         })`;
 
         // Update square box fields
-        ageValue.textContent = userData.age || "N/A";
+        ageValue.textContent = userData.age !== null ? userData.age : "N/A";
         yearValue.textContent = userData.year || "N/A";
-        heightValue.textContent = "None";
-        hometownValue.textContent = userData.hometown || "None"; // Add this
+        heightValue.textContent = userData.height || "None";
+
+        // Update profile info container fields
+        jobValue.textContent = userData.job || "None";
+        planToValue.textContent = userData.planTo || "None";
+        hometownValue.textContent = userData.hometown || "None";
+        datingIntentionValue.textContent = userData.datingIntention || "None";
+        nameValue.textContent = userData.firstName || "None"; // Using firstName
+        petsValue.textContent = userData.pets || "None";
+        languageValue.textContent = userData.language || "None";
+        drinkingValue.textContent = userData.drinking || "None";
+        smokingValue.textContent = userData.smoking || "None";
+        partyPersonValue.textContent = userData.partyPerson || "None";
 
         // Update quotes
         const quoteBoxes = document.querySelectorAll(".quote-box");
@@ -2172,6 +2213,7 @@
           });
 
         // Square box edit functionality
+        // Square box edit functionality
         const editBtn = document.getElementById("squareBoxEdit");
         const squareBox = document.querySelector(".square-box");
         const infoValues = squareBox.querySelectorAll(".info-value");
@@ -2185,8 +2227,9 @@
             editBtn.textContent = "SAVE";
             infoValues.forEach((value) => {
               const currentText = value.textContent;
+              const field = value.dataset.field;
               const input = document.createElement("input");
-              input.type = "text";
+              input.type = field === "age" ? "number" : "text"; // Use number for age
               input.value =
                 currentText === "N/A" || currentText === "None"
                   ? ""
@@ -2199,9 +2242,14 @@
             editBtn.textContent = "EDIT";
             infoValues.forEach((value) => {
               const input = value.querySelector("input");
-              const newText = input.value.trim() || "None";
-              value.innerHTML = newText;
               const field = value.dataset.field;
+              let newText = input.value.trim();
+              if (field === "age") {
+                newText = newText ? parseInt(newText) : null; // Convert to number or null
+              } else {
+                newText = newText || "None";
+              }
+              value.innerHTML = newText === null ? "N/A" : newText;
               saveProfileData(field, newText);
             });
           }

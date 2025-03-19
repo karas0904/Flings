@@ -12,14 +12,13 @@
       href="https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap"
       rel="stylesheet"
     />
-
     <style>
+      /* [Your existing styles remain unchanged] */
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
-
       body {
         font-family: Arial, sans-serif;
         background: #000;
@@ -28,8 +27,6 @@
         position: relative;
         overflow: hidden;
       }
-
-      /* Red and Blue blurred shapes */
       .blur-shape {
         position: fixed;
         width: 250px;
@@ -39,22 +36,18 @@
         z-index: -1;
         opacity: 0.4;
       }
-
       .red-shape {
         background: rgba(255, 0, 0, 0.7);
         top: 10%;
         left: 5%;
         transform: rotate(45deg);
       }
-
       .blue-shape {
         background: rgba(135, 206, 250, 0.7);
         bottom: 10%;
         right: 5%;
         transform: rotate(45deg);
       }
-
-      /* Sidebar */
       .left-sidebar {
         width: 60px;
         background: rgba(0, 0, 0, 0.2);
@@ -70,7 +63,6 @@
         left: 0;
         height: 100%;
       }
-
       .left-sidebar .logo {
         font-size: 14px;
         font-weight: bold;
@@ -78,7 +70,6 @@
         transform: rotate(180deg);
         margin-bottom: 40px;
       }
-
       .left-sidebar .icons-container {
         display: flex;
         flex-direction: column;
@@ -86,12 +77,10 @@
         flex: 1;
         justify-content: center;
       }
-
       .left-sidebar .icons-container a {
         text-decoration: none;
         color: rgba(255, 255, 255, 0.8);
       }
-
       .left-sidebar .icon-btn {
         font-size: 24px;
         color: rgba(255, 255, 255, 0.8);
@@ -107,31 +96,25 @@
         transition: background 0.3s ease, transform 0.3s, filter 0.3s,
           color 0.3s;
       }
-
       .left-sidebar .icon-btn:hover {
         background: rgba(255, 255, 255, 0.3);
         transform: scale(1.1);
       }
-
       .left-sidebar .icons-container:hover .icon-btn:not(:hover) {
         filter: blur(2px);
       }
-
       .left-sidebar .icon-btn:hover i.fa-heart {
         color: red;
       }
-
       .left-sidebar .icon-btn i.fa-heart {
         transition: color 0.3s;
       }
-
       .left-sidebar .separator {
         width: 20px;
         height: 1px;
         background: rgba(255, 255, 255, 0.5);
         margin: 10px 0;
       }
-
       .left-sidebar .profile-icon {
         font-size: 24px;
         color: rgba(255, 250, 250, 0.8);
@@ -139,13 +122,10 @@
         transition: color 0.3s, transform 0.3s;
         margin-top: 40px;
       }
-
       .left-sidebar .profile-icon:hover {
         color: #fff;
         transform: scale(1.1);
       }
-
-      /* Main Content Layout */
       .main-content {
         margin-left: 60px;
         width: calc(100% - 60px);
@@ -153,8 +133,6 @@
         flex-direction: column;
         padding: 20px;
       }
-
-      /* Top Bar */
       .top-bar {
         display: flex;
         justify-content: center;
@@ -162,13 +140,11 @@
         width: 100%;
         padding-bottom: 20px;
       }
-
       .top-bar h1 {
         color: white;
         font-size: 24px;
         margin-right: 20px;
       }
-
       .search-input {
         width: 500px;
         padding: 10px;
@@ -179,13 +155,10 @@
         background-color: rgba(255, 255, 255, 0.2);
         color: white;
       }
-
       .search-input:focus {
         box-shadow: 2px 2px 10px #818181;
         transition: 0.2s;
       }
-
-      /* Rectangular Boxes */
       .content {
         display: flex;
         flex-wrap: wrap;
@@ -193,7 +166,6 @@
         gap: 30px 30px;
         padding: 20px;
       }
-
       .rectangular-box {
         width: 48%;
         height: 200px;
@@ -206,17 +178,14 @@
         flex-direction: column;
         transition: none;
       }
-
       .rectangular-box.hidden {
         display: none;
       }
-
       .rectangle-top {
         flex: 3;
         position: relative;
         overflow: hidden;
       }
-
       .rectangle-bottom {
         flex: 1;
         display: flex;
@@ -227,7 +196,6 @@
         background-color: #fff;
         padding-right: 10px;
       }
-
       .rectangle-divider {
         height: 1px;
         background-color: rgb(224, 220, 220);
@@ -237,7 +205,6 @@
         opacity: 1;
         transition: opacity 0.3s ease, width 0.3s ease;
       }
-
       .card-stack {
         position: absolute;
         bottom: 0;
@@ -247,53 +214,48 @@
         z-index: 1;
         transition: transform 0.3s ease;
       }
-
       .card-stack:hover {
         transform: scale(1.1);
       }
-
       .card-stack:hover .card-left {
         transform: rotate(20deg) translateY(50%) translateZ(10px);
       }
-
       .card-stack:hover .card-right {
         transform: rotate(-20deg) translateY(50%) translateZ(10px);
       }
-
       .card {
         position: absolute;
         width: 100px;
         height: 200px;
-        background-color: rgba(255, 255, 255, 0.229);
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         transition: transform 0.3s ease, opacity 0.3s ease;
+        overflow: hidden;
+        background: white;
       }
-
+      .card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
       .card-left {
         bottom: 0;
         right: 180px;
         transform: rotate(-20deg) translateY(50%);
-        background-color: #f8f8f8;
         z-index: 1;
       }
-
       .card-middle {
         bottom: 0;
         right: 150px;
         transform: rotate(0deg) translateY(50%);
-        background-color: white;
         z-index: 3;
       }
-
       .card-right {
         bottom: 0;
         right: 130px;
         transform: rotate(20deg) translateY(50%);
-        background-color: #f8f8f8;
         z-index: 2;
       }
-
       .add-button {
         width: 32px;
         height: 32px;
@@ -307,16 +269,13 @@
         transition: background-color 0.3s;
         margin-left: 10px;
       }
-
       .add-button:hover {
-        background-color: rgba(0, 0, 0, 0.2);
+        background-color: rgba(255, 0, 0, 0.3);
       }
-
       .add-button i {
         font-size: 16px;
         color: #333;
       }
-
       .page-title {
         position: absolute;
         top: 20px;
@@ -325,13 +284,11 @@
         font-size: 24px;
         z-index: 99;
       }
-
       @media (max-width: 800px) {
         .rectangular-box {
           width: 100%;
         }
       }
-
       .saves-label {
         font-size: 16px;
         color: black;
@@ -343,18 +300,15 @@
         align-items: center;
         margin-left: 8px;
       }
-
       .saves-count {
         margin-left: 5px;
       }
-
       .date-container {
         position: absolute;
         left: 20px;
         top: 20px;
         text-align: left;
       }
-
       .month {
         font-size: 80px;
         font-weight: bold;
@@ -363,20 +317,17 @@
         font-optical-sizing: auto;
         font-style: normal;
       }
-
       .month-name {
         font-size: 16px;
         color: #f8f8f8;
         margin-top: -30px;
       }
-
       .note {
         color: white;
         font-size: 14px;
         margin-top: 10px;
         margin-left: 20px;
       }
-
       .profile-icon {
         width: 30px;
         height: 30px;
@@ -386,19 +337,15 @@
         margin-bottom: 20px;
         box-sizing: border-box;
       }
-
       .profile-icon img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
-
       .profile-icon:hover {
         outline: 5px solid rgba(144, 136, 136, 0.432);
         transition: 0.5s;
       }
-
-      /* Saves Modal Styles */
       .saves-modal {
         position: fixed;
         top: 0;
@@ -415,12 +362,10 @@
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
       }
-
       .saves-modal.active {
         opacity: 1;
         visibility: visible;
       }
-
       .modal-content {
         background: white;
         border-radius: 15px;
@@ -435,16 +380,13 @@
         transition: transform 0.3s ease;
         overflow-y: auto;
       }
-
       .saves-modal.active .modal-content {
         transform: scale(1);
       }
-
       .modal-body {
         max-height: 60vh;
         overflow-y: auto;
       }
-
       .modal-header {
         display: flex;
         justify-content: space-between;
@@ -453,12 +395,10 @@
         padding-bottom: 10px;
         margin-bottom: 20px;
       }
-
       .modal-header h2 {
         font-size: 20px;
         margin: 0;
       }
-
       .close-modal {
         background: none;
         border: none;
@@ -466,24 +406,20 @@
         cursor: pointer;
         color: #666;
       }
-
       .close-modal:hover {
         color: #333;
       }
-
       .profiles-list {
         display: flex;
         flex-direction: column;
         gap: 10px;
       }
-
       .profile-row {
         display: flex;
         align-items: center;
         padding: 10px 0;
         position: relative;
       }
-
       .profile-row:not(:last-child)::after {
         content: "";
         position: absolute;
@@ -493,7 +429,6 @@
         height: 1px;
         background: #e0e0e0;
       }
-
       .profile-picture {
         width: 40px;
         height: 40px;
@@ -502,13 +437,11 @@
         margin-right: 15px;
         flex-shrink: 0;
       }
-
       .profile-picture img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
-
       .profile-name {
         font-size: 16px;
         color: #333;
@@ -516,16 +449,24 @@
         font-weight: 400;
         flex-grow: 1;
       }
-
+      .delete-btn {
+        background: none;
+        border: none;
+        color: #ff0000;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 0 10px;
+      }
+      .delete-btn:hover {
+        color: #cc0000;
+      }
       .modal-body::-webkit-scrollbar {
         width: 6px;
       }
-
       .modal-body::-webkit-scrollbar-track {
         background: rgba(0, 0, 0, 0.05);
         border-radius: 3px;
       }
-
       .modal-body::-webkit-scrollbar-thumb {
         background: rgba(0, 0, 0, 0.2);
         border-radius: 3px;
@@ -536,7 +477,6 @@
     <div class="blur-shape red-shape"></div>
     <div class="blur-shape blue-shape"></div>
 
-    <!-- Sidebar -->
     <div class="left-sidebar">
       <div class="logo">Amourette</div>
       <div class="icons-container">
@@ -553,96 +493,24 @@
       </a>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-      <!-- Top Bar -->
       <div class="top-bar">
         <h1 class="page-title">Saves</h1>
         <input
           type="text"
           class="search-input"
           id="dateSearch"
-          placeholder="Search by date or month (e.g., 15 Sep or September)..."
+          placeholder="Search by date or month (e.g., Mar 15 or March)..."
         />
       </div>
       <div class="note">
         Note: You can save 2-3 profiles per day. Only days with at least 2 saves
-        will appear here and the data would only be for 1 week from the date it
-        was saved.
+        will appear here.
       </div>
 
-      <!-- Rectangular Boxes with Different Dates -->
-      <div class="content">
-        <div class="rectangular-box" data-date="15 September">
-          <div class="rectangle-top">
-            <div class="card-stack">
-              <div class="card card-left"></div>
-              <div class="card card-middle"></div>
-              <div class="card card-right"></div>
-            </div>
-            <div class="date-container">
-              <div class="month">15</div>
-              <div class="month-name">September</div>
-            </div>
-          </div>
-          <div class="rectangle-divider"></div>
-          <div class="rectangle-bottom">
-            <div class="saves-label">
-              Saves <span class="saves-count">2</span>
-            </div>
-            <button class="add-button">
-              <i class="fa-solid fa-times"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="rectangular-box" data-date="20 October">
-          <div class="rectangle-top">
-            <div class="card-stack">
-              <div class="card card-left"></div>
-              <div class="card card-middle"></div>
-              <div class="card card-right"></div>
-            </div>
-            <div class="date-container">
-              <div class="month">20</div>
-              <div class="month-name">October</div>
-            </div>
-          </div>
-          <div class="rectangle-divider"></div>
-          <div class="rectangle-bottom">
-            <div class="saves-label">
-              Saves <span class="saves-count">3</span>
-            </div>
-            <button class="add-button">
-              <i class="fa-solid fa-times"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="rectangular-box" data-date="5 November">
-          <div class="rectangle-top">
-            <div class="card-stack">
-              <div class="card card-left"></div>
-              <div class="card card-middle"></div>
-              <div class="card card-right"></div>
-            </div>
-            <div class="date-container">
-              <div class="month">5</div>
-              <div class="month-name">November</div>
-            </div>
-          </div>
-          <div class="rectangle-divider"></div>
-          <div class="rectangle-bottom">
-            <div class="saves-label">
-              Saves <span class="saves-count">2</span>
-            </div>
-            <button class="add-button">
-              <i class="fa-solid fa-times"></i>
-            </button>
-          </div>
-        </div>
-      </div>
+      <div class="content" id="savesContent"></div>
     </div>
+
     <div class="saves-modal" id="savesModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -656,69 +524,153 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
         const profileIcon = document.querySelector(".profile-icon img");
         const storedImage = localStorage.getItem("profileImage");
         if (storedImage) {
           profileIcon.src = storedImage;
         }
 
-        // Initialize saves data in localStorage if not present
-        if (!localStorage.getItem("savesData")) {
-          localStorage.setItem(
-            "savesData",
-            JSON.stringify({
-              "15 September": [
-                { name: "Profile 1", picture: "boy-account.svg" },
-                { name: "Profile 2", picture: "boy-account.svg" },
-              ],
-              "20 October": [
-                { name: "Profile 1", picture: "boy-account.svg" },
-                { name: "Profile 2", picture: "boy-account.svg" },
-                { name: "Profile 3", picture: "boy-account.svg" },
-              ],
-              "5 November": [
-                { name: "Profile 1", picture: "boy-account.svg" },
-                { name: "Profile 2", picture: "boy-account.svg" },
-              ],
-            })
-          );
+        // Fetch saved profiles from backend
+        async function fetchSavedProfiles() {
+          const token = localStorage.getItem("jwtToken");
+          if (!token) {
+            console.error("No JWT token found");
+            alert("Please log in to view saved profiles!");
+            window.location.href = "login.html";
+            return {};
+          }
+
+          try {
+            const response = await fetch(
+              "http://localhost:3000/api/saved-profiles",
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(
+                errorData.message || "Failed to fetch saved profiles"
+              );
+            }
+
+            const profiles = await response.json();
+            console.log("Saved profiles from backend:", profiles);
+            return groupProfilesByDate(profiles);
+          } catch (error) {
+            console.error("Error fetching saved profiles:", error);
+            alert("Error: " + error.message);
+            return {};
+          }
         }
 
-        const savesData = JSON.parse(localStorage.getItem("savesData"));
-
-        // Update saves count in UI based on initial data
-        const boxes = document.querySelectorAll(".rectangular-box");
-        boxes.forEach((box) => {
-          const date = box.getAttribute("data-date");
-          const saves = savesData[date] || [];
-          const savesCountSpan = box.querySelector(".saves-count");
-          savesCountSpan.textContent = saves.length;
-          if (saves.length < 2) {
-            box.classList.add("hidden"); // Hide if less than 2 saves
-          }
-        });
-
-        // Add click event listeners to saves labels
-        const savesLabels = document.querySelectorAll(".saves-label");
-        savesLabels.forEach((label) => {
-          label.addEventListener("click", function () {
-            const box = this.closest(".rectangular-box");
-            const date = box.getAttribute("data-date");
-            openSavesModal(date);
+        // Group profiles by save date (Month Day format)
+        function groupProfilesByDate(profiles) {
+          const grouped = {};
+          profiles.forEach((profile) => {
+            const saveDate = new Date(profile.saveDate).toLocaleDateString(
+              "en-US",
+              {
+                month: "long",
+                day: "numeric",
+              }
+            );
+            if (!grouped[saveDate]) {
+              grouped[saveDate] = [];
+            }
+            grouped[saveDate].push({
+              name: profile.name,
+              picture: profile.image,
+              _id: profile._id,
+            });
           });
-        });
+          return grouped;
+        }
+
+        // Create a rectangular box with profile images on cards
+        function createBox(date, saves) {
+          const [month, day] = date.split(" ");
+          const box = document.createElement("div");
+          box.className = "rectangular-box";
+          box.setAttribute("data-date", date);
+
+          const cardImages = saves.slice(0, 3).map((save) => save.picture);
+          const cardLeftImg = cardImages[0]
+            ? `<img src="${cardImages[0]}" alt="Profile">`
+            : "";
+          const cardMiddleImg = cardImages[1]
+            ? `<img src="${cardImages[1]}" alt="Profile">`
+            : "";
+          const cardRightImg = cardImages[2]
+            ? `<img src="${cardImages[2]}" alt="Profile">`
+            : "";
+
+          box.innerHTML = `
+            <div class="rectangle-top">
+              <div class="card-stack">
+                <div class="card card-left">${cardLeftImg}</div>
+                <div class="card card-middle">${cardMiddleImg}</div>
+                <div class="card card-right">${cardRightImg}</div>
+              </div>
+              <div class="date-container">
+                <div class="month">${day}</div>
+                <div class="month-name">${month}</div>
+              </div>
+            </div>
+            <div class="rectangle-divider"></div>
+            <div class="rectangle-bottom">
+              <div class="saves-label">
+                Saves <span class="saves-count">${saves.length}</span>
+              </div>
+              <button class="add-button">
+                <i class="fa-solid fa-times"></i>
+              </button>
+            </div>
+          `;
+          if (saves.length < 2) {
+            box.classList.add("hidden");
+          }
+          return box;
+        }
+
+        // Populate the UI with saved profiles
+        let savesData = await fetchSavedProfiles();
+        const content = document.getElementById("savesContent");
+        function renderContent() {
+          content.innerHTML = "";
+          Object.entries(savesData).forEach(([date, saves]) => {
+            const box = createBox(date, saves);
+            content.appendChild(box);
+            box
+              .querySelector(".saves-label")
+              .addEventListener("click", () => openSavesModal(date));
+            box
+              .querySelector(".add-button")
+              .addEventListener("click", () => deleteAllForDate(date));
+          });
+        }
+        renderContent();
 
         // Search functionality
         const searchInput = document.getElementById("dateSearch");
         searchInput.addEventListener("input", function () {
           const searchValue = this.value.trim().toLowerCase();
+          const boxes = document.querySelectorAll(".rectangular-box");
           boxes.forEach((box) => {
             const date = box.getAttribute("data-date").toLowerCase();
+            const savesCount = parseInt(
+              box.querySelector(".saves-count").textContent
+            );
             if (searchValue === "" || date.includes(searchValue)) {
               box.classList.remove("hidden");
-              if (savesData[date] && savesData[date].length < 2) {
-                box.classList.add("hidden"); // Ensure < 2 saves stay hidden
+              if (savesCount < 2) {
+                box.classList.add("hidden");
               }
             } else {
               box.classList.add("hidden");
@@ -726,7 +678,42 @@
           });
         });
 
-        // Function to open the saves modal
+        // Delete all saved profiles for a date
+        async function deleteAllForDate(date) {
+          const token = localStorage.getItem("jwtToken");
+          console.log("Deleting all profiles for date:", date);
+          console.log("Using token:", token);
+          try {
+            const response = await fetch(
+              `http://localhost:3000/api/saved-profiles/date/${encodeURIComponent(
+                date
+              )}`,
+              {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              console.log("Error response from server:", errorData);
+              throw new Error(
+                errorData.message || "Failed to delete saved profiles for date"
+              );
+            }
+
+            delete savesData[date];
+            renderContent();
+          } catch (error) {
+            console.error("Error deleting saved profiles for date:", error);
+            alert("Error: " + error.message);
+          }
+        }
+
+        // Open saves modal (for viewing only)
         function openSavesModal(date) {
           const modal = document.getElementById("savesModal");
           const profilesList = document.getElementById("profilesList");
@@ -736,20 +723,12 @@
           saves.forEach((profile) => {
             const row = document.createElement("div");
             row.className = "profile-row";
-
-            const picture = document.createElement("div");
-            picture.className = "profile-picture";
-            const img = document.createElement("img");
-            img.src = profile.picture;
-            img.alt = `${profile.name}'s profile picture`;
-            picture.appendChild(img);
-
-            const name = document.createElement("div");
-            name.className = "profile-name";
-            name.textContent = profile.name;
-
-            row.appendChild(picture);
-            row.appendChild(name);
+            row.innerHTML = `
+              <div class="profile-picture">
+                <img src="${profile.picture}" alt="${profile.name}'s profile picture">
+              </div>
+              <div class="profile-name">${profile.name}</div>
+            `;
             profilesList.appendChild(row);
           });
 
@@ -760,114 +739,15 @@
         document
           .getElementById("closeSavesModal")
           .addEventListener("click", closeSavesModal);
-
         document
           .getElementById("savesModal")
           .addEventListener("click", function (e) {
-            if (e.target === this) {
-              closeSavesModal();
-            }
+            if (e.target === this) closeSavesModal();
           });
 
         function closeSavesModal() {
-          const modal = document.getElementById("savesModal");
-          modal.classList.remove("active");
+          document.getElementById("savesModal").classList.remove("active");
         }
-
-        // Function to simulate saving a profile (for demo purposes)
-        function saveProfile(date, profile) {
-          const saves = savesData[date] || [];
-          const today = new Date().toLocaleDateString("en-US", {
-            day: "numeric",
-            month: "long",
-          });
-
-          // Check if the date matches today for the limit
-          if (date === today && saves.length >= 3) {
-            alert("You can only save up to 3 profiles per day!");
-            return false;
-          }
-
-          if (saves.length < 3) {
-            saves.push(profile);
-            savesData[date] = saves;
-            localStorage.setItem("savesData", JSON.stringify(savesData));
-            updateSavesUI(date, saves.length);
-            return true;
-          }
-          return false;
-        }
-
-        // Update UI after saving
-        function updateSavesUI(date, count) {
-          const box = document.querySelector(
-            `.rectangular-box[data-date="${date}"]`
-          );
-          if (box) {
-            const savesCountSpan = box.querySelector(".saves-count");
-            savesCountSpan.textContent = count;
-            if (count >= 2) {
-              box.classList.remove("hidden");
-            } else {
-              box.classList.add("hidden");
-            }
-          } else if (count >= 2) {
-            // Create new box dynamically if it doesn't exist (for demo)
-            const newBox = createNewBox(date, count);
-            document.querySelector(".content").appendChild(newBox);
-          }
-        }
-
-        // Function to create a new rectangular box dynamically
-        function createNewBox(date, count) {
-          const [day, month] = date.split(" ");
-          const box = document.createElement("div");
-          box.className = "rectangular-box";
-          box.setAttribute("data-date", date);
-          box.innerHTML = `
-            <div class="rectangle-top">
-              <div class="card-stack">
-                <div class="card card-left"></div>
-                <div class="card card-middle"></div>
-                <div class="card card-right"></div>
-              </div>
-              <div class="date-container">
-                <div class="month">${day}</div>
-                <div class="month-name">${month}</div>
-              </div>
-            </div>
-            <div class="rectangle-divider"></div>
-            <div class="rectangle-bottom">
-              <div class="saves-label">
-                Saves <span class="saves-count">${count}</span>
-              </div>
-              <button class="add-button">
-                <i class="fa-solid fa-times"></i>
-              </button>
-            </div>
-          `;
-          box.querySelector(".saves-label").addEventListener("click", () => {
-            openSavesModal(date);
-          });
-          return box;
-        }
-
-        // Example usage: Simulate saving a profile for today (for testing)
-        const today = new Date().toLocaleDateString("en-US", {
-          day: "numeric",
-          month: "long",
-        });
-        document.querySelectorAll(".add-button").forEach((button) => {
-          button.addEventListener("click", () => {
-            const box = button.closest(".rectangular-box");
-            const date = box.getAttribute("data-date");
-            const newProfile = {
-              name: `Profile ${Math.floor(Math.random() * 100)}`,
-              picture: "boy-account.svg",
-            };
-            saveProfile(date, newProfile);
-          });
-        });
       });
     </script>
   </body>

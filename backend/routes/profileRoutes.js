@@ -16,7 +16,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// POST /api/profile - Update user profile (existing route)
+// POST /api/profile - Update user profile
 router.post("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id });
@@ -45,10 +45,9 @@ router.post("/profile", authenticateToken, async (req, res) => {
       profileVisibility,
       dataConsent,
       photos,
-      quotes, // Added quotes
+      quotes,
     } = req.body;
 
-    // Update fields only if they’re provided in the request
     if (firstName !== undefined) user.firstName = firstName;
     if (email !== undefined) user.email = email;
     if (birthday !== undefined) user.birthday = birthday;
@@ -72,34 +71,10 @@ router.post("/profile", authenticateToken, async (req, res) => {
       user.profileVisibility = profileVisibility;
     if (dataConsent !== undefined) user.dataConsent = dataConsent;
     if (photos !== undefined) user.photos = photos;
-    if (quotes !== undefined) user.quotes = quotes; // Added quotes update
-    user.profileCompleted = true;
-
-    await user.save();
-    res.status(200).json({ message: "Profile updated successfully" });
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-});
-
-// GET /api/profile - Fetch authenticated user's profile (existing route)
-// POST /api/profile
-router.post("/profile", authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findOne({ _id: req.user.id });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const { quotes /* other fields */ } = req.body;
-    console.log("POST - User ID:", req.user.id, "Quotes to save:", quotes); // Add this
     if (quotes !== undefined) user.quotes = quotes;
-    // ... other fields ...
     user.profileCompleted = true;
 
     await user.save();
-    console.log("POST - Saved user:", user); // Add this
     res.status(200).json({ message: "Profile updated successfully" });
   } catch (error) {
     console.error("Error updating profile:", error);
@@ -107,7 +82,7 @@ router.post("/profile", authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/profile
+// GET /api/profile - Fetch authenticated user's profile
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id }).select(
@@ -116,8 +91,6 @@ router.get("/profile", authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    console.log("GET - User ID:", req.user.id, "Raw user data:", user); // Add this
 
     const today = new Date();
     const birthDate = new Date(
@@ -140,7 +113,6 @@ router.get("/profile", authenticateToken, async (req, res) => {
       photos: user.photos || [],
       quotes: user.quotes,
     };
-    console.log("Sending profile data:", responseData);
     res.status(200).json(responseData);
   } catch (error) {
     console.error("Error fetching profile:", error);
@@ -148,14 +120,11 @@ router.get("/profile", authenticateToken, async (req, res) => {
   }
 });
 
-// ... (previous imports and routes remain unchanged) ...
-
 // GET /api/profiles - Fetch all completed profiles
 router.get("/profiles", authenticateToken, async (req, res) => {
   try {
-    // Fetch profiles where profileCompleted is true
     const profiles = await User.find({ profileCompleted: true }).select(
-      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes" // Add 'quotes' here
+      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes"
     );
 
     if (!profiles || profiles.length === 0) {
@@ -177,7 +146,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
       }
 
       return {
-        _id: profile._id, // Use the MongoDB _id
+        _id: profile._id,
         name: profile.firstName,
         age: age || "N/A",
         hometown: "N/A",
@@ -206,26 +175,23 @@ router.get("/profiles", authenticateToken, async (req, res) => {
 // POST /api/save-profile - Save a profile
 router.post("/save-profile", authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.id; // The authenticated user's ID from JWT
-    const { profileId } = req.body; // The ID of the profile to save
+    const userId = req.user.id;
+    const { profileId } = req.body;
 
     if (!profileId) {
       return res.status(400).json({ message: "Profile ID is required" });
     }
 
-    // Find the authenticated user
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if the profile exists
     const profileToSave = await User.findById(profileId);
     if (!profileToSave) {
       return res.status(404).json({ message: "Profile to save not found" });
     }
 
-    // Check if the profile is already saved (avoid duplicates)
     const isAlreadySaved = user.savedProfiles.some(
       (saved) => saved.profileId.toString() === profileId
     );
@@ -233,8 +199,10 @@ router.post("/save-profile", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "Profile already saved" });
     }
 
-    // Add the profile to savedProfiles
-    user.savedProfiles.push({ profileId });
+    user.savedProfiles.push({
+      profileId,
+      saveDate: new Date(), // Ensure saveDate is included
+    });
     await user.save();
 
     res.status(200).json({ message: "Profile saved successfully" });
@@ -244,11 +212,105 @@ router.post("/save-profile", authenticateToken, async (req, res) => {
   }
 });
 
-// NEW POST /api/logout - Logout endpoint
+// GET /api/saved-profiles - Fetch user's saved profiles (with 7-day filter)
+router.get("/saved-profiles", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).populate(
+      "savedProfiles.profileId",
+      "firstName photos bio courseStudy hobbies birthday year quotes"
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const savedProfiles = user.savedProfiles
+      .filter((saved) => new Date(saved.saveDate) >= oneWeekAgo)
+      .map((saved) => {
+        const profile = saved.profileId;
+        const today = new Date();
+        const birthDate = new Date(
+          `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
+        );
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          age--;
+        }
+
+        return {
+          _id: profile._id,
+          name: profile.firstName,
+          age: age || "N/A",
+          year: profile.year || "N/A",
+          department: profile.courseStudy || "N/A",
+          bio: profile.bio || "No bio provided",
+          image:
+            profile.photos && profile.photos.length > 0
+              ? profile.photos[0]
+              : "https://via.placeholder.com/200",
+          hobbies: profile.hobbies ? [profile.hobbies] : [],
+          quotes: profile.quotes || [],
+          saveDate: saved.saveDate,
+        };
+      });
+
+    res.status(200).json(savedProfiles);
+  } catch (error) {
+    console.error("Error fetching saved profiles:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// DELETE /api/saved-profiles/date/:date - Remove all saved profiles for a specific date
+router.delete(
+  "/saved-profiles/date/:date",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { date } = req.params; // e.g., "March 19"
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const originalLength = user.savedProfiles.length;
+      user.savedProfiles = user.savedProfiles.filter((saved) => {
+        const saveDate = new Date(saved.saveDate).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+        });
+        return saveDate !== date;
+      });
+
+      if (user.savedProfiles.length === originalLength) {
+        return res
+          .status(404)
+          .json({ message: "No saved profiles found for this date" });
+      }
+
+      await user.save();
+      res
+        .status(200)
+        .json({ message: "All profiles for this date removed successfully" });
+    } catch (error) {
+      console.error("Error deleting saved profiles for date:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+);
+
+// POST /api/logout - Logout endpoint
 router.post("/logout", authenticateToken, async (req, res) => {
   try {
-    // Since JWT is stateless, logout typically just relies on client-side token removal.
-    // If you maintain a token blacklist or session store, you could invalidate the token here.
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error("Error during logout:", error);
@@ -256,7 +318,7 @@ router.post("/logout", authenticateToken, async (req, res) => {
   }
 });
 
-// NEW DELETE /api/delete-account - Delete account endpoint
+// DELETE /api/delete-account - Delete account endpoint
 router.delete("/delete-account", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;

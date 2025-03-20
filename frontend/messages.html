@@ -715,6 +715,26 @@
       .reject-btn:hover {
         background: rgba(255, 0, 0, 0.7);
       }
+
+      .efforts-container {
+        flex: 1;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        z-index: 5;
+      }
+
+      .efforts-content {
+        text-align: center;
+        color: #fff;
+        font-size: 18px;
+        font-style: italic;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        max-width: 80%;
+      }
     </style>
   </head>
   <body>
@@ -787,9 +807,6 @@
               </div>
             </div>
             <div class="actions">
-              <div class="icon">
-                <i class="fas fa-phone"></i>
-              </div>
               <div class="icon actions-icon" id="actionsIcon">
                 <i class="fas fa-ellipsis-vertical"></i>
                 <div class="chat-actions-dropdown" id="chatActionsDropdown">
@@ -813,6 +830,18 @@
               <button class="accept-btn">Accept</button>
               <button class="reject-btn">Reject</button>
             </div>
+            <p>
+              Here, you may engage in a video call to forge connections with
+              fellow study companions.
+            </p>
+          </div>
+        </div>
+        <div class="efforts-container">
+          <div class="efforts-content">
+            <p>
+              Here you can see who has bestowed a rose upon you or whispered
+              sweet words in a comment.
+            </p>
           </div>
         </div>
         <button class="plus-btn">+</button>
@@ -935,27 +964,37 @@
               messageDiv.classList.add("message-item");
               messageDiv.dataset.matchId = item.matchId;
               messageDiv.innerHTML = `
-                <div class="avatar"></div>
-                <div class="details">
-                  <div class="name">${item.name}</div>
-                  <div class="snippet">${item.snippet}</div>
-                </div>
-                <div class="time">${item.time}</div>
-              `;
+        <div class="avatar"></div>
+        <div class="details">
+          <div class="name">${item.name}</div>
+          <div class="snippet">${item.snippet}</div>
+        </div>
+        <div class="time">${item.time}</div>
+      `;
               messageList.appendChild(messageDiv);
             });
           }
 
+          // Toggle visibility of chat, buddy-up, and efforts sections
+          const effortsContainer = document.querySelector(".efforts-container");
           if (selectedOption.toLowerCase() === "buddy up") {
             blurContainer.style.display = "none";
             plusBtn.style.display = "none";
             optionsMenu.style.display = "none";
             buddyUpContainer.style.display = "flex";
+            effortsContainer.style.display = "none";
+          } else if (selectedOption.toLowerCase() === "efforts") {
+            blurContainer.style.display = "none";
+            plusBtn.style.display = "none";
+            optionsMenu.style.display = "none";
+            buddyUpContainer.style.display = "none";
+            effortsContainer.style.display = "flex";
           } else {
             blurContainer.style.display = "flex";
             plusBtn.style.display = "flex";
             optionsMenu.style.display = "block";
             buddyUpContainer.style.display = "none";
+            effortsContainer.style.display = "none";
           }
 
           const messageItems = document.querySelectorAll(".message-item");

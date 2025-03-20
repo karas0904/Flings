@@ -809,6 +809,10 @@
         cards.forEach((card) => {
           card.addEventListener("click", function (e) {
             e.stopPropagation();
+            // Only allow expansion if the card is focused
+            if (!card.classList.contains("focused")) {
+              return; // Do nothing if the card is not focused (i.e., blurred)
+            }
             if (!card.classList.contains("expanded")) {
               if (expandedCard) {
                 expandedCard.classList.remove("expanded");

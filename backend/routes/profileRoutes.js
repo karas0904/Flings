@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Like from "../models/Like.js";
 
 const router = express.Router();
 
@@ -15,6 +16,31 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+
+router.post("/like-profile", authenticateToken, async (req, res) => {
+  const { profileId } = req.body;
+  const userId = req.user.id;
+
+  if (!profileId) {
+    return res.status(400).json({ message: "Profile ID is required" });
+  }
+
+  try {
+    const existingLike = await Like.findOne({ userId, profileId });
+    if (existingLike) {
+      return res
+        .status(400)
+        .json({ message: "You already liked this profile" });
+    }
+
+    const like = new Like({ userId, profileId });
+    await like.save();
+    res.status(201).json({ message: "Profile liked successfully", like });
+  } catch (error) {
+    console.error("Error saving like:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // POST /api/profile - Update user profile
 router.post("/profile", authenticateToken, async (req, res) => {

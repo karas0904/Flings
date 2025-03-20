@@ -16,6 +16,8 @@ import profileRoutes from "./routes/profileRoutes.js"; // Default import
 import { createServer } from "http"; // Import HTTP server module
 import { Server } from "socket.io"; // Import Socket.IO
 import wrap from "./utils/wrap.js"; // Import a utility to wrap middleware for Socket.IO
+import Like from "../models/Like.js"; // Adjust the path to your Like model
+import jwt from "jsonwebtoken"; // Assuming you're using JWT for auth
 
 import "./config/passport.js";
 

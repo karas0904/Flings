@@ -1306,33 +1306,69 @@
       }
 
       // Function to fetch all profiles from backend
+      // Function to fetch all profiles from backend
       async function fetchProfiles() {
         const token = localStorage.getItem("jwtToken");
         if (!token) {
-          console.error("No JWT token found in localStorage");
+          alert("Please log in!");
+          window.location.href = "login.html";
           return [];
         }
 
         try {
-          const response = await fetch("http://localhost:3000/api/profiles", {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          // Fetch all profiles
+          const profilesResponse = await fetch(
+            "http://localhost:3000/api/profiles",
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to fetch profiles");
+          if (!profilesResponse.ok) {
+            throw new Error(
+              "Failed to fetch profiles: " + profilesResponse.status
+            );
           }
 
-          const profiles = await response.json();
-          console.log("Raw profiles from /api/profiles:", profiles); // Add this
-          return profiles;
+          const profiles = await profilesResponse.json(); // ✅ Corrected to use profilesResponse
+          console.log("Raw profiles from /api/profiles:", profiles);
+
+          // Fetch the current user's likes
+          const likesResponse = await fetch(
+            "http://localhost:3000/api/my-likes",
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (!likesResponse.ok) {
+            throw new Error("Failed to fetch likes: " + likesResponse.status);
+          }
+
+          const myLikes = await likesResponse.json();
+          console.log("My likes:", myLikes);
+
+          // Add like status to profiles
+          const likedProfileIds = new Set(
+            myLikes.map((like) => like.profileId.toString())
+          );
+          const profilesWithLikeStatus = profiles.map((profile) => ({
+            ...profile,
+            isLiked: likedProfileIds.has(profile._id.toString()),
+          }));
+
+          return profilesWithLikeStatus; // ✅ Return the processed profiles
         } catch (error) {
-          console.error("Error fetching profiles:", error);
-          return [];
+          console.error("Error fetching profiles or likes:", error);
+          return []; // Return an empty array in case of error to prevent undefined
         }
       }
 
@@ -1446,6 +1482,13 @@
         let profiles = [];
 
         profiles = await fetchProfiles();
+        console.log("Profiles loaded:", profiles);
+
+        function displayProfiles(profilesData) {
+          // Optional: Add a function to handle displaying profiles if needed
+          console.log("Displaying profiles:", profilesData);
+          loadProfiles(); // Call loadProfiles directly or process profilesData here
+        }
 
         function loadProfiles() {
           const profileList = document.getElementById("profileList");
@@ -1509,6 +1552,9 @@
 
             const heartButton = document.createElement("button");
             heartButton.classList.add("heart-button");
+            if (profile.isLiked) {
+              heartButton.classList.add("active"); // ✅ Set active class if profile is liked
+            }
             const heartIcon = document.createElement("img");
             heartIcon.src = "heart-icon.svg"; // Ensure correct path
             heartIcon.alt = "Heart Icon";
@@ -1529,8 +1575,9 @@
 
             profileList.appendChild(profileCard);
 
-            heartButton.addEventListener("click", function () {
-              this.classList.add("active");
+            heartButton.addEventListener("click", async function () {
+              const wasLiked = this.classList.contains("active");
+              this.classList.toggle("active"); // Toggle the active state
               setTimeout(() => {
                 this.style.animation = "heartbeat 1s ease";
                 this.addEventListener(
@@ -1541,6 +1588,43 @@
                   { once: true }
                 );
               }, 100);
+
+              const token = localStorage.getItem("jwtToken");
+              if (!token) {
+                alert("Please log in to like profiles!");
+                this.classList.toggle("active", wasLiked); // Revert if not logged in
+                return;
+              }
+
+              const profileId = profile._id;
+              try {
+                const response = await fetch(
+                  "http://localhost:3000/api/like-profile",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ profileId }),
+                  }
+                );
+
+                const result = await response.json();
+                if (response.ok) {
+                  console.log("Like saved:", result);
+                  profile.isLiked = !wasLiked; // Update the local state
+                  alert("Profile liked successfully!");
+                } else {
+                  console.error("Like failed:", result);
+                  this.classList.toggle("active", wasLiked); // Revert on failure
+                  alert("Failed to like profile: " + result.message);
+                }
+              } catch (error) {
+                console.error("Error liking profile:", error);
+                this.classList.toggle("active", wasLiked); // Revert on error
+                alert("An error occurred while liking the profile.");
+              }
             });
 
             [profileNameAge, profileDetails, profileBio].forEach((element) => {
@@ -1731,7 +1815,7 @@
           const detailHeartButton = document.querySelector(
             ".detail-heart-button"
           );
-          detailHeartButton.addEventListener("click", function () {
+          detailHeartButton.addEventListener("click", async function () {
             this.classList.toggle("active");
             setTimeout(() => {
               this.style.animation = "heartbeat 1s ease";
@@ -1743,6 +1827,39 @@
                 { once: true }
               );
             }, 100);
+
+            const token = localStorage.getItem("jwtToken");
+            if (!token) {
+              alert("Please log in to like profiles!");
+              return;
+            }
+
+            const profileId = profile._id; // Same profile object from showProfileDetails
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/like-profile",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ profileId }),
+                }
+              );
+
+              const result = await response.json();
+              if (response.ok) {
+                console.log("Like saved:", result);
+                alert("Profile liked successfully!");
+              } else {
+                console.error("Like failed:", result);
+                alert("Failed to like profile: " + result.message);
+              }
+            } catch (error) {
+              console.error("Error liking profile:", error);
+              alert("An error occurred while liking the profile.");
+            }
           });
         }
 

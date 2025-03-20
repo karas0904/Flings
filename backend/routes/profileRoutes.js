@@ -42,6 +42,121 @@ router.post("/like-profile", authenticateToken, async (req, res) => {
   }
 });
 
+// ... (existing imports and code)
+
+router.get("/liked-profiles", authenticateToken, async (req, res) => {
+  const userId = req.user.id; // Current user's ID from JWT
+
+  try {
+    // Find all likes where this user's profile was liked
+    const likes = await Like.find({ profileId: userId })
+      .populate("userId", "firstName photos") // Populate the liker's details
+      .lean();
+
+    if (!likes.length) {
+      return res
+        .status(200)
+        .json({ message: "No one has liked your profile yet", profiles: [] });
+    }
+
+    // Map to a format showing who liked you
+    const likedByProfiles = likes.map((like) => ({
+      id: like.userId._id,
+      name: like.userId.firstName,
+      photo: like.userId.photos[0] || "default-profile.jpg",
+      timestamp: like.timestamp, // Optional: when they liked you
+    }));
+
+    res
+      .status(200)
+      .json({ message: "Profiles that liked you", profiles: likedByProfiles });
+  } catch (error) {
+    console.error("Error fetching liked profiles:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/my-likes", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const likes = await Like.find({ userId }).lean();
+    res.status(200).json(likes); // Returns array of like objects with profileId
+  } catch (error) {
+    console.error("Error fetching my likes:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+//trending pages api
+router.get("/trending-profiles", authenticateToken, async (req, res) => {
+  try {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    // Aggregate likes from the past week
+    const trendingProfiles = await Like.aggregate([
+      { $match: { timestamp: { $gte: oneWeekAgo } } },
+      { $group: { _id: "$profileId", likeCount: { $sum: 1 } } },
+      { $sort: { likeCount: -1 } },
+      { $limit: 10 },
+    ]);
+
+    const profileIds = trendingProfiles.map((profile) => profile._id);
+    const profiles = await User.find({ _id: { $in: profileIds } }).select(
+      "firstName photos age courseStudy height birthday year partyPerson smoking drinking pets"
+    );
+
+    console.log("Profiles from DB:", profiles); // Debugging
+
+    const formattedProfiles = trendingProfiles.map((trend) => {
+      const user = profiles.find((p) => p._id.equals(trend._id));
+      console.log("User for profileId", trend._id, ":", user); // Debugging
+
+      let calculatedAge = user.age;
+      if (!calculatedAge && user.birthday) {
+        const today = new Date();
+        const birthDate = new Date(
+          `${user.birthday.year}-${user.birthday.month}-${user.birthday.day}`
+        );
+        calculatedAge = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          calculatedAge--;
+        }
+      }
+
+      return {
+        id: trend._id,
+        name: user ? user.firstName : "Unknown",
+        photos:
+          user && user.photos.length > 0
+            ? user.photos
+            : ["https://via.placeholder.com/200"], // Return full photos array
+        likeCount: trend.likeCount,
+        age: calculatedAge || "N/A",
+        courseStudy: user ? user.courseStudy || "N/A" : "N/A",
+        height: user ? user.height || "N/A" : "N/A",
+        year: user ? user.year || "N/A" : "N/A",
+        partyPerson: user ? user.partyPerson || "N/A" : "N/A",
+        smoking: user ? user.smoking || "N/A" : "N/A",
+        drinking: user ? user.drinking || "N/A" : "N/A",
+        pets: user ? user.pets || "N/A" : "N/A",
+      };
+    });
+
+    res.status(200).json({
+      message: "Top trending profiles",
+      profiles: formattedProfiles,
+    });
+  } catch (error) {
+    console.error("Error fetching trending profiles:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // POST /api/profile - Update user profile
 router.post("/profile", authenticateToken, async (req, res) => {
   try {

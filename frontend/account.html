@@ -1374,6 +1374,45 @@
       .set-profile-btn:hover {
         background: rgba(0, 0, 0, 0.9);
       }
+
+      .bell-container {
+        position: relative;
+        cursor: pointer;
+      }
+
+      .bell-dropdown {
+        position: absolute;
+        top: 35px; /* Adjust based on bell size */
+        right: 0;
+        background: rgba(0, 0, 0, 0.95);
+        border-radius: 10px;
+        border: 1px solid rgba(145, 145, 145, 0.388);
+        width: 200px;
+        z-index: 101; /* Above other elements */
+        color: white;
+      }
+
+      .bell-dropdown ul {
+        list-style: none;
+        padding: 10px;
+        margin: 0;
+      }
+
+      .bell-dropdown li {
+        padding: 8px 10px;
+        font-size: 14px;
+        font-family: "Raleway", sans-serif;
+      }
+
+      .bell-dropdown li:hover {
+        background: rgba(139, 139, 139, 0.1);
+        border-radius: 5px;
+      }
+
+      .bell-dropdown a {
+        color: white;
+        text-decoration: none;
+      }
     </style>
   </head>
   <body>
@@ -1387,7 +1426,13 @@
         <h1>ACCOUNT</h1>
         <div class="account-name"></div>
       </div>
-      <i class="fa fa-bell"></i>
+      <div class="bell-container">
+        <i class="fa fa-bell" id="bellIcon"></i>
+        <div class="bell-dropdown" id="bellDropdown" style="display: none">
+          <ul id="likedProfilesList"></ul>
+          <!--populate dynamically -->
+        </div>
+      </div>
     </div>
 
     <!-- Sidebar (left fixed sidebar) -->
@@ -2537,6 +2582,106 @@
           await saveProfileData("photos", uploadedImages);
         }
       }
+      // Fetch liked profiles from the backend
+      // Fetch profiles that liked you
+      async function fetchLikedProfiles() {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/liked-profiles",
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          const result = await response.json();
+          if (response.ok) {
+            displayLikedProfiles(result.profiles);
+          } else {
+            console.error("Failed to fetch liked profiles:", result.message);
+            displayLikedProfiles([]);
+          }
+        } catch (error) {
+          console.error("Error fetching liked profiles:", error);
+          displayLikedProfiles([]);
+        }
+      }
+
+      // Display profiles that liked you in the bell dropdown
+      function displayLikedProfiles(profiles) {
+        const dropdownList = document.querySelector(".bell-dropdown ul");
+        dropdownList.innerHTML = ""; // Clear existing content
+
+        if (profiles.length === 0) {
+          const li = document.createElement("li");
+          li.textContent = "No likes yet";
+          dropdownList.appendChild(li);
+          return;
+        }
+
+        profiles.forEach((profile) => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = "#"; // Could link to their profile later
+          a.textContent = `${profile.name} liked you`;
+          a.style.display = "flex";
+          a.style.alignItems = "center";
+          if (profile.photo) {
+            const img = document.createElement("img");
+            img.src = profile.photo;
+            img.alt = `${profile.name}'s photo`;
+            img.style.width = "30px";
+            img.style.height = "30px";
+            img.style.borderRadius = "50%";
+            img.style.marginRight = "10px";
+            a.insertBefore(img, a.firstChild);
+          }
+          li.appendChild(a);
+          dropdownList.appendChild(li);
+        });
+      }
+
+      // Bell icon click handler
+      document
+        .getElementById("bellIcon")
+        .addEventListener("click", function (e) {
+          e.stopPropagation();
+          const dropdown = document.getElementById("bellDropdown");
+          if (
+            dropdown.style.display === "none" ||
+            dropdown.style.display === ""
+          ) {
+            fetchLikedProfiles(); // Fetch on click
+            dropdown.style.display = "block";
+          } else {
+            dropdown.style.display = "none";
+          }
+        });
+
+      // Close dropdown when clicking outside
+      document.addEventListener("click", function (e) {
+        const dropdown = document.getElementById("bellDropdown");
+        const bellIcon = document.getElementById("bellIcon");
+        if (!bellIcon.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.style.display = "none";
+        }
+      });
+
+      // Optional: Fetch on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        storeToken();
+        fetchUserProfile();
+        // fetchLikedProfiles(); // Uncomment if you want it on load
+      });
     </script>
   </body>
 </html>

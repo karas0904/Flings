@@ -16,6 +16,17 @@
         font-family: Arial, sans-serif;
         background: #000; /* Fallback color */
         scroll-behavior: smooth; /* Smooth scrolling */
+        opacity: 0; /* Start with the page hidden */
+        animation: fadeIn 1s ease-in forwards; /* Fade in over 1 second */
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
       }
 
       /* Navbar Styles */
@@ -604,7 +615,7 @@
               <a
                 href="http://localhost:3000/auth/google?flow=login"
                 class="login-button"
-                >Login</a
+                >Sign-up</a
               >
             </li>
           </ul>
@@ -620,10 +631,10 @@
         <p class="sub-text">
           Where the Wi-Fi drops faster than your GPA, but the love stories
           rise<br />
-          faster than the hostel fees!
+          faster than the Chennai's heat!
         </p>
         <br />
-        <p class="sub-text">Already a user tehen just...</p>
+        <p class="sub-text">Already a user then just...</p>
         <a
           href="http://localhost:3000/auth/google?flow=sinkin"
           class="sink-button"

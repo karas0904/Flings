@@ -33,8 +33,8 @@
         height: 500px;
         border-radius: 50px;
         filter: blur(100px);
-        z-index: -1;
-        opacity: 0.4;
+        z-index: -2;
+        opacity: 0.2;
       }
 
       .red-shape {
@@ -46,8 +46,8 @@
 
       .blue-shape {
         background: rgba(135, 206, 250, 0.7);
-        bottom: 10%;
-        right: 5%;
+        bottom: -150px;
+        right: -1%;
         transform: rotate(45deg);
       }
 
@@ -885,14 +885,6 @@
         const messageInput = document.querySelector(".message-input");
         const sendBtn = document.querySelector(".send-btn");
 
-        function getEffortsData() {
-          return JSON.parse(localStorage.getItem("efforts")) || [];
-        }
-
-        function getBuddyUpData() {
-          return JSON.parse(localStorage.getItem("buddyUp")) || [];
-        }
-
         const messagesData = [
           {
             matchId: "67d5827fe677150f33b2adbf",
@@ -925,46 +917,31 @@
         function updateMessageList(selectedOption) {
           messageList.innerHTML = "";
           let data;
-          if (selectedOption.toLowerCase() === "efforts") {
-            data = getEffortsData();
-          } else if (selectedOption.toLowerCase() === "buddy up") {
-            data = getBuddyUpData();
-          } else {
+
+          if (selectedOption.toLowerCase() === "messages") {
             data = messagesData;
-          }
-
-          console.log("Selected Option:", selectedOption);
-          console.log("buddyUpContainer:", buddyUpContainer);
-          console.log("blurContainer:", blurContainer);
-
-          if (data.length === 0) {
+          } else {
+            // For Efforts and Buddy Up, always show "No profiles saved yet."
             const noDataMessage = document.createElement("div");
             noDataMessage.classList.add("message-item", "simplified");
             noDataMessage.textContent = "No profiles saved yet.";
             messageList.appendChild(noDataMessage);
-          } else {
-            data.forEach((item, index) => {
+            data = []; // Empty data to skip further processing
+          }
+
+          if (data.length > 0) {
+            data.forEach((item) => {
               const messageDiv = document.createElement("div");
-              if (selectedOption.toLowerCase() === "messages") {
-                messageDiv.classList.add("message-item");
-                messageDiv.dataset.matchId = item.matchId;
-                messageDiv.innerHTML = `
-                  <div class="avatar"></div>
-                  <div class="details">
-                    <div class="name">${item.name}</div>
-                    <div class="snippet">${item.snippet}</div>
-                  </div>
-                  <div class="time">${item.time}</div>
-                `;
-              } else {
-                messageDiv.classList.add("message-item", "simplified");
-                messageDiv.innerHTML = `
+              messageDiv.classList.add("message-item");
+              messageDiv.dataset.matchId = item.matchId;
+              messageDiv.innerHTML = `
+                <div class="avatar"></div>
+                <div class="details">
                   <div class="name">${item.name}</div>
-                  <button class="remove-btn" data-index="${index}" data-category="${selectedOption
-                  .toLowerCase()
-                  .replace(" ", "")}">✕</button>
-                `;
-              }
+                  <div class="snippet">${item.snippet}</div>
+                </div>
+                <div class="time">${item.time}</div>
+              `;
               messageList.appendChild(messageDiv);
             });
           }
@@ -975,7 +952,7 @@
             optionsMenu.style.display = "none";
             buddyUpContainer.style.display = "flex";
           } else {
-            blurContainer.style.display = "flex"; /* Ensure flex display */
+            blurContainer.style.display = "flex";
             plusBtn.style.display = "flex";
             optionsMenu.style.display = "block";
             buddyUpContainer.style.display = "none";
@@ -991,28 +968,6 @@
               loadMessages(matchId, name);
             });
           });
-
-          const removeButtons = document.querySelectorAll(".remove-btn");
-          removeButtons.forEach((button) => {
-            button.addEventListener("click", (event) => {
-              event.stopPropagation();
-              const index = parseInt(button.dataset.index, 10);
-              const category = button.dataset.category;
-              removeProfile(category, index);
-              updateMessageList(selectedOption);
-            });
-          });
-        }
-
-        function removeProfile(category, index) {
-          const profiles = JSON.parse(localStorage.getItem(category)) || [];
-          if (index >= 0 && index < profiles.length) {
-            profiles.splice(index, 1);
-            localStorage.setItem(category, JSON.stringify(profiles));
-            console.log(`Profile removed from ${category} at index ${index}`);
-          } else {
-            console.error(`Invalid index ${index} for category ${category}`);
-          }
         }
 
         function handleDropdownSelection(event) {

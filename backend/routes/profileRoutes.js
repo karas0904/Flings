@@ -103,7 +103,7 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
 
     const profileIds = trendingProfiles.map((profile) => profile._id);
     const profiles = await User.find({ _id: { $in: profileIds } }).select(
-      "firstName photos age courseStudy height birthday year partyPerson smoking drinking pets"
+      "firstName photos age courseStudy height birthday year partyPerson smoking drinking pets bio"
     );
 
     console.log("Profiles from DB:", profiles); // Debugging
@@ -144,6 +144,7 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
         smoking: user ? user.smoking || "N/A" : "N/A",
         drinking: user ? user.drinking || "N/A" : "N/A",
         pets: user ? user.pets || "N/A" : "N/A",
+        bio: user ? user.bio || "No bio provided" : "No bio provided",
       };
     });
 

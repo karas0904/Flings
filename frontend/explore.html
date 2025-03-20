@@ -554,6 +554,12 @@
         outline: none;
       }
 
+      .comment-input:disabled {
+        background: #e0e0e0; /* Keep the same background */
+        color: #999; /* Gray out the text for a disabled look */
+        cursor: not-allowed; /* Show a "not allowed" cursor */
+      }
+
       .external-buttons {
         position: absolute;
         top: calc(50% + 190px);
@@ -889,15 +895,6 @@
 
       .side-navbar .bottom-buttons button:hover {
         background-color: rgba(255, 255, 255, 0.2);
-      }
-
-      .side-navbar .bottom-buttons button.delete-account {
-        background-color: rgba(250, 37, 37, 0.7);
-        border: 0px solid rgba(250, 37, 37, 0.7);
-      }
-
-      .side-navbar .bottom-buttons button.delete-account:hover {
-        background-color: rgba(255, 87, 87, 0.9);
       }
 
       .account-section {
@@ -1250,9 +1247,6 @@
       </div>
       <div class="bottom-buttons">
         <button onclick="logout()">Logout</button>
-        <button class="delete-account" onclick="deleteAccount()">
-          Delete Account
-        </button>
       </div>
     </div>
 
@@ -1306,7 +1300,6 @@
       }
 
       // Function to fetch all profiles from backend
-      // Function to fetch all profiles from backend
       async function fetchProfiles() {
         const token = localStorage.getItem("jwtToken");
         if (!token) {
@@ -1334,7 +1327,7 @@
             );
           }
 
-          const profiles = await profilesResponse.json(); // ✅ Corrected to use profilesResponse
+          const profiles = await profilesResponse.json();
           console.log("Raw profiles from /api/profiles:", profiles);
 
           // Fetch the current user's likes
@@ -1363,15 +1356,17 @@
           const profilesWithLikeStatus = profiles.map((profile) => ({
             ...profile,
             isLiked: likedProfileIds.has(profile._id.toString()),
+            hasRose: false, // Add hasRose field (default false; update via backend if needed)
           }));
 
-          return profilesWithLikeStatus; // ✅ Return the processed profiles
+          return profilesWithLikeStatus;
         } catch (error) {
           console.error("Error fetching profiles or likes:", error);
-          return []; // Return an empty array in case of error to prevent undefined
+          return [];
         }
       }
 
+      // Function to update sidebar with user data
       function updateSidebar(userData) {
         const accountImage = document.querySelector(".account-image");
         const accountName = document.querySelector(".account-name");
@@ -1424,55 +1419,7 @@
         button.disabled = false;
       }
 
-      // Delete Account function
-      async function deleteAccount() {
-        const button = document.querySelector(
-          ".side-navbar .bottom-buttons .delete-account"
-        );
-        const confirmDelete = confirm(
-          "Are you sure you want to delete your account? This cannot be undone."
-        );
-        if (!confirmDelete) return;
-
-        button.textContent = "Deleting...";
-        button.disabled = true;
-
-        const token = localStorage.getItem("jwtToken");
-        if (!token) {
-          alert("You are not logged in!");
-          window.location.href = "login.html";
-          return;
-        }
-
-        try {
-          const response = await fetch(
-            "http://localhost:3000/api/delete-account",
-            {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to delete account");
-          }
-
-          alert("Your account has been deleted successfully.");
-          localStorage.removeItem("jwtToken");
-          window.location.href = "login.html";
-        } catch (error) {
-          console.error("Error deleting account:", error);
-          alert("Error deleting account: " + error.message);
-        } finally {
-          button.textContent = "Delete Account";
-          button.disabled = false;
-        }
-      }
-
+      // Main DOMContentLoaded event listener
       document.addEventListener("DOMContentLoaded", async function () {
         storeToken();
         fetchUserProfile();
@@ -1483,12 +1430,6 @@
 
         profiles = await fetchProfiles();
         console.log("Profiles loaded:", profiles);
-
-        function displayProfiles(profilesData) {
-          // Optional: Add a function to handle displaying profiles if needed
-          console.log("Displaying profiles:", profilesData);
-          loadProfiles(); // Call loadProfiles directly or process profilesData here
-        }
 
         function loadProfiles() {
           const profileList = document.getElementById("profileList");
@@ -1546,22 +1487,24 @@
             commentInbox.classList.add("comment-inbox");
             const commentInput = document.createElement("input");
             commentInput.type = "text";
-            commentInput.placeholder = "Add a comment...";
+            commentInput.placeholder =
+              "by giving the rose only the comment would be enabled";
+            commentInput.disabled = true; // Disable the input by default
             commentInput.classList.add("comment-input");
             commentInbox.appendChild(commentInput);
 
             const heartButton = document.createElement("button");
             heartButton.classList.add("heart-button");
             if (profile.isLiked) {
-              heartButton.classList.add("active"); // ✅ Set active class if profile is liked
+              heartButton.classList.add("active");
             }
             const heartIcon = document.createElement("img");
-            heartIcon.src = "heart-icon.svg"; // Ensure correct path
+            heartIcon.src = "heart-icon.svg";
             heartIcon.alt = "Heart Icon";
             heartIcon.classList.add("heart-icon");
             heartIcon.onerror = () => {
               console.error("Failed to load heart-icon.svg, using fallback");
-              heartButton.innerHTML = '<i class="fa-solid fa-heart"></i>'; // Fallback
+              heartButton.innerHTML = '<i class="fa-solid fa-heart"></i>';
             };
             heartButton.appendChild(heartIcon);
 
@@ -1575,9 +1518,10 @@
 
             profileList.appendChild(profileCard);
 
+            // Heart button event listener
             heartButton.addEventListener("click", async function () {
               const wasLiked = this.classList.contains("active");
-              this.classList.toggle("active"); // Toggle the active state
+              this.classList.toggle("active");
               setTimeout(() => {
                 this.style.animation = "heartbeat 1s ease";
                 this.addEventListener(
@@ -1592,7 +1536,7 @@
               const token = localStorage.getItem("jwtToken");
               if (!token) {
                 alert("Please log in to like profiles!");
-                this.classList.toggle("active", wasLiked); // Revert if not logged in
+                this.classList.toggle("active", wasLiked);
                 return;
               }
 
@@ -1613,26 +1557,68 @@
                 const result = await response.json();
                 if (response.ok) {
                   console.log("Like saved:", result);
-                  profile.isLiked = !wasLiked; // Update the local state
+                  profile.isLiked = !wasLiked;
                   alert("Profile liked successfully!");
                 } else {
                   console.error("Like failed:", result);
-                  this.classList.toggle("active", wasLiked); // Revert on failure
+                  this.classList.toggle("active", wasLiked);
                   alert("Failed to like profile: " + result.message);
                 }
               } catch (error) {
                 console.error("Error liking profile:", error);
-                this.classList.toggle("active", wasLiked); // Revert on error
+                this.classList.toggle("active", wasLiked);
                 alert("An error occurred while liking the profile.");
               }
             });
 
+            // Rose button event listener (single click to enable comment)
+            const externalRoseButton = document.querySelector(".rose-button");
+            externalRoseButton.dataset.profileIndex = i;
+
+            externalRoseButton.addEventListener("click", function () {
+              const profileIndex = parseInt(this.dataset.profileIndex);
+              const currentCommentInput =
+                profileList.children[profileIndex].querySelector(
+                  ".comment-input"
+                );
+
+              // Toggle active state first
+              this.classList.toggle("active");
+
+              // Add shine effect
+              this.classList.add("shine");
+              setTimeout(() => {
+                this.classList.remove("shine");
+              }, 600);
+
+              // Check state after toggle
+              const isActive = this.classList.contains("active");
+              if (isActive) {
+                currentCommentInput.disabled = false;
+                currentCommentInput.placeholder = "Add a comment...";
+                profiles[profileIndex].hasRose = true; // Update local state
+              } else {
+                currentCommentInput.disabled = true;
+                currentCommentInput.placeholder =
+                  "by giving the rose only the comment would be enabled";
+                profiles[profileIndex].hasRose = false; // Update local state
+              }
+
+              // Optional: Save profile under "efforts" when rose is given
+              const currentProfile = profiles[profileIndex];
+              if (currentProfile && isActive) {
+                saveProfile("efforts", currentProfile);
+              }
+            });
+
+            // Clickable profile info to show details
             [profileNameAge, profileDetails, profileBio].forEach((element) => {
               element.addEventListener("click", () =>
                 showProfileDetails(profile)
               );
             });
 
+            // No-named button to scroll to next profile
             noNamedButton.addEventListener("click", function () {
               currentProfileIndex++;
               if (currentProfileIndex >= loadedProfiles) {
@@ -1653,8 +1639,10 @@
           }
         }
 
+        // Load initial profiles
         loadProfiles();
 
+        // Utility function to check if scrolled near bottom
         function isNearBottom(element) {
           const lastProfile = element.lastElementChild;
           if (!lastProfile) return false;
@@ -1663,6 +1651,7 @@
           return lastProfileRect.bottom <= containerRect.bottom + 50;
         }
 
+        // Scroll to specific profile
         function scrollToProfile(index) {
           const profileList = document.getElementById("profileList");
           const profilesElements = profileList.children;
@@ -1673,11 +1662,34 @@
               top: targetPosition,
               behavior: "smooth",
             });
+
+            // Update rose button state
+            const roseButton = document.querySelector(".rose-button");
+            const currentProfile = profiles[index];
+            roseButton.dataset.profileIndex = index;
+            if (currentProfile.hasRose) {
+              roseButton.classList.add("active");
+            } else {
+              roseButton.classList.remove("active");
+            }
+
+            // Sync comment input state
+            const currentCommentInput =
+              profilesElements[index].querySelector(".comment-input");
+            if (roseButton.classList.contains("active")) {
+              currentCommentInput.disabled = false;
+              currentCommentInput.placeholder = "Add a comment...";
+            } else {
+              currentCommentInput.disabled = true;
+              currentCommentInput.placeholder =
+                "by giving the rose only the comment would be enabled";
+            }
           }
         }
 
         let currentProfileIndex = 0;
 
+        // Scroll event listener for profile list
         document
           .getElementById("profileList")
           .addEventListener("scroll", function () {
@@ -1701,6 +1713,7 @@
             }
           });
 
+        // Keyboard navigation for profile list
         document
           .getElementById("profileList")
           .addEventListener("keydown", function (event) {
@@ -1727,6 +1740,7 @@
         document.getElementById("profileList").setAttribute("tabindex", "0");
         document.getElementById("profileList").focus();
 
+        // Sidebar hover effects
         document
           .querySelectorAll(".side-navbar .top-items a")
           .forEach((link) => {
@@ -1749,6 +1763,7 @@
             });
           });
 
+        // Show profile details
         function showProfileDetails(profile) {
           const profileList = document.getElementById("profileList");
           const profileDetailsBox =
@@ -1765,22 +1780,17 @@
           profileImage.src = profile.image;
           profileImage.alt = `${profile.name}'s image 1`;
 
-          // Clear existing content in scroll container
           scrollContainer.innerHTML = "";
-
-          // Define the items with icons (including height)
           const details = [
-            { icon: "fa-regular fa-user", text: profile.age || "N/A" }, // Age
-            { icon: "fa-solid fa-graduation-cap", text: profile.year || "N/A" }, // Year
+            { icon: "fa-regular fa-user", text: profile.age || "N/A" },
+            { icon: "fa-solid fa-graduation-cap", text: profile.year || "N/A" },
             {
               icon: "fa-solid fa-book-open",
               text: profile.department || "N/A",
-            }, // Department
-            { icon: "fa-solid fa-ruler", text: profile.height || "N/A" }, // Height (already present)
-            { icon: "fa-solid fa-house", text: profile.hometown || "N/A" }, // Hometown
+            },
+            { icon: "fa-solid fa-ruler", text: profile.height || "N/A" },
+            { icon: "fa-solid fa-house", text: profile.hometown || "N/A" },
           ];
-
-          // Populate the scroll container
           details.forEach((item) => {
             const span = document.createElement("span");
             span.classList.add("scroll-item");
@@ -1788,7 +1798,6 @@
             scrollContainer.appendChild(span);
           });
 
-          // Display quotes if they exist
           if (profile.quotes && profile.quotes.length > 0) {
             quote1.innerHTML = `<strong></strong> "${
               profile.quotes[0] || "No quote available"
@@ -1811,7 +1820,6 @@
 
           profileDetailsBox.classList.add("active");
 
-          // Add event listener for the heart button in the details box
           const detailHeartButton = document.querySelector(
             ".detail-heart-button"
           );
@@ -1834,7 +1842,7 @@
               return;
             }
 
-            const profileId = profile._id; // Same profile object from showProfileDetails
+            const profileId = profile._id;
             try {
               const response = await fetch(
                 "http://localhost:3000/api/like-profile",
@@ -1863,6 +1871,7 @@
           });
         }
 
+        // Close profile details
         window.closeProfileDetails = function () {
           const profileList = document.getElementById("profileList");
           const profileDetailsBox =
@@ -1872,36 +1881,28 @@
           const scrollContainer = document.getElementById("scrollContainer");
           const quote1 = document.getElementById("quote1");
 
-          // Remove active class to start fade-out transition
           profileDetailsBox.classList.remove("active");
-
-          // Clear content immediately (won’t affect transition)
           profileName.textContent = "";
           profileImage.src = "";
           profileImage.alt = "";
           scrollContainer.innerHTML = "";
           quote1.innerHTML = "";
-
-          // Remove blur class immediately; CSS transition will handle the fade
           profileList.classList.remove("blur");
         };
 
         const profileDetailsBox = document.getElementById("profileDetailsBox");
         profileDetailsBox.addEventListener(
           "wheel",
-          (event) => {
-            event.stopPropagation();
-          },
+          (event) => event.stopPropagation(),
           { passive: false }
         );
         profileDetailsBox.addEventListener(
           "touchmove",
-          (event) => {
-            event.stopPropagation();
-          },
+          (event) => event.stopPropagation(),
           { passive: false }
         );
 
+        // Share functionality
         const shareButton = document.querySelector('button[title="Share"]');
         const shareOptions = document.querySelector(".share-options");
 
@@ -1963,6 +1964,7 @@
           );
         }
 
+        // Save profile function
         function saveProfile(category, profile) {
           const existingProfiles =
             JSON.parse(localStorage.getItem(category)) || [];
@@ -1978,23 +1980,7 @@
           }
         }
 
-        document
-          .querySelector(".rose-button")
-          .addEventListener("click", function () {
-            this.classList.toggle("active");
-            this.classList.add("shine");
-            setTimeout(() => {
-              this.classList.remove("shine");
-            }, 600);
-
-            const currentProfile = profiles[currentProfileIndex];
-            if (currentProfile) {
-              saveProfile("efforts", currentProfile);
-            } else {
-              console.error("No profile selected to save under Efforts.");
-            }
-          });
-
+        // Buddy button event listener
         document
           .querySelector(".buddy-button")
           .addEventListener("click", function () {
@@ -2011,6 +1997,8 @@
               console.error("No profile selected to save under Buddy Up.");
             }
           });
+
+        // Save button event listener
         document
           .querySelector('button[title="Save"]')
           .addEventListener("click", async function () {
@@ -2034,7 +2022,7 @@
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                   },
-                  body: JSON.stringify({ profileId: currentProfile._id }), // Use _id here
+                  body: JSON.stringify({ profileId: currentProfile._id }),
                 }
               );
 
@@ -2053,26 +2041,7 @@
           });
       });
 
-      document
-        .querySelector(".buddy-button")
-        .addEventListener("click", function () {
-          this.classList.toggle("active");
-          this.classList.add("shine");
-          setTimeout(() => {
-            this.classList.remove("shine");
-          }, 600);
-        });
-
-      document
-        .querySelector(".rose-button")
-        .addEventListener("click", function () {
-          this.classList.toggle("active");
-          this.classList.add("shine");
-          setTimeout(() => {
-            this.classList.remove("shine");
-          }, 600);
-        });
-
+      // Toggle sidebar
       function toggleSidebar() {
         const sideNavbar = document.getElementById("sideNavbar");
         const hamburger = document.querySelector(".hamburger");

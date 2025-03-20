@@ -32,6 +32,23 @@
         position: relative;
         overflow: hidden;
         color: #fff;
+        opacity: 0; /* Start with the page hidden */
+        animation: fadeIn 1s ease-in forwards; /* Fade in over 1 second */
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        75% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 1;
+        }
       }
 
       /* Red and Blue blurred shapes */
@@ -280,7 +297,7 @@
       .extra-item {
         background: #f0f0f0;
         color: #333;
-        padding: 5px 5px;
+        padding: 5px 20px;
         border-radius: 50px;
         font-size: 8px;
       }
@@ -310,12 +327,21 @@
         transform: translateX(-50%);
         width: 90%;
         background: rgb(255, 255, 255);
-        padding: 5px;
+        padding: 10px;
         border-radius: 15px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         z-index: 2;
         height: 100px;
         border: 5px solid rgba(227, 227, 227, 0.942);
+        text-align: center;
+      }
+
+      .bio-text {
+        font-size: 14px;
+        color: #333;
+        margin: 0;
+        overflow-y: auto; /* Allow scrolling if bio is long */
+        max-height: 80px; /* Fit within overlay-box height */
       }
 
       /* Expanded Card */
@@ -361,7 +387,9 @@
       }
 
       .carousel-card.expanded .overlay-box {
-        display: block; /* Optional: keep if you want overlay content */
+        display: flex; /* Add Flexbox */
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
       }
 
       /* Navigation Buttons */
@@ -534,7 +562,7 @@
         </button>
       </div>
       <div class="carousel-note">
-        Top trending pages of the month would be displayed here
+        Top trending pages of the week would be displayed here
       </div>
     </div>
 
@@ -587,6 +615,7 @@
           card.classList.add("carousel-card");
           card.setAttribute("data-id", data.id);
           card.setAttribute("data-photos", JSON.stringify(data.photos));
+          card.setAttribute("data-bio", data.bio); // Store bio in a data attribute
           card.innerHTML = `
             <div class="card-image">
               <img src="${data.photos[0]}" alt="${data.name}">
@@ -608,7 +637,7 @@
               </div>
             </div>
             <div class="overlay-box">
-              <!-- Optional content can go here, no buttons -->
+              <p class="bio-text">${data.bio}</p> <!-- Display bio here -->
             </div>
           `;
           carousel.insertBefore(card, rightNav);

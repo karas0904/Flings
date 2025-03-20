@@ -20,6 +20,7 @@
         padding: 0;
         box-sizing: border-box;
       }
+
       body {
         font-family: Arial, sans-serif;
         background: #000;
@@ -27,6 +28,23 @@
         display: flex;
         position: relative;
         overflow: hidden;
+        opacity: 0; /* Start with the page hidden */
+        animation: fadeIn 1s ease-in forwards; /* Fade in over 1 second */
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        75% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 1;
+        }
       }
       .blur-shape {
         position: fixed;
@@ -528,8 +546,47 @@
       document.addEventListener("DOMContentLoaded", async () => {
         const profileIcon = document.querySelector(".profile-icon img");
         const storedImage = localStorage.getItem("profileImage");
+
+        // Set profile image from localStorage if available, then fetch from server
         if (storedImage) {
           profileIcon.src = storedImage;
+        }
+        await fetchUserProfile(); // Fetch and update profile image dynamically
+
+        // Fetch user profile from backend to get the photo
+        async function fetchUserProfile() {
+          const token = localStorage.getItem("jwtToken");
+          if (!token) {
+            console.error("No JWT token found");
+            return;
+          }
+
+          try {
+            const response = await fetch("http://localhost:3000/api/profile", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || "Failed to fetch profile");
+            }
+
+            const userData = await response.json();
+            console.log("User profile data:", userData);
+
+            // Update profile image if photos array exists and has at least one photo
+            if (userData.photos && userData.photos.length > 0) {
+              const profilePhoto = userData.photos[0]; // Use the first photo
+              profileIcon.src = profilePhoto;
+              localStorage.setItem("profileImage", profilePhoto); // Store in localStorage
+            }
+          } catch (error) {
+            console.error("Error fetching user profile:", error);
+          }
         }
 
         // Fetch saved profiles from backend

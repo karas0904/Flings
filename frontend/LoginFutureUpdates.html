@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Safety - Amourette</title>
+    <title>Future Features - Amourette</title>
     <link rel="icon" type="image/svg" href="Frame 1.svg" />
     <link
       href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=DM+Serif+Text:ital@1&display=swap"
@@ -104,15 +104,15 @@
         left: 0;
       }
 
-      /* Safety Content */
-      .safety-section {
+      /* Features Content */
+      .features-section {
         padding: 100px 60px 50px; /* Top padding for navbar, matches footer side padding */
         background: #fff; /* White background for content area */
         color: #333; /* Dark text for readability on white */
         min-height: 100vh; /* Ensures page isn’t too short */
       }
 
-      .safety-section h1 {
+      .features-section h1 {
         font-size: 40px;
         font-family: "DM Serif Text", serif;
         font-style: italic;
@@ -121,13 +121,13 @@
         color: #000; /* Black for emphasis */
       }
 
-      .safety-content {
+      .features-content {
         max-width: 800px;
         margin: 0 auto;
         padding: 0 20px;
       }
 
-      .safety-content h2 {
+      .features-content h2 {
         font-size: 24px;
         font-family: "Raleway", sans-serif;
         font-weight: 700;
@@ -136,7 +136,7 @@
         display: inline-block;
       }
 
-      .safety-content h2::after {
+      .features-content h2::after {
         content: "";
         position: absolute;
         bottom: -5px;
@@ -146,7 +146,7 @@
         background: #000; /* Underline for emphasis */
       }
 
-      .safety-content p {
+      .features-content p {
         font-size: 16px;
         font-family: "Raleway", sans-serif;
         line-height: 1.6;
@@ -233,19 +233,19 @@
           padding: 20px 30px;
         }
 
-        .safety-section {
+        .features-section {
           padding: 80px 30px 50px;
         }
 
-        .safety-section h1 {
+        .features-section h1 {
           font-size: 32px;
         }
 
-        .safety-content h2 {
+        .features-content h2 {
           font-size: 20px;
         }
 
-        .safety-content p {
+        .features-content p {
           font-size: 14px;
         }
 
@@ -267,15 +267,15 @@
           padding: 15px 20px;
         }
 
-        .safety-section {
+        .features-section {
           padding: 70px 20px 50px;
         }
 
-        .safety-section h1 {
+        .features-section h1 {
           font-size: 28px;
         }
 
-        .safety-content h2 {
+        .features-content h2 {
           font-size: 18px;
         }
       }
@@ -289,50 +289,37 @@
           <ul>
             <li><div class="logo">Amourette</div></li>
             <li><div class="vertical-line"></div></li>
-            <li><a href="account.html" class="nav-link">Account</a></li>
+            <li><a href="Login.html" class="nav-link">Home</a></li>
           </ul>
         </nav>
       </div>
     </header>
 
-    <!-- Safety Content -->
-    <section class="safety-section">
-      <h1>Your Safety Matters</h1>
-      <div class="safety-content">
-        <h2>Guided by Our Core Beliefs</h2>
+    <!-- Features Content -->
+    <section class="features-section">
+      <h1>Our Future Features</h1>
+      <div class="features-content">
+        <h2>Photo Detection</h2>
         <p>
-          At Amourette, we live by Authenticity, Courage, and Empathy—our ACE
-          principles. These values shape our community, guiding how we connect
-          both online and in person.
+          We’ve noticed that some users upload photos where their faces aren’t
+          visible. To enhance authenticity, we’re integrating machine learning
+          to ensure the first image you upload clearly shows your face—making
+          connections more genuine from the start.
         </p>
 
-        <h2>Constant Protection</h2>
+        <h2>Quote Recommendations</h2>
         <p>
-          Our safety team blends smart technology with human oversight to keep
-          Amourette a secure space. Reports are handled swiftly—whether by
-          automated systems or our expert moderators—to ensure your peace of
-          mind.
+          Personalize your profile with ease. Using machine learning, we’ll
+          recommend quotes tailored to your preferences. Simply choose the ones
+          you love, and they’ll be added to your account to reflect your unique
+          personality.
         </p>
 
-        <h2>Easy Reporting</h2>
+        <h2>GIF Uploads</h2>
         <p>
-          Feel something’s off? Report it anytime. Once flagged, that person
-          disappears from your view, and your report stays confidential to keep
-          you safe.
-        </p>
-
-        <h2>Date Follow-Up</h2>
-        <p>
-          We check in after your dates with a quick survey. Loved the vibe?
-          Great. Not so much? Let us know privately if anything felt wrong—it
-          helps us maintain a respectful community.
-        </p>
-
-        <h2>Kindness Required</h2>
-        <p>
-          Respect is non-negotiable. Rudeness, threats, or misuse of our tools
-          (like fake reports) isn’t tolerated. We’re here for real connections,
-          not drama.
+          Express yourself dynamically! Soon, you’ll be able to upload GIFs just
+          like quotes. These will appear on your profile, adding a fun and
+          lively touch to how you present yourself to the Amourette community.
         </p>
       </div>
     </section>
@@ -341,15 +328,14 @@
     <footer class="footer">
       <div class="footer-left">
         <div class="logo">Amourette</div>
-        <a href="FutureUpdates.html" class="features-link"
-          >See upcoming features >></a
-        >
         <p class="copyright">© 2025</p>
       </div>
       <div class="footer-right">
         <ul>
-          <li><a href="Terms-account.html">Terms</a></li>
-          <li><a href="report-account.html">Report a Problem</a></li>
+          <li><a href="safety.html">Safe Dating Tips</a></li>
+          <li><a href="FAQ.html">FAQ</a></li>
+          <li><a href="Terms.html">Terms</a></li>
+          <li><a href="Cookiepolicy.html">Cookie Policy</a></li>
         </ul>
       </div>
     </footer>

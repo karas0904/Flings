@@ -31,6 +31,23 @@
         position: relative;
         overflow: hidden;
         overflow-y: auto;
+        opacity: 0; /* Start with the page hidden */
+        animation: fadeIn 0.5s ease-in forwards; /* Fade in over 1 second */
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        75% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 1;
+        }
       }
 
       /* Red and Blue vertically tilted blurred rectangles */
@@ -1021,6 +1038,8 @@
         padding: 20px;
         max-width: 1200px; /* Limit width on large screens */
         margin: 0 auto; /* Center the content */
+        flex-wrap: wrap;
+        gap: 20px;
       }
 
       .footer-left {
@@ -1029,10 +1048,15 @@
         flex-direction: column;
         justify-content: space-between;
         padding-right: 20px;
+        min-width: 200px;
       }
 
       .footer-brand {
-        font-size: 50px; /* Base font size for large screens */
+        font-size: clamp(
+          24px,
+          5vw,
+          50px
+        ); /* Base font size for large screens */
         font-weight: bold;
         padding-bottom: 30px;
         margin-bottom: 15px;
@@ -1041,7 +1065,7 @@
       }
 
       .features-link {
-        font-size: 16px; /* Base font size for large screens */
+        font-size: clamp(12px, 3vw, 16px);
         color: rgb(0, 0, 0);
         text-decoration: none;
         margin-bottom: 20px;
@@ -1062,7 +1086,11 @@
       }
 
       .footer-trademark {
-        font-size: 14px; /* Base font size for large screens */
+        font-size: clamp(
+          10px,
+          2vw,
+          14px
+        ); /* Base font size for large screens */
         color: rgba(68, 68, 68, 0.812);
         margin-top: auto; /* Push to bottom of left column */
       }
@@ -1072,11 +1100,12 @@
         display: flex;
         justify-content: space-between;
         gap: 40px; /* Increased gap to shift content right */
-        margin-left: 40px; /* Added margin to shift content further right */
+        margin-left: 200px; /* Added margin to shift content further right */
       }
 
       .footer-column {
         flex: 1;
+        min-width: 100px;
       }
 
       .footer-section {
@@ -1084,7 +1113,7 @@
       }
 
       .footer-section h3 {
-        font-size: 16px; /* Base font size for large screens */
+        font-size: clamp(12px, 2.5vw, 16px);
         margin-bottom: 10px;
         color: rgb(0, 0, 0);
       }
@@ -1101,7 +1130,7 @@
       .footer-section ul li a {
         color: rgb(0, 0, 0);
         text-decoration: none;
-        font-size: 14px; /* Base font size for large screens */
+        font-size: clamp(10px, 2vw, 14px);
       }
 
       .footer-section ul li a:hover {
@@ -1113,7 +1142,7 @@
       /* Extra Large Screens (> 1200px) */
       @media (min-width: 1201px) {
         .footer-wrapper {
-          max-width: 1200px; /* Ensure content doesn't stretch too wide */
+          flex-wrap: nowrap;
         }
       }
 
@@ -1146,14 +1175,13 @@
       /* Medium Screens (481px - 768px) */
       @media (max-width: 768px) {
         .footer-wrapper {
-          flex-direction: column; /* Stack left and right vertically */
-          padding: 10px; /* Reduce padding */
+          flex-direction: column; /* Stack vertically */
+          padding: 15px;
+          align-items: center; /* Center content */
+          text-align: center; /* Center text */
         }
         .footer-left {
-          padding-right: 0; /* Remove right padding */
-          margin-bottom: 20px; /* Add space below left section */
-          align-items: center; /* Center content on smaller screens */
-          text-align: center; /* Center text */
+          margin-bottom: 20px;
         }
         .footer-right {
           flex-direction: row; /* Keep two columns side by side */
@@ -1161,6 +1189,10 @@
           margin-left: 0; /* Remove margin */
           justify-content: space-around; /* Distribute columns evenly */
         }
+        .footer-column {
+          min-width: 120px; /* Slightly larger min-width for readability */
+        }
+
         .footer-brand {
           font-size: 28px; /* Further reduce "Amourette" size */
         }
@@ -1188,11 +1220,14 @@
         }
         .footer-right {
           flex-direction: column; /* Stack columns vertically on very small screens */
-          gap: 0; /* Remove gap */
-          margin-left: 0; /* Ensure no margin */
+          gap: 10px;
+          justify-content: center;
+          align-items: center;
         }
         .footer-column {
-          margin-bottom: 15px; /* Add space between stacked columns */
+          margin-bottom: 15px;
+          width: 100%; /* Full width for each column */
+          max-width: 300px; /* Limit max width */
         }
         .footer-brand {
           font-size: 24px; /* Even smaller "Amourette" */
@@ -1709,7 +1744,7 @@
           <!-- Left Side -->
           <div class="footer-left">
             <h2 class="footer-brand">Amourette</h2>
-            <a href="/features" class="features-link"
+            <a href="FutureUpdates.html" class="features-link"
               >See upcoming features <span class="features-arrow">>></span></a
             >
             <p class="footer-trademark">
@@ -1722,8 +1757,7 @@
               <div class="footer-section">
                 <h3>Legal</h3>
                 <ul>
-                  <li><a href="/privacy">Privacy Policy</a></li>
-                  <li><a href="/terms">Terms of Service</a></li>
+                  <li><a href="Terms-account.html">Terms</a></li>
                   <li><a href="safety-account.html">Safety Guidelines</a></li>
                 </ul>
               </div>
@@ -1732,9 +1766,7 @@
               <div class="footer-section">
                 <h3>Support</h3>
                 <ul>
-                  <li><a href="/report">Report a Problem</a></li>
-                  <li><a href="/contact">Contact Us</a></li>
-                  <li><a href="/help">Help Center</a></li>
+                  <li><a href="report-account.html">Report a Problem</a></li>
                 </ul>
               </div>
             </div>

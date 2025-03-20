@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Safety - Amourette</title>
+    <title>Report a Problem - Amourette</title>
     <link rel="icon" type="image/svg" href="Frame 1.svg" />
     <link
       href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=DM+Serif+Text:ital@1&display=swap"
@@ -104,15 +104,15 @@
         left: 0;
       }
 
-      /* Safety Content */
-      .safety-section {
+      /* Report Content */
+      .report-section {
         padding: 100px 60px 50px; /* Top padding for navbar, matches footer side padding */
         background: #fff; /* White background for content area */
         color: #333; /* Dark text for readability on white */
         min-height: 100vh; /* Ensures page isn’t too short */
       }
 
-      .safety-section h1 {
+      .report-section h1 {
         font-size: 40px;
         font-family: "DM Serif Text", serif;
         font-style: italic;
@@ -121,13 +121,13 @@
         color: #000; /* Black for emphasis */
       }
 
-      .safety-content {
+      .report-content {
         max-width: 800px;
         margin: 0 auto;
         padding: 0 20px;
       }
 
-      .safety-content h2 {
+      .report-content h2 {
         font-size: 24px;
         font-family: "Raleway", sans-serif;
         font-weight: 700;
@@ -136,7 +136,7 @@
         display: inline-block;
       }
 
-      .safety-content h2::after {
+      .report-content h2::after {
         content: "";
         position: absolute;
         bottom: -5px;
@@ -146,11 +146,21 @@
         background: #000; /* Underline for emphasis */
       }
 
-      .safety-content p {
+      .report-content p {
         font-size: 16px;
         font-family: "Raleway", sans-serif;
         line-height: 1.6;
         margin: 0 0 20px;
+      }
+
+      .report-content a {
+        color: #000;
+        text-decoration: underline;
+        transition: color 0.3s ease;
+      }
+
+      .report-content a:hover {
+        color: #555;
       }
 
       /* Footer Styles */
@@ -233,19 +243,19 @@
           padding: 20px 30px;
         }
 
-        .safety-section {
+        .report-section {
           padding: 80px 30px 50px;
         }
 
-        .safety-section h1 {
+        .report-section h1 {
           font-size: 32px;
         }
 
-        .safety-content h2 {
+        .report-content h2 {
           font-size: 20px;
         }
 
-        .safety-content p {
+        .report-content p {
           font-size: 14px;
         }
 
@@ -267,15 +277,15 @@
           padding: 15px 20px;
         }
 
-        .safety-section {
+        .report-section {
           padding: 70px 20px 50px;
         }
 
-        .safety-section h1 {
+        .report-section h1 {
           font-size: 28px;
         }
 
-        .safety-content h2 {
+        .report-content h2 {
           font-size: 18px;
         }
       }
@@ -295,44 +305,24 @@
       </div>
     </header>
 
-    <!-- Safety Content -->
-    <section class="safety-section">
-      <h1>Your Safety Matters</h1>
-      <div class="safety-content">
-        <h2>Guided by Our Core Beliefs</h2>
+    <!-- Report Content -->
+    <section class="report-section">
+      <h1>Report a Problem</h1>
+      <div class="report-content">
+        <h2>We’re Here to Help</h2>
         <p>
-          At Amourette, we live by Authenticity, Courage, and Empathy—our ACE
-          principles. These values shape our community, guiding how we connect
-          both online and in person.
+          At Amourette, your experience matters. If something doesn’t feel
+          right—whether it’s a technical issue, an interaction, or anything
+          else—let us know. We’re committed to addressing your concerns quickly
+          and confidentially.
         </p>
 
-        <h2>Constant Protection</h2>
+        <h2>How to Report</h2>
         <p>
-          Our safety team blends smart technology with human oversight to keep
-          Amourette a secure space. Reports are handled swiftly—whether by
-          automated systems or our expert moderators—to ensure your peace of
-          mind.
-        </p>
-
-        <h2>Easy Reporting</h2>
-        <p>
-          Feel something’s off? Report it anytime. Once flagged, that person
-          disappears from your view, and your report stays confidential to keep
-          you safe.
-        </p>
-
-        <h2>Date Follow-Up</h2>
-        <p>
-          We check in after your dates with a quick survey. Loved the vibe?
-          Great. Not so much? Let us know privately if anything felt wrong—it
-          helps us maintain a respectful community.
-        </p>
-
-        <h2>Kindness Required</h2>
-        <p>
-          Respect is non-negotiable. Rudeness, threats, or misuse of our tools
-          (like fake reports) isn’t tolerated. We’re here for real connections,
-          not drama.
+          Encountered a problem? You can report it by emailing us at
+          <a href="mailto:support@amourette.com">support@amourette.com</a>.
+          Provide as much detail as possible—screenshots, timestamps, or a brief
+          description—so we can assist you effectively.
         </p>
       </div>
     </section>
@@ -341,15 +331,17 @@
     <footer class="footer">
       <div class="footer-left">
         <div class="logo">Amourette</div>
-        <a href="FutureUpdates.html" class="features-link"
+        <a href="LoginFutureUpdates.html" class="features-link"
           >See upcoming features >></a
         >
         <p class="copyright">© 2025</p>
       </div>
       <div class="footer-right">
         <ul>
-          <li><a href="Terms-account.html">Terms</a></li>
-          <li><a href="report-account.html">Report a Problem</a></li>
+          <li><a href="safety-account.html">Safe Dating Tips</a></li>
+          <li><a href="/faq">FAQ</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="/cookie-policy">Cookie Policy</a></li>
         </ul>
       </div>
     </footer>

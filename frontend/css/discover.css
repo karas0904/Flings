@@ -1,0 +1,199 @@
+body {
+  background-color: white;
+  color: black;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+  padding: 20px;
+}
+.header h1 {
+  font-size: 35px;
+  color: black;
+  margin: 0;
+  font-family: "Bodoni Moda", serif;
+  font-optical-sizing: auto;
+  font-weight: 100;
+  font-style: normal;
+}
+.header .language {
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+}
+.container {
+  width: 90%;
+  max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.form-section {
+  width: 45%;
+}
+.form-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-family: "Oswald", sans-serif;
+  font-style: normal;
+  font-weight: 100;
+  font-optical-sizing: auto;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+  font-size: 16px;
+}
+.form-group input:focus {
+  border: 2px solid black;
+  outline: none;
+}
+
+.form-group input::placeholder {
+  color: #888;
+}
+.form-group .birthday {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.form-group .birthday input {
+  width: 30%;
+}
+.form-group .gender,
+.form-group .interested-in,
+.form-group .relationship-intent {
+  display: flex;
+  justify-content: space-around;
+  gap: 5px;
+}
+.form-group .gender button,
+.form-group .interested-in button,
+.form-group .relationship-intent button {
+  padding: 10px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 5px;
+  color: black;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border 0.3s;
+  width: 45%;
+}
+.form-group .relationship-intent button {
+  width: 30%;
+}
+.form-group .gender button.selected,
+.form-group .interested-in button.selected,
+.form-group .relationship-intent button.selected {
+  background-color: black;
+  color: white;
+  transition: 1s;
+}
+.photo-section {
+  width: 45%;
+}
+.photo-section h3 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-family: "Oswald", sans-serif;
+  font-style: normal;
+  font-weight: 100;
+  font-optical-sizing: auto;
+}
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.photo-box {
+  background-color: black;
+  border: 2px dashed white;
+  border-radius: 5px;
+  height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+.photo-box.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.photo-box .plus {
+  color: white;
+  font-size: 24px;
+}
+.photo-box.disabled .plus {
+  color: #888; /* Grayed out plus sign for disabled boxes */
+}
+.photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+.photo-box input[type="file"] {
+  display: none;
+}
+.photo-section p {
+  color: #888;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.next-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 50px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 5px;
+  color: black;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.next-button:hover:not(:disabled) {
+  background-color: black;
+  color: white;
+  transition: 1s;
+}
+.next-button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  border: 1px solid #999;
+}
+.email-note {
+  color: #888;
+  font-size: 12px;
+  margin-top: 5px;
+}
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+  display: none;
+}

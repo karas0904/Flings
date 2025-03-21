@@ -1,0 +1,157 @@
+body {
+  background-color: white;
+  color: black;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+}
+.header {
+  display: flex;
+  justify-content: center; /* Centered the header content */
+  width: 100%;
+  padding: 10px;
+  background-color: black;
+}
+.header h1 {
+  font-size: 24px;
+  color: white;
+  margin: 0;
+  font-family: "Bodoni Moda", serif;
+  font-optical-sizing: auto;
+  font-weight: 100;
+  font-style: normal;
+}
+.container {
+  width: 90%;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+}
+.form-section {
+  width: 60%;
+}
+.form-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-family: "Oswald", sans-serif;
+  font-style: normal;
+  font-weight: 100;
+  font-optical-sizing: auto;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  background-color: white;
+  border: 1px solid black;
+  color: rgb(0, 0, 0);
+  font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  outline: none;
+}
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #888;
+  font-style: italic;
+}
+.form-group input:hover,
+.form-group textarea:hover {
+  border-color: black;
+  box-shadow: 0 0 5px black;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: black;
+  box-shadow: 0 0 8px black;
+}
+.form-group .visibility-options {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+.form-group .visibility-options button {
+  padding: 12px;
+  background-color: #2a2b31;
+  border: 1px solid #444;
+  border-radius: 5px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border 0.3s, box-shadow 0.3s;
+  width: 50%;
+}
+.form-group .visibility-options button:hover {
+  border-color: #555;
+  box-shadow: 0 0 5px rgba(255, 88, 100, 0.3);
+}
+.form-group .visibility-options button.selected {
+  border: 1px solid black;
+  box-shadow: 0 0 8px black;
+}
+.form-group .checkbox {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+.form-group .checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border: 2px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  margin-right: 10px;
+}
+.form-group .checkbox input[type="checkbox"]:checked {
+  background-color: black;
+  border-color: black;
+}
+.form-group .checkbox input[type="checkbox"]:checked::after {
+  content: "✔";
+  color: white;
+  font-size: 14px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.next-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 5px;
+  color: black;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, opacity 0.3s;
+}
+.next-button:disabled {
+  background-color: #888;
+  border: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+  transition: 1s;
+}
+.next-button:not(:disabled):hover {
+  background-color: black;
+  color: white;
+  transition: 1s;
+}

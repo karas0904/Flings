@@ -1,0 +1,139 @@
+body {
+  background-color: white;
+  color: black;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+  min-height: 100%; /* Ensure body takes full height for scrolling */
+}
+.header {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background-color: black;
+  width: 100%;
+}
+.header h1 {
+  font-size: 24px;
+  color: white;
+  margin: 0;
+  font-family: "Bodoni Moda", serif;
+  font-optical-sizing: auto;
+  font-weight: 100;
+  font-style: normal;
+}
+.container {
+  width: 90%;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  flex-grow: 1; /* Allow container to grow and push footer */
+}
+.form-section {
+  width: 60%;
+}
+.form-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-family: "Oswald", sans-serif;
+  font-style: normal;
+  font-weight: 100;
+  font-optical-sizing: auto;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 0px;
+  color: black;
+  font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  outline: none;
+}
+.form-group input:hover,
+.form-group textarea:hover {
+  border-color: #555;
+  box-shadow: 0 0 5px black;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: black;
+  box-shadow: 0 0 8px black;
+}
+.form-group .year-options {
+  display: flex;
+  justify-content: space-around;
+  gap: 15px;
+}
+.form-group .year-options button {
+  padding: 12px 20px;
+  background-color: #2a2b31;
+  border: 2px solid #444;
+  border-radius: 5px;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border 0.3s, box-shadow 0.3s;
+  width: 40%;
+}
+.form-group .year-options button:hover {
+  border-color: #555;
+  box-shadow: 0 0 5px black;
+}
+.form-group .year-options button.selected {
+  border: 2px solid black;
+  box-shadow: 0 0 8px black;
+}
+.form-group .electives {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px; /* Gap between elective inputs */
+}
+.form-group .electives input {
+  width: 30%; /* Adjusted width for three inputs side by side */
+}
+.electives-section {
+  display: none; /* Initially hidden */
+  margin-top: 20px;
+}
+.next-button {
+  position: fixed; /* Changed to fixed positioning */
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  background-color: white;
+  border: none;
+  border-radius: 5px;
+  color: black;
+  border: 1px solid black;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  z-index: 1000; /* Ensure it stays above other content */
+}
+.next-button:hover {
+  background-color: black;
+  color: white;
+  transition: 1s;
+}
+.form-note {
+  color: #888;
+  font-size: 12px;
+  margin-top: 5px;
+}

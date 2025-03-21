@@ -1,0 +1,323 @@
+body {
+  background-color: white;
+  color: black;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+  min-height: 100%; /* Ensure body takes full height for scrolling */
+  overflow: hidden; /* Prevent scrolling issues with moving shapes */
+}
+
+.header {
+  display: flex;
+  justify-content: left;
+  padding: 10px 0px 10px 40px;
+  background-color: black;
+  width: 100%;
+  z-index: 10; /* Ensure header stays above glass and shapes */
+}
+
+.header h1 {
+  font-size: 24px;
+  padding: 0px 0px 0px 20px;
+  color: white;
+  margin: 0;
+  font-family: "Bodoni Moda", serif;
+  font-optical-sizing: auto;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.container {
+  width: 90%;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center content vertically */
+  flex-grow: 1; /* Allow container to grow and push footer */
+  position: relative;
+  z-index: 5; /* Ensure container is above shapes but below header */
+}
+
+/* Glass-like transparent background */
+.glass-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1); /* Slightly transparent white */
+  backdrop-filter: blur(10px); /* Blur effect for glassmorphism */
+  -webkit-backdrop-filter: blur(10px); /* For Safari compatibility */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  z-index: 1; /* Ensure glass is above shapes but below content */
+}
+
+/* Background container for moving shapes */
+.shapes-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0; /* Ensure shapes are behind glass */
+  overflow: hidden;
+}
+
+/* Irregular shape 1 (top-right, sky blue) */
+.shape1 {
+  position: absolute;
+  width: 600px; /* Increased size */
+  height: 600px; /* Increased size */
+  top: -100px; /* Position in top-right */
+  right: -100px;
+  background: radial-gradient(
+    circle,
+    rgba(135, 206, 235, 0.5),
+    rgba(135, 206, 235, 0.1)
+  ); /* Sky blue with depth */
+  clip-path: polygon(
+    40% 10%,
+    70% 5%,
+    90% 20%,
+    95% 40%,
+    85% 60%,
+    70% 80%,
+    50% 95%,
+    30% 90%,
+    20% 70%,
+    15% 50%,
+    20% 30%,
+    30% 15%
+  ); /* Amoeba-like shape */
+  filter: blur(20px); /* Blur the shape */
+  animation: moveShape1 10s infinite ease-in-out;
+}
+
+/* Irregular shape 2 (bottom-left, rose pink) */
+.shape2 {
+  position: absolute;
+  width: 600px; /* Increased size */
+  height: 600px; /* Increased size */
+  bottom: -100px; /* Position in bottom-left */
+  left: -100px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 182, 193, 0.5),
+    rgba(255, 182, 193, 0.1)
+  ); /* Rose pink with depth */
+  clip-path: polygon(
+    30% 20%,
+    50% 10%,
+    70% 20%,
+    85% 35%,
+    90% 50%,
+    80% 70%,
+    60% 90%,
+    40% 95%,
+    20% 85%,
+    10% 70%,
+    5% 50%,
+    15% 30%
+  ); /* Amoeba-like shape */
+  filter: blur(20px); /* Blur the shape */
+  animation: moveShape2 12s infinite ease-in-out;
+}
+
+/* Animation for shape 1 */
+@keyframes moveShape1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(50px, 30px) scale(1.1);
+  }
+  50% {
+    transform: translate(20px, 60px) scale(0.9);
+  }
+  75% {
+    transform: translate(-30px, 20px) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Animation for shape 2 */
+@keyframes moveShape2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-50px, -30px) scale(1.1);
+  }
+  50% {
+    transform: translate(-20px, -60px) scale(0.9);
+  }
+  75% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Content wrapper to hold text and box */
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 6; /* Ensure content is above glass and shapes */
+}
+
+/* Text above the box */
+.content-wrapper h2 {
+  font-family: "Bodoni Moda", serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: #333; /* Dark gray for contrast */
+  margin: 0 0 20px 0; /* Space between text and box */
+  line-height: 1.2;
+}
+
+/* Centered box with increased height */
+.content-box {
+  position: relative;
+  width: 100%; /* Adjust width as needed */
+  max-width: 500px; /* Limit max width */
+  height: 400px; /* Increased height */
+  background: rgba(245, 245, 245, 0.8); /* Off-white with slight transparency */
+  border-radius: 15px; /* Rounded corners */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Ensure content stays within box */
+}
+
+/* Top section (1 part) */
+.top-section {
+  flex: 1; /* 1 part of the 1:4 ratio */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.5); /* Slightly whiter for distinction */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Subtle divider */
+}
+
+.top-section p {
+  font-family: "Oswald", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #555; /* Medium gray for contrast */
+  margin: 0;
+}
+
+/* Bottom section (4 parts) */
+.bottom-section {
+  flex: 4; /* 4 parts of the 1:4 ratio */
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+/* Columns in bottom section */
+.column {
+  flex: 1; /* Equal width for both columns */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer; /* Indicate clickable area */
+  position: relative;
+  background: rgba(245, 245, 245, 0.8); /* Match box background */
+  transition: transform 0.5s ease, opacity 0.5s ease; /* Smooth slide and fade */
+}
+
+.column p {
+  font-family: "Oswald", sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #555; /* Medium gray for contrast */
+  margin: 0;
+  z-index: 2; /* Ensure text is above any effects */
+}
+
+/* Slide animations for left and right columns */
+.column.slide-left {
+  transform: translateX(-100%); /* Slide left out of view */
+  opacity: 0; /* Fade out */
+  background-color: rgba(183, 183, 183, 0.285);
+  transition: 1s;
+}
+
+.column.slide-right {
+  transform: translateX(100%); /* Slide right out of view */
+  opacity: 0; /* Fade out */
+  background-color: rgba(183, 183, 183, 0.285);
+  transition: 1s;
+}
+
+/* Reset animation for smoothness */
+.column:not(.slide-left):not(.slide-right) {
+  transform: translateX(0); /* Reset to original position */
+  opacity: 1; /* Fully visible */
+}
+
+/* Skip button styling */
+.skip-button {
+  margin-top: 20px; /* Space between the box and the button */
+  padding: 5px 30px; /* Vertical and horizontal padding for size */
+  background: rgba(215, 208, 208, 0.45); /* Transparent background */
+  border: 0px solid rgba(215, 208, 208, 0.45); /* 2px border with dark gray color */
+  border-radius: 50px; /* Slightly rounded corners */
+  box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.2); /* Inward shadow */
+  font-family: "Oswald", sans-serif; /* Consistent font */
+  font-size: 16px; /* Font size */
+  color: #333; /* Text color to match border */
+  cursor: pointer; /* Indicate clickable */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  z-index: 6; /* Ensure button is above glass and shapes */
+}
+
+/* Hover effect for skip button */
+.skip-button:hover {
+  background: rgba(255, 255, 255, 0.2); /* Slight white background on hover */
+  box-shadow: 5px 1px 10px 2px rgba(0, 0, 0, 0.2); /* Inward shadow */
+  color: #000; /* Darken text color on hover */
+}
+
+/* Container for buttons to center them side by side */
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Space between buttons */
+  margin-top: 20px; /* Space between the box and buttons */
+}
+
+/* Let's Match button styling */
+.match-button {
+  margin-top: 20px;
+  padding: 5px 30px; /* Vertical and horizontal padding for size */
+  background: transparent; /* Transparent background */
+  border: 0px solid rgba(215, 208, 208, 0.45); /* 2px border with dark gray color */
+  border-radius: 50px; /* Slightly rounded corners */
+  box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.2); /* Inward shadow */
+  font-family: "Oswald", sans-serif; /* Consistent font */
+  font-size: 16px; /* Font size */
+  color: #333; /* Text color to match border */
+  cursor: pointer; /* Indicate clickable */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  z-index: 6; /* Ensure button is above glass and shapes */
+}
+
+/* Hover effect for Let's Match button */
+.match-button:hover {
+  background: rgba(255, 255, 255, 0.2); /* Slight white background on hover */
+  box-shadow: 5px 1px 10px 2px rgba(0, 0, 0, 0.2); /* Inward shadow */
+  color: #000; /* Darken text color on hover */
+}

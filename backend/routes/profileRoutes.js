@@ -299,7 +299,11 @@ router.get("/profile", authenticateToken, async (req, res) => {
 // GET /api/profiles - Fetch all completed profiles
 router.get("/profiles", authenticateToken, async (req, res) => {
   try {
-    const profiles = await User.find({ profileCompleted: true }).select(
+    // Exclude the logged-in user by using $ne (not equal) with their _id
+    const profiles = await User.find({
+      profileCompleted: true,
+      _id: { $ne: req.user.id }, // This excludes the logged-in user
+    }).select(
       "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes height hometown"
     );
 
@@ -329,7 +333,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
           profile.photos && profile.photos.length > 0
             ? profile.photos[0]
             : "https://via.placeholder.com/200",
-        photos: profile.photos || [], // Add the full photos array
+        photos: profile.photos || [],
         interests: profile.interestedIn ? [profile.interestedIn] : [],
         hobbies: profile.hobbies ? [profile.hobbies] : [],
         favoriteQuote: profile.quotes?.[0] || "N/A",

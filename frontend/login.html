@@ -162,6 +162,7 @@
         color: white;
         text-align: left;
         z-index: 3;
+        max-width: 600px; /* Limit width to prevent text wrapping */
       }
 
       .welcome-text {
@@ -176,6 +177,25 @@
         font-size: 18px;
         font-family: "Raleway", sans-serif;
         margin: 5px 0;
+        white-space: nowrap; /* Prevent text wrapping */
+        overflow: hidden; /* Hide overflow */
+        text-overflow: ellipsis; /* Show ellipsis for overflow */
+      }
+
+      /* Add styles for animated text */
+      .animated-text {
+        font-size: 24px;
+        font-family: "Raleway", sans-serif;
+        margin: 20px 0;
+        min-height: 36px; /* Prevent layout shift */
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+
+      .animated-text.visible {
+        opacity: 1;
+        transform: translateY(0);
       }
 
       .sink-button {
@@ -627,19 +647,12 @@
     <section class="hero-section">
       <div id="particles-js"></div>
       <div class="text-container">
-        <p class="welcome-text">Welcome to<br />SRM Dating,</p>
-        <p class="sub-text">
-          Where the Wi-Fi drops faster than your GPA, but the love stories
-          rise<br />
-          faster than the Chennai's heat!
-        </p>
-        <br />
-        <p class="sub-text">Already a user then just...</p>
-        <a
-          href="http://localhost:3000/auth/google?flow=sinkin"
-          class="sink-button"
-          >SINK IN<span class="arrow">→</span></a
-        >
+        <h1 class="welcome-text">Welcome to Amourette</h1>
+        <div class="animated-text" id="quoteText"></div>
+        <p class="sub-text">Find your perfect match in college</p>
+        <a href="#login-section" class="sink-button">
+          Get Started <span class="arrow">→</span>
+        </a>
       </div>
     </section>
 
@@ -655,7 +668,7 @@
           <p>
             College is all about making memories—why not make a few with someone
             who gets your vibe? Whether you're into deep convos, campus
-            adventures, or just finding someone to survive exams with, there’s a
+            adventures, or just finding someone to survive exams with, there's a
             match waiting for you.
           </p>
         </div>
@@ -669,7 +682,7 @@
         <div class="text-content">
           <h2>Make Friends, Make Mistakes, Make It Interesting</h2>
           <p>
-            Chance to meet people who actually get you. Whether it’s someone to
+            Chance to meet people who actually get you. Whether it's someone to
             fake attend morning lectures with or the reason you start liking
             rainy walks across campus, it all starts with a conversation.
           </p>
@@ -723,7 +736,6 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
       // Function to show the modal with animation
@@ -912,6 +924,40 @@
           quoteObserver.observe(card);
         });
       });
+
+      // Add this before the closing body tag
+      const quotes = [
+        "Forget grades, your college ID's now scoring you dates.",
+        "Who knew your student ID could spark more than just a library loan?",
+        "No fakes, just dates—verified by your SRM ID",
+        "College is all about making memories—why not make a few with someone who gets your vibe?",
+        "Where the Wi-Fi drops faster than your GPA, but the love stories rise faster than Chennai's heat!", 
+        "Your GPA might be a rollercoaster, but your love life doesnt have to be!"
+      ];
+
+      let currentQuoteIndex = 0;
+      const quoteElement = document.getElementById('quoteText');
+
+      function animateText() {
+        // Fade out
+        quoteElement.classList.remove('visible');
+        
+        setTimeout(() => {
+          // Update text
+          quoteElement.textContent = quotes[currentQuoteIndex];
+          
+          // Fade in
+          quoteElement.classList.add('visible');
+          
+          // Move to next quote
+          currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+        }, 500);
+      }
+
+      // Start the animation
+      animateText();
+      // Change quote every 4 seconds
+      setInterval(animateText, 4000);
     </script>
   </body>
 </html>

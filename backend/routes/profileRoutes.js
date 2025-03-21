@@ -300,12 +300,8 @@ router.get("/profile", authenticateToken, async (req, res) => {
 router.get("/profiles", authenticateToken, async (req, res) => {
   try {
     const profiles = await User.find({ profileCompleted: true }).select(
-      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes height hometown" // Add hometown here
+      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes height hometown"
     );
-
-    if (!profiles || profiles.length === 0) {
-      return res.status(404).json({ message: "No profiles found" });
-    }
 
     const formattedProfiles = profiles.map((profile) => {
       const today = new Date();
@@ -325,7 +321,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
         _id: profile._id,
         name: profile.firstName,
         age: age || "N/A",
-        hometown: profile.hometown || "N/A", // Use actual hometown value
+        hometown: profile.hometown || "N/A",
         year: profile.year || "N/A",
         department: profile.courseStudy || "N/A",
         bio: profile.bio || "No bio provided",
@@ -333,6 +329,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
           profile.photos && profile.photos.length > 0
             ? profile.photos[0]
             : "https://via.placeholder.com/200",
+        photos: profile.photos || [], // Add the full photos array
         interests: profile.interestedIn ? [profile.interestedIn] : [],
         hobbies: profile.hobbies ? [profile.hobbies] : [],
         favoriteQuote: profile.quotes?.[0] || "N/A",

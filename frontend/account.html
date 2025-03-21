@@ -1448,6 +1448,37 @@
         color: white;
         text-decoration: none;
       }
+
+
+
+      /* Add this to your existing <style> section */
+      .gif-section.disabled {
+        cursor: not-allowed;
+        opacity: 0.5; /* Reduce opacity to visually indicate disabled state */
+      }
+
+      /* Optional: Style the gif-box and its elements when disabled */
+      .gif-section.disabled .gif-box {
+        cursor: not-allowed;
+        background-color: rgba(200, 200, 200, 0.95); /* Grayed-out background */
+        border-color: rgba(150, 150, 150, 0.3); /* Gray border */
+      }
+
+      .gif-section.disabled .corner-plus-btn {
+        background-color: #ccc; /* Gray button */
+        color: #666; /* Darker gray icon/text */
+        cursor: not-allowed; /* Show "not-allowed" cursor */
+      }
+
+      .gif-section.disabled .gif-upload {
+        display: none; /* Hide file input entirely */
+      }
+
+      /* Optional: Add a disabled message */
+      .gif-note.disabled-message {
+        color: rgba(255, 255, 255, 0.8);
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
@@ -1704,7 +1735,7 @@
         </div>
       </div>
 
-      <div class="gif-section">
+      <div class="gif-section disabled">
         <div class="gif-prompts-container">
           <div class="gif-box">
             <button class="corner-plus-btn" onclick="triggerGifUpload(this)">
@@ -1715,13 +1746,14 @@
               class="gif-upload"
               accept=".gif,video/*"
               hidden
+              disabled
             />
             <div class="gif-text">GIF</div>
             <video class="gif-video" loop muted hidden></video>
           </div>
 
           <div class="gif-box">
-            <button class="corner-plus-btn" onclick="triggerGifUpload(this)">
+            <button class="corner-plus-btn" disabled">
               <i class="fa-solid fa-plus"></i>
             </button>
             <input
@@ -1729,13 +1761,14 @@
               class="gif-upload"
               accept=".gif,video/*"
               hidden
+              disabled
             />
             <div class="gif-text">GIF</div>
             <video class="gif-video" loop muted hidden></video>
           </div>
         </div>
-        <div class="gif-note">
-          Note: Only 2-3 seconds video clips are allowed
+        <div class="gif-note disabled-message">
+          Note: COMING SOON 
         </div>
       </div>
 
@@ -2456,6 +2489,12 @@
 
       // GIF upload functionality
       function triggerGifUpload(button) {
+        const gifSection = document.querySelector(".gif-section");
+        if (gifSection.classList.contains("disabled")) {
+          console.log("GIF section is disabled");
+          return; // Exit the function if disabled
+        }
+
         const gifBox = button.parentElement;
         const fileInput = gifBox.querySelector(".gif-upload");
         fileInput.click();

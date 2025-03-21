@@ -189,7 +189,7 @@
         padding: 0;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.7s ease-in-out, visibility 0s linear 0.7s;
+        transition: opacity 0.3s ease-in-out, visibility 0s linear 0.7s;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
       }
@@ -197,7 +197,7 @@
       .profile-details-box.active {
         opacity: 1;
         visibility: visible;
-        transition: opacity 0.7s ease-in-out, visibility 0s linear 0s;
+        transition: opacity 0.3s ease-in-out, visibility 0s linear 0s;
       }
 
       .detail-header {
@@ -1149,7 +1149,11 @@
           <div class="detail-section" id="imageSection">
             <img id="profileImage" alt="Profile Image" />
             <button class="heart-button detail-heart-button">
-              <img src="heart-icon.svg" alt="Heart Icon" class="heart-icon" />
+              <img
+                src="assets/icons/heart-icon.svg"
+                alt="Heart Icon"
+                class="heart-icon"
+              />
             </button>
           </div>
           <div class="detail-section" id="detailsSection">
@@ -1157,24 +1161,7 @@
               <!-- Content will be dynamically added via JS -->
             </div>
           </div>
-          <div class="detail-section" id="gifSection">
-            <p class="placeholder" id="gif1">
-              [GIF Placeholder - Add GIF URL in profile data]
-            </p>
-          </div>
-          <div class="detail-section" id="quote1Section">
-            <p class="quote" id="quote1"></p>
-          </div>
-          <div class="detail-section" id="image2Section">
-            <p class="placeholder">
-              [Image 2 Placeholder - Add second image URL in profile data]
-            </p>
-          </div>
-          <div class="detail-section" id="quote2Section">
-            <p class="quote placeholder">
-              <strong></strong> "[Add second quote in profile data]"
-            </p>
-          </div>
+          <!-- Dynamic content will be added here via JavaScript -->
         </div>
       </div>
       <div class="share-options" id="shareOptions">
@@ -1320,13 +1307,11 @@
               },
             }
           );
-
           if (!profilesResponse.ok) {
             throw new Error(
               "Failed to fetch profiles: " + profilesResponse.status
             );
           }
-
           const profiles = await profilesResponse.json();
           console.log("Raw profiles from /api/profiles:", profiles);
 
@@ -1341,27 +1326,46 @@
               },
             }
           );
-
           if (!likesResponse.ok) {
             throw new Error("Failed to fetch likes: " + likesResponse.status);
           }
-
           const myLikes = await likesResponse.json();
-          console.log("My likes:", myLikes);
-
-          // Add like status to profiles
           const likedProfileIds = new Set(
             myLikes.map((like) => like.profileId.toString())
           );
-          const profilesWithLikeStatus = profiles.map((profile) => ({
+
+          // Fetch the current user's saved profiles
+          const savedResponse = await fetch(
+            "http://localhost:3000/api/saved-profiles",
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (!savedResponse.ok) {
+            throw new Error(
+              "Failed to fetch saved profiles: " + savedResponse.status
+            );
+          }
+          const savedProfiles = await savedResponse.json();
+          const savedProfileIds = new Set(
+            savedProfiles.map((saved) => saved._id.toString())
+          );
+
+          // Add like and save status to profiles
+          const profilesWithStatus = profiles.map((profile) => ({
             ...profile,
             isLiked: likedProfileIds.has(profile._id.toString()),
-            hasRose: false, // Add hasRose field (default false; update via backend if needed)
+            isSaved: savedProfileIds.has(profile._id.toString()), // New field
+            hasRose: false,
           }));
 
-          return profilesWithLikeStatus;
+          return profilesWithStatus;
         } catch (error) {
-          console.error("Error fetching profiles or likes:", error);
+          console.error("Error fetching profiles, likes, or saves:", error);
           return [];
         }
       }
@@ -1487,8 +1491,7 @@
             commentInbox.classList.add("comment-inbox");
             const commentInput = document.createElement("input");
             commentInput.type = "text";
-            commentInput.placeholder =
-              "by giving the rose only the comment would be enabled";
+            commentInput.placeholder = "Enable when you rose someone";
             commentInput.disabled = true; // Disable the input by default
             commentInput.classList.add("comment-input");
             commentInbox.appendChild(commentInput);
@@ -1600,7 +1603,7 @@
               } else {
                 currentCommentInput.disabled = true;
                 currentCommentInput.placeholder =
-                  "by giving the rose only the comment would be enabled";
+                  "Enable when you rose someone";
                 profiles[profileIndex].hasRose = false; // Update local state
               }
 
@@ -1665,12 +1668,20 @@
 
             // Update rose button state
             const roseButton = document.querySelector(".rose-button");
+            const saveButton = document.querySelector('button[title="Save"]');
             const currentProfile = profiles[index];
             roseButton.dataset.profileIndex = index;
+            saveButton.dataset.profileIndex = index;
             if (currentProfile.hasRose) {
               roseButton.classList.add("active");
             } else {
               roseButton.classList.remove("active");
+            }
+
+            if (currentProfile.isSaved) {
+              saveButton.classList.add("saved");
+            } else {
+              saveButton.classList.remove("saved");
             }
 
             // Sync comment input state
@@ -1681,8 +1692,7 @@
               currentCommentInput.placeholder = "Add a comment...";
             } else {
               currentCommentInput.disabled = true;
-              currentCommentInput.placeholder =
-                "by giving the rose only the comment would be enabled";
+              currentCommentInput.placeholder = "Enable when you rose someone";
             }
           }
         }
@@ -1765,29 +1775,37 @@
 
         // Show profile details
         function showProfileDetails(profile) {
+          console.log("Profile object:", profile); // For debugging
           const profileList = document.getElementById("profileList");
           const profileDetailsBox =
             document.getElementById("profileDetailsBox");
           const profileName = document.getElementById("profileName");
           const profileImage = document.getElementById("profileImage");
           const scrollContainer = document.getElementById("scrollContainer");
-          const quote1 = document.getElementById("quote1");
-          const quote2Section = document.getElementById("quote2Section");
+          const profileDetailsContent = document.getElementById(
+            "profileDetailsContent"
+          );
 
           profileList.classList.add("blur");
 
+          // Set the first image and name
           profileName.textContent = profile.name;
-          profileImage.src = profile.image;
+          const firstImage =
+            profile.photos && profile.photos.length > 0
+              ? profile.photos[0]
+              : profile.image || "default-image.jpg";
+          profileImage.src = firstImage;
           profileImage.alt = `${profile.name}'s image 1`;
 
+          // Populate the scroll container (unchanged)
           scrollContainer.innerHTML = "";
           const details = [
             { icon: "fa-regular fa-user", text: profile.age || "N/A" },
             { icon: "fa-solid fa-graduation-cap", text: profile.year || "N/A" },
             {
               icon: "fa-solid fa-book-open",
-              text: profile.department || "N/A",
-            },
+              text: profile.courseStudy || "N/A",
+            }, // Changed to courseStudy per schema
             { icon: "fa-solid fa-ruler", text: profile.height || "N/A" },
             { icon: "fa-solid fa-house", text: profile.hometown || "N/A" },
           ];
@@ -1798,28 +1816,64 @@
             scrollContainer.appendChild(span);
           });
 
-          if (profile.quotes && profile.quotes.length > 0) {
-            quote1.innerHTML = `<strong></strong> "${
-              profile.quotes[0] || "No quote available"
-            }"`;
-            if (profile.quotes.length > 1) {
-              quote2Section.querySelector(
-                ".quote"
-              ).innerHTML = `<strong></strong> "${profile.quotes[1]}"`;
-            } else {
-              quote2Section.querySelector(
-                ".quote"
-              ).innerHTML = `<strong></strong> "No second quote available"`;
-            }
-          } else {
-            quote1.innerHTML = `<strong></strong> "No quotes available"`;
-            quote2Section.querySelector(
-              ".quote"
-            ).innerHTML = `<strong></strong> "No quotes available"`;
+          // Clear any existing dynamic content after detailsSection
+          while (profileDetailsContent.children.length > 2) {
+            // Keep imageSection and detailsSection
+            profileDetailsContent.removeChild(profileDetailsContent.lastChild);
           }
+
+          // Prepare additional images (up to 3 from photos[1] to photos[3])
+          const additionalImages = (
+            profile.photos ? profile.photos.slice(1, 4) : []
+          ).filter((src) => src); // Fallback to empty array
+
+          // Prepare quotes (filter out empty strings, take all up to 3)
+          const quotes = (profile.quotes || [])
+            .filter((quote) => quote && quote.trim() !== "")
+            .slice(0, 3);
+
+          // Combine images and quotes into one array for randomization
+          const contentItems = [
+            ...additionalImages.map((src, index) => ({
+              type: "image",
+              src,
+              alt: `${profile.name}'s image ${index + 2}`,
+            })),
+            ...quotes.map((text) => ({ type: "quote", text })),
+          ];
+
+          // Shuffle the array randomly
+          for (let i = contentItems.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [contentItems[i], contentItems[j]] = [
+              contentItems[j],
+              contentItems[i],
+            ];
+          }
+
+          // Dynamically create sections for each item
+          contentItems.forEach((item) => {
+            const section = document.createElement("div");
+            section.classList.add("detail-section");
+
+            if (item.type === "image") {
+              const img = document.createElement("img");
+              img.src = item.src;
+              img.alt = item.alt;
+              section.appendChild(img);
+            } else if (item.type === "quote") {
+              const p = document.createElement("p");
+              p.classList.add("quote");
+              p.innerHTML = `<strong></strong> "${item.text}"`;
+              section.appendChild(p);
+            }
+
+            profileDetailsContent.appendChild(section);
+          });
 
           profileDetailsBox.classList.add("active");
 
+          // Heart button logic (unchanged)
           const detailHeartButton = document.querySelector(
             ".detail-heart-button"
           );
@@ -1879,14 +1933,26 @@
           const profileName = document.getElementById("profileName");
           const profileImage = document.getElementById("profileImage");
           const scrollContainer = document.getElementById("scrollContainer");
-          const quote1 = document.getElementById("quote1");
+          const profileDetailsContent = document.getElementById(
+            "profileDetailsContent"
+          );
 
+          // Hide the details box
           profileDetailsBox.classList.remove("active");
+
+          // Reset static elements
           profileName.textContent = "";
           profileImage.src = "";
           profileImage.alt = "";
           scrollContainer.innerHTML = "";
-          quote1.innerHTML = "";
+
+          // Clear dynamic content
+          while (profileDetailsContent.children.length > 2) {
+            // Keep imageSection and detailsSection
+            profileDetailsContent.removeChild(profileDetailsContent.lastChild);
+          }
+
+          // Un-blur the profile list
           profileList.classList.remove("blur");
         };
 
@@ -2002,16 +2068,21 @@
         document
           .querySelector('button[title="Save"]')
           .addEventListener("click", async function () {
-            this.classList.toggle("saved");
             const currentProfile = profiles[currentProfileIndex];
-            console.log("Profile to save:", currentProfile);
-
             const token = localStorage.getItem("jwtToken");
             if (!token) {
               console.error("No JWT token found");
               alert("Please log in to save profiles!");
               return;
             }
+
+            if (currentProfile.isSaved) {
+              alert("Profile already saved!");
+              return; // Do nothing if already saved
+            }
+
+            // Optimistic UI update
+            this.classList.add("saved");
 
             try {
               const response = await fetch(
@@ -2029,13 +2100,16 @@
               const result = await response.json();
               if (response.ok) {
                 console.log("Save successful:", result);
+                currentProfile.isSaved = true; // Update local state
                 alert("Profile saved successfully!");
               } else {
                 console.error("Save failed:", result);
+                this.classList.remove("saved"); // Revert on failure
                 alert("Failed to save profile: " + result.message);
               }
             } catch (error) {
               console.error("Error saving profile:", error);
+              this.classList.remove("saved"); // Revert on error
               alert("An error occurred while saving the profile.");
             }
           });

@@ -1437,6 +1437,11 @@
 
         function loadProfiles() {
           const profileList = document.getElementById("profileList");
+          console.log(
+            "Loading profiles, current loadedProfiles:",
+            loadedProfiles
+          );
+          console.log("Profiles array:", profiles);
           const start = loadedProfiles;
           const end = Math.min(
             loadedProfiles + profilesPerPage,
@@ -1444,6 +1449,7 @@
           );
 
           if (profiles.length === 0 || start >= profiles.length) {
+            console.log("No profiles to load or end reached");
             const noMoreProfiles = document.createElement("div");
             noMoreProfiles.classList.add("profile-card");
             noMoreProfiles.textContent = "No more profiles to show";
@@ -1456,6 +1462,7 @@
 
           for (let i = start; i < end; i++) {
             const profile = profiles[i];
+            console.log("Appending profile:", profile.name, profile._id);
             const profileCard = document.createElement("div");
             profileCard.classList.add("profile-card");
 

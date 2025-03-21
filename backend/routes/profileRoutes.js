@@ -2,6 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Like from "../models/Like.js";
+import { getMatches } from "../utils/matching.js";
 
 const router = express.Router();
 
@@ -299,51 +300,8 @@ router.get("/profile", authenticateToken, async (req, res) => {
 // GET /api/profiles - Fetch all completed profiles
 router.get("/profiles", authenticateToken, async (req, res) => {
   try {
-    // Exclude the logged-in user by using $ne (not equal) with their _id
-    const profiles = await User.find({
-      profileCompleted: true,
-      _id: { $ne: req.user.id }, // This excludes the logged-in user
-    }).select(
-      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes height hometown"
-    );
-
-    const formattedProfiles = profiles.map((profile) => {
-      const today = new Date();
-      const birthDate = new Date(
-        `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
-      );
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
-      ) {
-        age--;
-      }
-
-      return {
-        _id: profile._id,
-        name: profile.firstName,
-        age: age || "N/A",
-        hometown: profile.hometown || "N/A",
-        year: profile.year || "N/A",
-        department: profile.courseStudy || "N/A",
-        bio: profile.bio || "No bio provided",
-        image:
-          profile.photos && profile.photos.length > 0
-            ? profile.photos[0]
-            : "https://via.placeholder.com/200",
-        photos: profile.photos || [],
-        interests: profile.interestedIn ? [profile.interestedIn] : [],
-        hobbies: profile.hobbies ? [profile.hobbies] : [],
-        favoriteQuote: profile.quotes?.[0] || "N/A",
-        additionalInfo: "N/A",
-        height: profile.height || "N/A",
-        quotes: profile.quotes || [],
-      };
-    });
-
-    res.status(200).json(formattedProfiles);
+    const matchedProfiles = await getMatches(req.user.id);
+    res.status(200).json(matchedProfiles);
   } catch (error) {
     console.error("Error fetching profiles:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -394,10 +352,11 @@ router.post("/save-profile", authenticateToken, async (req, res) => {
 router.get("/saved-profiles", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId).populate(
-      "savedProfiles.profileId",
-      "firstName photos bio courseStudy hobbies birthday year quotes height age"
-    );
+    const user = await User.findById(userId).populate({
+      path: "savedProfiles.profileId",
+      select:
+        "firstName photos bio courseStudy hobbies birthday year quotes height age",
+    });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -406,26 +365,43 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
     const savedProfiles = user.savedProfiles
-      .filter((saved) => new Date(saved.saveDate) >= oneWeekAgo)
+      .filter((saved) => {
+        if (!saved.saveDate) {
+          console.warn(
+            `Missing saveDate for saved profile: ${saved.profileId}`
+          );
+          return false; // Skip if saveDate is missing
+        }
+        return new Date(saved.saveDate) >= oneWeekAgo;
+      })
       .map((saved) => {
+        if (!saved.profileId) {
+          console.warn(`Invalid saved profile for user ${userId}`);
+          return null; // Skip if profileId is missing
+        }
         const profile = saved.profileId;
         const today = new Date();
-        const birthDate = new Date(
-          `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
-        );
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (
-          monthDiff < 0 ||
-          (monthDiff === 0 && today.getDate() < birthDate.getDate())
-        ) {
-          age--;
+        const birthDate = profile.birthday
+          ? new Date(
+              `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
+            )
+          : null;
+        let age = "N/A";
+        if (birthDate) {
+          age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birthDate.getDate())
+          ) {
+            age--;
+          }
         }
 
         return {
           _id: profile._id,
-          name: profile.firstName,
-          age: age || "N/A",
+          name: profile.firstName || "Unknown",
+          age: profile.age || age,
           year: profile.year || "N/A",
           department: profile.courseStudy || "N/A",
           bio: profile.bio || "No bio provided",
@@ -437,7 +413,8 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
           quotes: profile.quotes || [],
           saveDate: saved.saveDate,
         };
-      });
+      })
+      .filter((profile) => profile !== null); // Remove null entries
 
     res.status(200).json(savedProfiles);
   } catch (error) {

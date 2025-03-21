@@ -759,6 +759,7 @@
       }
 
       // Check for URL parameters (e.g., error messages or token)
+      // Check for URL parameters (e.g., error messages or token)
       function checkUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get("error");
@@ -766,12 +767,14 @@
         if (error) {
           if (error === "domain") {
             showModal("Only SRM email addresses are allowed.");
+          } else if (error === "exists") {
+            showModal("User already exists, try sinking in.");
           } else {
             showModal("Authentication failed. Please try again.");
           }
           clearUrlParams();
         } else {
-          storeToken(); // Store the JWT token if present
+          storeToken();
         }
       }
 

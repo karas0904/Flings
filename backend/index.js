@@ -97,7 +97,7 @@ app.use("/api/interactions", interactionRoutes);
 app.use("/api/messages", messageRoutes);
 
 // Serve static files from the public directory
-app.use(express.static("public"));
+//app.use(express.static("public"));
 
 // A simple test route
 app.get("/", (req, res) => {

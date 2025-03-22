@@ -1130,6 +1130,46 @@
           transform: scale(1.2);
         }
       }
+
+      /* Disabled state for rose button */
+      .rose-button:disabled {
+        background: rgba(255, 58, 94, 0.3) !important; /* Faded red */
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: perspective(500px) translateZ(0);
+      }
+
+      .rose-button:disabled:hover {
+        transform: perspective(500px) translateZ(0); /* No hover effect */
+      }
+
+      /* Container for comment input and send icon */
+      .comment-inbox {
+        position: relative; /* For positioning the send icon */
+        display: flex;
+        align-items: center;
+      }
+
+      /* Style for the send icon */
+      .send-icon {
+        position: absolute;
+        right: 10px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        display: none; /* Hidden by default */
+        transition: opacity 0.3s ease;
+      }
+
+      /* Show send icon when comment is enabled */
+      .comment-inbox.enabled .send-icon {
+        display: block;
+      }
+
+      /* Adjust input padding to avoid overlap with send icon */
+      .comment-input.enabled {
+        padding-right: 35px; /* Space for the send icon */
+      }
     </style>
   </head>
   <body>
@@ -1330,8 +1370,11 @@
             throw new Error("Failed to fetch likes: " + likesResponse.status);
           }
           const myLikes = await likesResponse.json();
+          console.log("Raw likes from /api/my-likes:", myLikes);
           const likedProfileIds = new Set(
-            myLikes.map((like) => like.profileId.toString())
+            Array.isArray(myLikes)
+              ? myLikes.map((like) => like.profileId.toString())
+              : []
           );
 
           // Fetch the current user's saved profiles
@@ -1351,21 +1394,53 @@
             );
           }
           const savedProfiles = await savedResponse.json();
+          console.log(
+            "Raw saved profiles from /api/saved-profiles:",
+            savedProfiles
+          );
           const savedProfileIds = new Set(
-            savedProfiles.map((saved) => saved._id.toString())
+            Array.isArray(savedProfiles)
+              ? savedProfiles.map((saved) => saved._id.toString())
+              : []
           );
 
-          // Add like and save status to profiles
+          // Fetch sent roses (using /api/efforts as a proxy, adjust if incorrect)
+          const rosesResponse = await fetch(
+            "http://localhost:3000/api/efforts",
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (!rosesResponse.ok) {
+            throw new Error("Failed to fetch roses: " + rosesResponse.status);
+          }
+          const myRoses = await rosesResponse.json();
+          console.log("Raw roses from /api/efforts:", myRoses);
+          // Safely handle the efforts array
+          const roseProfileIds = new Set(
+            myRoses && Array.isArray(myRoses.efforts)
+              ? myRoses.efforts.map((rose) => rose.fromUserId.toString())
+              : []
+          );
+
+          // Add like, save, and rose status to profiles
           const profilesWithStatus = profiles.map((profile) => ({
             ...profile,
             isLiked: likedProfileIds.has(profile._id.toString()),
-            isSaved: savedProfileIds.has(profile._id.toString()), // New field
-            hasRose: false,
+            isSaved: savedProfileIds.has(profile._id.toString()),
+            hasRose: roseProfileIds.has(profile._id.toString()), // Check received roses
           }));
 
           return profilesWithStatus;
         } catch (error) {
-          console.error("Error fetching profiles, likes, or saves:", error);
+          console.error(
+            "Error fetching profiles, likes, saves, or roses:",
+            error
+          );
           return [];
         }
       }
@@ -1503,6 +1578,13 @@
             commentInput.classList.add("comment-input");
             commentInbox.appendChild(commentInput);
 
+            const sendIcon = document.createElement("img");
+            sendIcon.src = "assets/icons/Comment-send.svg"; // Ensure you have this SVG or use Font Awesome below
+            sendIcon.alt = "Send Comment";
+            sendIcon.classList.add("send-icon");
+            commentInbox.appendChild(commentInput);
+            commentInbox.appendChild(sendIcon);
+
             const heartButton = document.createElement("button");
             heartButton.classList.add("heart-button");
             if (profile.isLiked) {
@@ -1584,40 +1666,162 @@
             // Rose button event listener (single click to enable comment)
             const externalRoseButton = document.querySelector(".rose-button");
             externalRoseButton.dataset.profileIndex = i;
+            if (profile.hasRose) {
+              externalRoseButton.classList.add("active");
+              externalRoseButton.disabled = true; // Disable the button
+              commentInput.disabled = false;
+              commentInput.placeholder = "Add a comment...";
+              commentInput.classList.add("enabled");
+              commentInbox.classList.add("enabled");
+            } else {
+              externalRoseButton.classList.remove("active");
+              externalRoseButton.disabled = false; // Enable the button
+              commentInput.disabled = true;
+              commentInput.placeholder = "Enable when you rose someone";
+              commentInput.classList.remove("enabled");
+              commentInbox.classList.remove("enabled");
+            }
 
-            externalRoseButton.addEventListener("click", function () {
-              const profileIndex = parseInt(this.dataset.profileIndex);
-              const currentCommentInput =
-                profileList.children[profileIndex].querySelector(
-                  ".comment-input"
+            async function submitComment(
+              profileId,
+              commentText,
+              commentInput,
+              commentInbox
+            ) {
+              const token = localStorage.getItem("jwtToken");
+              if (!token) {
+                alert("Please log in to send a comment!");
+                return;
+              }
+
+              try {
+                const response = await fetch(
+                  "http://localhost:3000/api/rose/comment",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                      toUser: profileId,
+                      comment: commentText,
+                    }),
+                  }
                 );
 
-              // Toggle active state first
-              this.classList.toggle("active");
+                const result = await response.json();
+                if (response.ok) {
+                  console.log("Comment attached to rose:", result);
+                  commentInput.value = ""; // Clear input after sending
+                  commentInput.disabled = true; // Disable input
+                  commentInput.placeholder = "Comment sent!";
+                  commentInput.classList.remove("enabled"); // Hide send icon
+                  commentInbox.classList.remove("enabled"); // Update inbox state
+                  alert("Comment sent successfully!");
+                } else {
+                  console.error("Failed to attach comment:", result);
+                  alert(result.message || "Failed to send comment");
+                }
+              } catch (error) {
+                console.error("Error sending comment:", error);
+                alert("An error occurred while sending the comment.");
+              }
+            }
+
+            // Send comment on Enter key
+            commentInput.addEventListener("keypress", function (event) {
+              if (
+                event.key === "Enter" &&
+                !commentInput.disabled &&
+                commentInput.value.trim()
+              ) {
+                submitComment(
+                  profile._id,
+                  commentInput.value.trim(),
+                  commentInput,
+                  commentInbox
+                );
+              }
+            });
+
+            // Send comment on send icon click
+            sendIcon.addEventListener("click", function () {
+              if (!commentInput.disabled && commentInput.value.trim()) {
+                submitComment(
+                  profile._id,
+                  commentInput.value.trim(),
+                  commentInput,
+                  commentInbox
+                );
+              }
+            });
+
+            externalRoseButton.addEventListener("click", async function () {
+              const profileIndex = parseInt(this.dataset.profileIndex);
+              const currentProfile = profiles[profileIndex];
+              const profileCard = profileList.children[profileIndex];
+              const currentCommentInput =
+                profileCard.querySelector(".comment-input");
+              const currentCommentInbox =
+                profileCard.querySelector(".comment-inbox");
+              const token = localStorage.getItem("jwtToken");
+
+              if (!token) {
+                alert("Please log in to send a Rose!");
+                return;
+              }
+
+              if (currentProfile.hasRose) {
+                alert("You’ve already sent a Rose to this profile!");
+                return;
+              }
 
               // Add shine effect
               this.classList.add("shine");
-              setTimeout(() => {
-                this.classList.remove("shine");
-              }, 600);
+              setTimeout(() => this.classList.remove("shine"), 600);
 
-              // Check state after toggle
-              const isActive = this.classList.contains("active");
-              if (isActive) {
-                currentCommentInput.disabled = false;
-                currentCommentInput.placeholder = "Add a comment...";
-                profiles[profileIndex].hasRose = true; // Update local state
-              } else {
-                currentCommentInput.disabled = true;
-                currentCommentInput.placeholder =
-                  "Enable when you rose someone";
-                profiles[profileIndex].hasRose = false; // Update local state
-              }
+              const comment = currentCommentInput.value.trim();
+              try {
+                const response = await fetch("http://localhost:3000/api/rose", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    toUser: currentProfile._id,
+                    comment: comment || "",
+                  }),
+                });
 
-              // Optional: Save profile under "efforts" when rose is given
-              const currentProfile = profiles[profileIndex];
-              if (currentProfile && isActive) {
-                saveProfile("efforts", currentProfile);
+                const result = await response.json();
+                if (response.ok) {
+                  console.log("Rose sent:", result);
+                  // Update rose button state
+                  this.classList.add("active");
+                  this.disabled = true;
+
+                  // Enable comment input
+                  currentCommentInput.disabled = false;
+                  currentCommentInput.placeholder = "Add a comment...";
+                  currentCommentInput.classList.add("enabled");
+                  currentCommentInput.focus(); // Optional: Focus the input for user convenience
+
+                  // Update comment inbox state
+                  currentCommentInbox.classList.add("enabled");
+
+                  // Update profile state
+                  profiles[profileIndex].hasRose = true;
+
+                  alert("Rose sent successfully! You can now add a comment.");
+                } else {
+                  console.error("Rose failed:", result);
+                  alert(result.message || "Failed to send Rose");
+                }
+              } catch (error) {
+                console.error("Error sending Rose:", error);
+                alert("An error occurred while sending the Rose.");
               }
             });
 
@@ -1667,39 +1871,49 @@
           const profilesElements = profileList.children;
           if (index >= 0 && index < profilesElements.length) {
             const profileHeight = profilesElements[index].offsetHeight;
-            const targetPosition = index * profileHeight;
             profileList.scrollTo({
-              top: targetPosition,
+              top: index * profileHeight,
               behavior: "smooth",
             });
 
-            // Update rose button state
             const roseButton = document.querySelector(".rose-button");
             const saveButton = document.querySelector('button[title="Save"]');
             const currentProfile = profiles[index];
             roseButton.dataset.profileIndex = index;
             saveButton.dataset.profileIndex = index;
+
+            const currentCommentInput =
+              profilesElements[index].querySelector(".comment-input");
+            const currentCommentInbox =
+              profilesElements[index].querySelector(".comment-inbox");
             if (currentProfile.hasRose) {
               roseButton.classList.add("active");
+              roseButton.disabled = true;
+              // Check if a comment exists (assuming backend returns it in profiles)
+              if (currentProfile.comment && currentProfile.comment.trim()) {
+                currentCommentInput.disabled = true;
+                currentCommentInput.placeholder = "Comment sent!";
+                currentCommentInput.classList.remove("enabled");
+                currentCommentInbox.classList.remove("enabled");
+              } else {
+                currentCommentInput.disabled = false;
+                currentCommentInput.placeholder = "Add a comment...";
+                currentCommentInput.classList.add("enabled");
+                currentCommentInbox.classList.add("enabled");
+              }
             } else {
               roseButton.classList.remove("active");
+              roseButton.disabled = false;
+              currentCommentInput.disabled = true;
+              currentCommentInput.placeholder = "Enable when you rose someone";
+              currentCommentInput.classList.remove("enabled");
+              currentCommentInbox.classList.remove("enabled");
             }
 
             if (currentProfile.isSaved) {
               saveButton.classList.add("saved");
             } else {
               saveButton.classList.remove("saved");
-            }
-
-            // Sync comment input state
-            const currentCommentInput =
-              profilesElements[index].querySelector(".comment-input");
-            if (roseButton.classList.contains("active")) {
-              currentCommentInput.disabled = false;
-              currentCommentInput.placeholder = "Add a comment...";
-            } else {
-              currentCommentInput.disabled = true;
-              currentCommentInput.placeholder = "Enable when you rose someone";
             }
           }
         }

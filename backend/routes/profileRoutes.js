@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Like from "../models/Like.js";
 import { getMatches } from "../utils/matching.js";
+import RoseInteraction from "../models/roseInteraction.js";
 
 const router = express.Router();
 
@@ -88,13 +89,224 @@ router.get("/my-likes", authenticateToken, async (req, res) => {
   }
 });
 
+router.post("/rose", authenticateToken, async (req, res) => {
+  const { toUser, comment } = req.body;
+  const fromUser = req.user.id;
+
+  if (!toUser) {
+    return res.status(400).json({ message: "Target profile ID is required" });
+  }
+
+  try {
+    // Validate that toUser exists
+    const targetUser = await User.findById(toUser);
+    if (!targetUser) {
+      console.log(`Target user not found: ${toUser}`);
+      return res.status(404).json({ message: "Target user not found" });
+    }
+
+    // Validate that fromUser exists
+    const sender = await User.findById(fromUser);
+    if (!sender) {
+      console.log(`Sender user not found: ${fromUser}`);
+      return res.status(404).json({ message: "Sender user not found" });
+    }
+
+    const existingRose = await RoseInteraction.findOne({ fromUser, toUser });
+    if (existingRose) {
+      return res
+        .status(400)
+        .json({ message: "You already sent a Rose to this profile" });
+    }
+
+    const rose = new RoseInteraction({
+      fromUser,
+      toUser,
+      comment,
+    });
+    await rose.save();
+    console.log(
+      `RoseInteraction created: ${rose._id}, fromUser: ${fromUser}, toUser: ${toUser}`
+    );
+    res.status(200).json({ message: "Rose sent successfully" });
+  } catch (error) {
+    console.error("Error sending Rose:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/efforts", authenticateToken, async (req, res) => {
+  const userId = req.user.id; // Logged-in user (receiver)
+
+  try {
+    const efforts = await RoseInteraction.find({
+      toUser: userId,
+      status: "pending",
+    })
+      .populate("fromUser", "firstName photos") // Change to firstName
+      .lean();
+
+    console.log("All efforts fetched:", JSON.stringify(efforts, null, 2)); // Debug
+
+    const formattedEfforts = efforts
+      .map((effort) => {
+        console.log("Processing effort:", JSON.stringify(effort, null, 2));
+        if (!effort.fromUser) {
+          console.log(`No fromUser found for RoseInteraction ${effort._id}`);
+          return null;
+        }
+        const fromUser = effort.fromUser;
+        const photos = Array.isArray(fromUser.photos) ? fromUser.photos : [];
+        return {
+          id: effort._id,
+          fromUserId: fromUser._id || "unknown",
+          name: fromUser.firstName || "Unknown", // Change to firstName
+          photo:
+            photos.length > 0
+              ? photos[0]
+              : "http://localhost:3000/default-profile.jpg",
+          comment: effort.comment || "",
+        };
+      })
+      .filter((effort) => effort !== null);
+
+    console.log("Formatted efforts:", formattedEfforts);
+    res
+      .status(200)
+      .json({ message: "Pending efforts", efforts: formattedEfforts });
+  } catch (error) {
+    console.error("Error fetching efforts:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.delete("/efforts/:id", authenticateToken, async (req, res) => {
+  const effortId = req.params.id;
+  const userId = req.user.id; // Logged-in user (receiver)
+
+  try {
+    // Find the effort by ID and ensure it belongs to the logged-in user
+    const effort = await RoseInteraction.findOne({
+      _id: effortId,
+      toUser: userId,
+    });
+
+    if (!effort) {
+      return res
+        .status(404)
+        .json({ message: "Effort not found or not authorized" });
+    }
+
+    // Delete the effort
+    await RoseInteraction.deleteOne({ _id: effortId });
+    res
+      .status(200)
+      .json({ message: "Effort declined and deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting effort:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Accept an effort (rose interaction)
+router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
+  const effortId = req.params.id;
+  const userId = req.user.id; // Logged-in user (receiver)
+
+  try {
+    // Find the effort by ID and ensure it belongs to the logged-in user
+    const effort = await RoseInteraction.findOne({
+      _id: effortId,
+      toUser: userId,
+      status: "pending",
+    }).populate("fromUser", "firstName photos");
+
+    if (!effort) {
+      return res
+        .status(404)
+        .json({ message: "Effort not found or not authorized" });
+    }
+
+    // Update the status to "accepted"
+    effort.status = "accepted";
+    await effort.save();
+
+    // Optionally, create a match or chat session (simplified here)
+    // For simplicity, we'll assume accepting a rose creates a match
+    const matchData = {
+      matchId: effort._id, // Use the rose interaction ID as a unique identifier
+      name: effort.fromUser.firstName || "Unknown",
+      photo: effort.fromUser.photos[0] || "default-profile.jpg",
+      snippet: effort.comment || "Rose accepted!",
+      time: new Date().toLocaleTimeString(),
+    };
+
+    res.status(200).json({
+      message: "Effort accepted successfully",
+      match: matchData,
+    });
+  } catch (error) {
+    console.error("Error accepting effort:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/sent-roses", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const sentRoses = await RoseInteraction.find({ fromUser: userId })
+      .populate("toUser", "firstName photos")
+      .lean();
+    const formattedRoses = sentRoses.map((rose) => ({
+      id: rose._id,
+      toUserId: rose.toUser._id,
+      name: rose.toUser.firstName || "Unknown",
+      photo: rose.toUser.photos[0] || "default-profile.jpg",
+      comment: rose.comment || "",
+    }));
+    res.status(200).json({ message: "Sent roses", roses: formattedRoses });
+  } catch (error) {
+    console.error("Error fetching sent roses:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/rose/comment", authenticateToken, async (req, res) => {
+  const { toUser, comment } = req.body;
+  const fromUser = req.user.id; // Current user from JWT
+
+  try {
+    // Find the existing rose interaction
+    const roseInteraction = await RoseInteraction.findOne({
+      fromUser,
+      toUser,
+      status: "pending", // Only update pending roses
+    });
+
+    if (!roseInteraction) {
+      return res.status(404).json({ message: "Rose interaction not found" });
+    }
+
+    // Update the comment
+    roseInteraction.comment = comment;
+    await roseInteraction.save();
+
+    res.status(200).json({
+      message: "Comment attached to rose successfully",
+      rose: roseInteraction,
+    });
+  } catch (error) {
+    console.error("Error attaching comment to rose:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 //trending pages api
 router.get("/trending-profiles", authenticateToken, async (req, res) => {
   try {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    // Aggregate likes from the past week
     const trendingProfiles = await Like.aggregate([
       { $match: { timestamp: { $gte: oneWeekAgo } } },
       { $group: { _id: "$profileId", likeCount: { $sum: 1 } } },
@@ -102,19 +314,49 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
       { $limit: 10 },
     ]);
 
+    if (!trendingProfiles.length) {
+      return res
+        .status(200)
+        .json({ message: "No trending profiles found", profiles: [] });
+    }
+
     const profileIds = trendingProfiles.map((profile) => profile._id);
     const profiles = await User.find({ _id: { $in: profileIds } }).select(
       "firstName photos age courseStudy height birthday year partyPerson smoking drinking pets bio"
     );
 
-    console.log("Profiles from DB:", profiles); // Debugging
+    console.log("Trending Profile IDs:", profileIds); // Debug
+    console.log("Fetched Profiles:", profiles); // Debug
 
     const formattedProfiles = trendingProfiles.map((trend) => {
       const user = profiles.find((p) => p._id.equals(trend._id));
-      console.log("User for profileId", trend._id, ":", user); // Debugging
+      if (!user) {
+        console.warn(`No user found for profileId: ${trend._id}`);
+        return {
+          id: trend._id,
+          name: "Unknown",
+          photos: ["https://via.placeholder.com/200"],
+          likeCount: trend.likeCount,
+          age: "N/A",
+          courseStudy: "N/A",
+          height: "N/A",
+          year: "N/A",
+          partyPerson: "N/A",
+          smoking: "N/A",
+          drinking: "N/A",
+          pets: "N/A",
+          bio: "No bio provided",
+        };
+      }
 
       let calculatedAge = user.age;
-      if (!calculatedAge && user.birthday) {
+      if (
+        !calculatedAge &&
+        user.birthday &&
+        user.birthday.year &&
+        user.birthday.month &&
+        user.birthday.day
+      ) {
         const today = new Date();
         const birthDate = new Date(
           `${user.birthday.year}-${user.birthday.month}-${user.birthday.day}`
@@ -131,21 +373,21 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
 
       return {
         id: trend._id,
-        name: user ? user.firstName : "Unknown",
+        name: user.firstName || "Unknown",
         photos:
-          user && user.photos.length > 0
+          user.photos.length > 0
             ? user.photos
-            : ["https://via.placeholder.com/200"], // Return full photos array
+            : ["https://via.placeholder.com/200"],
         likeCount: trend.likeCount,
         age: calculatedAge || "N/A",
-        courseStudy: user ? user.courseStudy || "N/A" : "N/A",
-        height: user ? user.height || "N/A" : "N/A",
-        year: user ? user.year || "N/A" : "N/A",
-        partyPerson: user ? user.partyPerson || "N/A" : "N/A",
-        smoking: user ? user.smoking || "N/A" : "N/A",
-        drinking: user ? user.drinking || "N/A" : "N/A",
-        pets: user ? user.pets || "N/A" : "N/A",
-        bio: user ? user.bio || "No bio provided" : "No bio provided",
+        courseStudy: user.courseStudy || "N/A",
+        height: user.height || "N/A",
+        year: user.year || "N/A",
+        partyPerson: user.partyPerson || "N/A",
+        smoking: user.smoking || "N/A",
+        drinking: user.drinking || "N/A",
+        pets: user.pets || "N/A",
+        bio: user.bio || "No bio provided",
       };
     });
 
@@ -422,46 +664,6 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
-
-// DELETE /api/saved-profiles/date/:date - Remove all saved profiles for a specific date
-router.delete(
-  "/saved-profiles/date/:date",
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { date } = req.params; // e.g., "March 19"
-
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const originalLength = user.savedProfiles.length;
-      user.savedProfiles = user.savedProfiles.filter((saved) => {
-        const saveDate = new Date(saved.saveDate).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-        });
-        return saveDate !== date;
-      });
-
-      if (user.savedProfiles.length === originalLength) {
-        return res
-          .status(404)
-          .json({ message: "No saved profiles found for this date" });
-      }
-
-      await user.save();
-      res
-        .status(200)
-        .json({ message: "All profiles for this date removed successfully" });
-    } catch (error) {
-      console.error("Error deleting saved profiles for date:", error);
-      res.status(500).json({ message: "Server error", error: error.message });
-    }
-  }
-);
 
 // POST /api/logout - Logout endpoint
 router.post("/logout", authenticateToken, async (req, res) => {

@@ -662,74 +662,6 @@
         flex: 1;
       }
 
-      .buddy-up-container {
-        flex: 1;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-        z-index: 5;
-      }
-
-      .buddy-up-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-      }
-
-      .video-btn {
-        font-size: 40px;
-        color: rgba(255, 255, 255, 0.8);
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: color 0.3s, background-color 0.3s;
-      }
-
-      .video-btn:hover {
-        color: #fff;
-        background: rgba(255, 255, 255, 0.3);
-      }
-
-      .buddy-up-actions {
-        display: flex;
-        gap: 10px;
-      }
-
-      .accept-btn,
-      .reject-btn {
-        padding: 10px 20px;
-        font-size: 16px;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-
-      .accept-btn {
-        background: rgba(0, 255, 0, 0.5);
-      }
-
-      .accept-btn:hover {
-        background: rgba(0, 255, 0, 0.7);
-      }
-
-      .reject-btn {
-        background: rgba(255, 0, 0, 0.5);
-      }
-
-      .reject-btn:hover {
-        background: rgba(255, 0, 0, 0.7);
-      }
-
       .efforts-container {
         flex: 1;
         display: none;
@@ -788,7 +720,6 @@
           </div>
           <div class="dropdown-menu" id="dropdownMenu">
             <div class="dropdown-item" data-value="efforts">Efforts</div>
-            <div class="dropdown-item" data-value="buddyup">Buddy Up</div>
           </div>
         </div>
         <input type="text" class="search-bar" placeholder="Search" />
@@ -822,19 +753,6 @@
             <div class="send-btn">➤</div>
           </div>
         </div>
-        <div class="buddy-up-container">
-          <div class="buddy-up-content">
-            <button class="video-btn"><i class="fas fa-video"></i></button>
-            <div class="buddy-up-actions">
-              <button class="accept-btn">Accept</button>
-              <button class="reject-btn">Reject</button>
-            </div>
-            <p>
-              Here, you may engage in a video call to forge connections with
-              fellow study companions.
-            </p>
-          </div>
-        </div>
         <div class="efforts-container">
           <div class="efforts-content">
             <p>
@@ -853,6 +771,16 @@
     </div>
 
     <script>
+      const messagesData = [
+        {
+          matchId: "67d5827fe677150f33b2adbf",
+          name: "Test User 1",
+          snippet: "Hi there!",
+          time: "Just now",
+        },
+      ];
+
+      let effortsData = [];
       document.addEventListener("DOMContentLoaded", () => {
         const heartBtn = document.getElementById("heart-btn");
         if (heartBtn) {
@@ -912,23 +840,12 @@
         const messageInput = document.querySelector(".message-input");
         const sendBtn = document.querySelector(".send-btn");
         const effortsContainer = document.querySelector(".efforts-container");
-        const buddyUpContainer = document.querySelector(".buddy-up-container");
-
-        const messagesData = [
-          {
-            matchId: "67d5827fe677150f33b2adbf",
-            name: "Test User 1",
-            snippet: "Hi there!",
-            time: "Just now",
-          },
-        ];
 
         let currentMatchId = null;
-        let effortsData = [];
 
         function updateDropdownOptions(selectedOption) {
           dropdownMenu.innerHTML = "";
-          const options = ["Messages", "Efforts", "Buddy Up"].filter(
+          const options = ["Messages", "Efforts"].filter(
             (opt) => opt.toLowerCase() !== selectedOption.toLowerCase()
           );
           options.forEach((option) => {
@@ -947,16 +864,12 @@
           const messageList = document.getElementById("messageList");
           const blurContainer = document.querySelector(".blur-container");
           const effortsContainer = document.querySelector(".efforts-container");
-          const buddyUpContainer = document.querySelector(
-            ".buddy-up-container"
-          );
           const plusBtn = document.querySelector(".plus-btn");
           const optionsMenu = document.querySelector(".options-menu");
 
           messageList.innerHTML = "";
           blurContainer.style.display = "none";
           effortsContainer.style.display = "none";
-          buddyUpContainer.style.display = "none";
           plusBtn.style.display = "none";
           optionsMenu.style.display = "none";
 
@@ -1086,13 +999,6 @@
         </div>
       `;
             }
-          } else if (selectedOption.toLowerCase() === "buddyup") {
-            buddyUpContainer.style.display = "flex";
-            messageList.innerHTML = `
-      <div class="message-item simplified">
-        <div class="name">No profiles saved yet.</div>
-      </div>
-    `;
           }
         }
 
@@ -1127,7 +1033,7 @@
               return;
             }
 
-            console.log("Sending request to accept effort:", effort.id); // Debug
+            console.log("Sending request to accept effort:", effort.id);
             const response = await fetch(
               `http://localhost:3000/api/efforts/${effort.id}/accept`,
               {
@@ -1139,7 +1045,6 @@
               }
             );
 
-            console.log("Response status:", response.status); // Debug
             if (!response.ok) {
               const errorText = await response.text();
               throw new Error(
@@ -1150,7 +1055,26 @@
             const result = await response.json();
             console.log("Effort accepted:", result);
 
-            // ... (rest of the code)
+            // Remove the effort from effortsData
+            effortsData = effortsData.filter((e) => e.id !== effort.id);
+
+            // Add the new match to messagesData
+            messagesData.push(result.match);
+
+            // Update the UI: Switch to Messages section
+            dropdownSelected.textContent = "Messages";
+            dropdownMenu.classList.remove("active");
+            dropdownArrow.classList.remove("active");
+            updateDropdownOptions("Messages");
+            await updateMessageList("messages");
+
+            // Optionally, auto-select the new match
+            const newMatchItem = document.querySelector(
+              `.message-item[data-match-id="${result.match.matchId}"]`
+            );
+            if (newMatchItem) {
+              newMatchItem.click(); // Trigger click to load the chat
+            }
           } catch (error) {
             console.error("Error accepting effort:", error);
             alert("Something went wrong: " + error.message);

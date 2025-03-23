@@ -1036,80 +1036,6 @@
         }
       }
 
-      .buddy-button {
-        background: radial-gradient(
-          circle at 30% 30%,
-          rgba(255, 255, 255, 0.25),
-          rgba(255, 255, 255, 0.1) 70%,
-          rgba(255, 255, 255, 0.05)
-        );
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 18px;
-        color: #fff;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        backdrop-filter: blur(5px);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2),
-          inset 0 4px 8px rgba(255, 255, 255, 0.3),
-          inset 0 -2px 6px rgba(0, 0, 0, 0.15);
-        transform: perspective(500px) translateZ(5px);
-        overflow: hidden;
-        position: relative;
-        z-index: 21;
-      }
-
-      .buddy-button .buddy-icon {
-        width: 30px;
-        height: 30px;
-        transition: transform 0.3s ease;
-      }
-
-      .buddy-button:hover {
-        transform: perspective(500px) translateZ(10px) scale(1.1);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
-          inset 0 4px 10px rgba(255, 255, 255, 0.6),
-          inset 0 -2px 6px rgba(0, 0, 0, 0.2);
-      }
-
-      .buddy-button.active {
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
-          inset 0 4px 12px rgba(255, 255, 255, 0.7),
-          inset 0 -2px 6px rgba(0, 0, 0, 0.25);
-        transform: perspective(500px) translateZ(3px);
-      }
-
-      .buddy-button.active .buddy-icon {
-        transform: scale(1.1);
-      }
-
-      .buddy-button::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 30%;
-        height: 100%;
-        background: linear-gradient(
-          120deg,
-          transparent,
-          rgba(255, 255, 255, 0.8) 50%,
-          transparent
-        );
-        transform: skewX(-20deg);
-        transition: none;
-        pointer-events: none;
-      }
-
-      .buddy-button.shine::after {
-        animation: shine 0.6s linear forwards;
-      }
-
       @keyframes heartbeat {
         0% {
           transform: scale(1);
@@ -1170,6 +1096,98 @@
       .comment-input.enabled {
         padding-right: 35px; /* Space for the send icon */
       }
+
+      /* Loading overlay for profile list */
+      .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(
+          255,
+          255,
+          255,
+          0.95
+        ); /* White background to match phone-box */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 15; /* Above profile-list but below profile-details-box */
+        transition: opacity 0.5s ease-out;
+      }
+
+      .loading-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* Cube grid animation */
+      .loading-animation {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+
+      .cube-grid {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+      }
+
+      .cube {
+        width: 15px;
+        height: 15px;
+        border-radius: 50px;
+        background: #ff0000; /* Dark gray cubes */
+        transform: scale(1);
+        animation: cubePulse 1.5s infinite ease-in-out;
+      }
+
+      /* Staggered animation delays for a wave effect */
+      .cube:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .cube:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      .cube:nth-child(3) {
+        animation-delay: 0.2s;
+      }
+      .cube:nth-child(4) {
+        animation-delay: 0.1s;
+      }
+      .cube:nth-child(5) {
+        animation-delay: 0.2s;
+      }
+      .cube:nth-child(6) {
+        animation-delay: 0.3s;
+      }
+      .cube:nth-child(7) {
+        animation-delay: 0.2s;
+      }
+      .cube:nth-child(8) {
+        animation-delay: 0.3s;
+      }
+      .cube:nth-child(9) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes cubePulse {
+        0%,
+        100% {
+          transform: scale(1);
+          background: #ff0000;
+        }
+        50% {
+          transform: scale(1.3);
+          background: #ff0000d3; /* Lighter gray at peak */
+        }
+      }
     </style>
   </head>
   <body>
@@ -1178,6 +1196,21 @@
 
     <div class="phone-box">
       <div class="profile-list" id="profileList" tabindex="0"></div>
+      <div class="loading-overlay" id="profileLoadingOverlay">
+        <div class="loading-animation">
+          <div class="cube-grid">
+            <div class="cube"></div>
+            <div class="cube"></div>
+            <div class="cube"></div>
+            <div class="cube"></div>
+            <div class="cube"></div>
+            <div class="cube"></div>
+            <div class="cube"></div>
+            <div class="cube"></div>
+            <div class="cube"></div>
+          </div>
+        </div>
+      </div>
       <div class="profile-details-box" id="profileDetailsBox">
         <div class="detail-header" id="detailHeader">
           <h3 id="profileName"></h3>
@@ -1218,19 +1251,6 @@
       <button title="Rose" class="rose-button">
         <img src="assets/icons/rose-icon.svg" alt="Rose" class="rose-icon" />
       </button>
-      <div class="buddy-button-container">
-        <button title="Buddy" class="buddy-button">
-          <img
-            src="assets/icons/buddy-icon.png"
-            alt="Buddy"
-            class="buddy-icon"
-            style="
-              filter: brightness(0) saturate(100%) invert(100%) sepia(0%)
-                saturate(1%) hue-rotate(149deg) brightness(103%) contrast(101%);
-            "
-          />
-        </button>
-      </div>
       <button title="Save">
         <i class="fa-solid fa-bookmark"></i>
       </button>
@@ -1329,9 +1349,19 @@
       // Function to fetch all profiles from backend
       async function fetchProfiles() {
         const token = localStorage.getItem("jwtToken");
+        const loadingOverlay = document.getElementById("profileLoadingOverlay");
+
+        // Show the loading overlay
+        if (loadingOverlay) {
+          loadingOverlay.classList.remove("hidden");
+        }
+
         if (!token) {
           alert("Please log in!");
           window.location.href = "login.html";
+          if (loadingOverlay) {
+            loadingOverlay.classList.add("hidden");
+          }
           return [];
         }
 
@@ -1404,7 +1434,7 @@
               : []
           );
 
-          // Fetch sent roses (using /api/efforts as a proxy, adjust if incorrect)
+          // Fetch sent roses and comments
           const rosesResponse = await fetch(
             "http://localhost:3000/api/efforts",
             {
@@ -1420,20 +1450,34 @@
           }
           const myRoses = await rosesResponse.json();
           console.log("Raw roses from /api/efforts:", myRoses);
-          // Safely handle the efforts array
-          const roseProfileIds = new Set(
+          const roseData = new Map(
             myRoses && Array.isArray(myRoses.efforts)
-              ? myRoses.efforts.map((rose) => rose.fromUserId.toString())
+              ? myRoses.efforts.map((rose) => [
+                  rose.toUserId.toString(), // Use toUserId as the key
+                  { hasRose: true, comment: rose.comment || "" },
+                ])
               : []
           );
 
-          // Add like, save, and rose status to profiles
-          const profilesWithStatus = profiles.map((profile) => ({
-            ...profile,
-            isLiked: likedProfileIds.has(profile._id.toString()),
-            isSaved: savedProfileIds.has(profile._id.toString()),
-            hasRose: roseProfileIds.has(profile._id.toString()), // Check received roses
-          }));
+          // Add like, save, and rose/comment status to profiles
+          const profilesWithStatus = profiles.map((profile) => {
+            const roseInfo = roseData.get(profile._id.toString()) || {
+              hasRose: false,
+              comment: "",
+            };
+            return {
+              ...profile,
+              isLiked: likedProfileIds.has(profile._id.toString()),
+              isSaved: savedProfileIds.has(profile._id.toString()),
+              hasRose: roseInfo.hasRose,
+              comment: roseInfo.comment,
+            };
+          });
+
+          // Hide the loading overlay after successful fetch
+          if (loadingOverlay) {
+            loadingOverlay.classList.add("hidden");
+          }
 
           return profilesWithStatus;
         } catch (error) {
@@ -1441,6 +1485,9 @@
             "Error fetching profiles, likes, saves, or roses:",
             error
           );
+          if (loadingOverlay) {
+            loadingOverlay.classList.add("hidden");
+          }
           return [];
         }
       }
@@ -1511,7 +1558,6 @@
         console.log("Profiles loaded:", profiles);
 
         function loadProfiles() {
-          const profileList = document.getElementById("profileList");
           console.log(
             "Loading profiles, current loadedProfiles:",
             loadedProfiles
@@ -1522,6 +1568,8 @@
             loadedProfiles + profilesPerPage,
             profiles.length
           );
+
+          const profileList = document.getElementById("profileList");
 
           if (profiles.length === 0 || start >= profiles.length) {
             console.log("No profiles to load or end reached");
@@ -1573,13 +1621,29 @@
             commentInbox.classList.add("comment-inbox");
             const commentInput = document.createElement("input");
             commentInput.type = "text";
-            commentInput.placeholder = "Enable when you rose someone";
-            commentInput.disabled = true; // Disable the input by default
             commentInput.classList.add("comment-input");
-            commentInbox.appendChild(commentInput);
+            // Set initial state based on profile data
+            if (profile.hasRose) {
+              if (profile.comment && profile.comment.trim()) {
+                commentInput.placeholder = "Comment sent!";
+                commentInput.disabled = true;
+                commentInput.classList.remove("enabled");
+                commentInbox.classList.remove("enabled");
+              } else {
+                commentInput.placeholder = "Add a comment...";
+                commentInput.disabled = false;
+                commentInput.classList.add("enabled");
+                commentInbox.classList.add("enabled");
+              }
+            } else {
+              commentInput.placeholder = "Enable when you rose someone";
+              commentInput.disabled = true;
+              commentInput.classList.remove("enabled");
+              commentInbox.classList.remove("enabled");
+            }
 
             const sendIcon = document.createElement("img");
-            sendIcon.src = "assets/icons/Comment-send.svg"; // Ensure you have this SVG or use Font Awesome below
+            sendIcon.src = "assets/icons/Comment-send.svg"; // Ensure you have this SVG
             sendIcon.alt = "Send Comment";
             sendIcon.classList.add("send-icon");
             commentInbox.appendChild(commentInput);
@@ -1663,23 +1727,15 @@
               }
             });
 
-            // Rose button event listener (single click to enable comment)
+            // Rose button event listener
             const externalRoseButton = document.querySelector(".rose-button");
             externalRoseButton.dataset.profileIndex = i;
             if (profile.hasRose) {
               externalRoseButton.classList.add("active");
-              externalRoseButton.disabled = true; // Disable the button
-              commentInput.disabled = false;
-              commentInput.placeholder = "Add a comment...";
-              commentInput.classList.add("enabled");
-              commentInbox.classList.add("enabled");
+              externalRoseButton.disabled = true;
             } else {
               externalRoseButton.classList.remove("active");
-              externalRoseButton.disabled = false; // Enable the button
-              commentInput.disabled = true;
-              commentInput.placeholder = "Enable when you rose someone";
-              commentInput.classList.remove("enabled");
-              commentInbox.classList.remove("enabled");
+              externalRoseButton.disabled = false;
             }
 
             async function submitComment(
@@ -1718,6 +1774,7 @@
                   commentInput.placeholder = "Comment sent!";
                   commentInput.classList.remove("enabled"); // Hide send icon
                   commentInbox.classList.remove("enabled"); // Update inbox state
+                  profiles[i].comment = commentText; // Update local profile state
                   alert("Comment sent successfully!");
                 } else {
                   console.error("Failed to attach comment:", result);
@@ -1798,22 +1855,21 @@
                 const result = await response.json();
                 if (response.ok) {
                   console.log("Rose sent:", result);
-                  // Update rose button state
                   this.classList.add("active");
                   this.disabled = true;
-
-                  // Enable comment input
                   currentCommentInput.disabled = false;
-                  currentCommentInput.placeholder = "Add a comment...";
+                  currentCommentInput.placeholder = comment
+                    ? "Comment sent!"
+                    : "Add a comment...";
                   currentCommentInput.classList.add("enabled");
-                  currentCommentInput.focus(); // Optional: Focus the input for user convenience
-
-                  // Update comment inbox state
                   currentCommentInbox.classList.add("enabled");
-
-                  // Update profile state
                   profiles[profileIndex].hasRose = true;
-
+                  profiles[profileIndex].comment = comment || "";
+                  if (comment) {
+                    currentCommentInput.disabled = true;
+                    currentCommentInput.classList.remove("enabled");
+                    currentCommentInbox.classList.remove("enabled");
+                  }
                   alert("Rose sent successfully! You can now add a comment.");
                 } else {
                   console.error("Rose failed:", result);
@@ -1886,10 +1942,11 @@
               profilesElements[index].querySelector(".comment-input");
             const currentCommentInbox =
               profilesElements[index].querySelector(".comment-inbox");
+
+            // Sync rose button and comment state
             if (currentProfile.hasRose) {
               roseButton.classList.add("active");
               roseButton.disabled = true;
-              // Check if a comment exists (assuming backend returns it in profiles)
               if (currentProfile.comment && currentProfile.comment.trim()) {
                 currentCommentInput.disabled = true;
                 currentCommentInput.placeholder = "Comment sent!";
@@ -1935,6 +1992,7 @@
                 profileRect.bottom <= containerRect.bottom + 50
               ) {
                 currentProfileIndex = i;
+                scrollToProfile(currentProfileIndex); // Sync button states
                 break;
               }
             }
@@ -1996,7 +2054,7 @@
 
         // Show profile details
         function showProfileDetails(profile) {
-          console.log("Profile object:", profile); // For debugging
+          console.log("Profile object:", profile);
           const profileList = document.getElementById("profileList");
           const profileDetailsBox =
             document.getElementById("profileDetailsBox");
@@ -2009,7 +2067,6 @@
 
           profileList.classList.add("blur");
 
-          // Set the first image and name
           profileName.textContent = profile.name;
           const firstImage =
             profile.photos && profile.photos.length > 0
@@ -2018,7 +2075,6 @@
           profileImage.src = firstImage;
           profileImage.alt = `${profile.name}'s image 1`;
 
-          // Populate the scroll container (unchanged)
           scrollContainer.innerHTML = "";
           const details = [
             { icon: "fa-regular fa-user", text: profile.age || "N/A" },
@@ -2026,7 +2082,7 @@
             {
               icon: "fa-solid fa-book-open",
               text: profile.courseStudy || "N/A",
-            }, // Changed to courseStudy per schema
+            },
             { icon: "fa-solid fa-ruler", text: profile.height || "N/A" },
             { icon: "fa-solid fa-house", text: profile.hometown || "N/A" },
           ];
@@ -2037,23 +2093,17 @@
             scrollContainer.appendChild(span);
           });
 
-          // Clear any existing dynamic content after detailsSection
           while (profileDetailsContent.children.length > 2) {
-            // Keep imageSection and detailsSection
             profileDetailsContent.removeChild(profileDetailsContent.lastChild);
           }
 
-          // Prepare additional images (up to 3 from photos[1] to photos[3])
           const additionalImages = (
             profile.photos ? profile.photos.slice(1, 4) : []
-          ).filter((src) => src); // Fallback to empty array
-
-          // Prepare quotes (filter out empty strings, take all up to 3)
+          ).filter((src) => src);
           const quotes = (profile.quotes || [])
             .filter((quote) => quote && quote.trim() !== "")
             .slice(0, 3);
 
-          // Combine images and quotes into one array for randomization
           const contentItems = [
             ...additionalImages.map((src, index) => ({
               type: "image",
@@ -2063,7 +2113,6 @@
             ...quotes.map((text) => ({ type: "quote", text })),
           ];
 
-          // Shuffle the array randomly
           for (let i = contentItems.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [contentItems[i], contentItems[j]] = [
@@ -2072,7 +2121,6 @@
             ];
           }
 
-          // Dynamically create sections for each item
           contentItems.forEach((item) => {
             const section = document.createElement("div");
             section.classList.add("detail-section");
@@ -2094,7 +2142,6 @@
 
           profileDetailsBox.classList.add("active");
 
-          // Heart button logic (unchanged)
           const detailHeartButton = document.querySelector(
             ".detail-heart-button"
           );
@@ -2158,22 +2205,16 @@
             "profileDetailsContent"
           );
 
-          // Hide the details box
           profileDetailsBox.classList.remove("active");
-
-          // Reset static elements
           profileName.textContent = "";
           profileImage.src = "";
           profileImage.alt = "";
           scrollContainer.innerHTML = "";
 
-          // Clear dynamic content
           while (profileDetailsContent.children.length > 2) {
-            // Keep imageSection and detailsSection
             profileDetailsContent.removeChild(profileDetailsContent.lastChild);
           }
 
-          // Un-blur the profile list
           profileList.classList.remove("blur");
         };
 
@@ -2181,7 +2222,9 @@
         profileDetailsBox.addEventListener(
           "wheel",
           (event) => event.stopPropagation(),
-          { passive: false }
+          {
+            passive: false,
+          }
         );
         profileDetailsBox.addEventListener(
           "touchmove",
@@ -2267,24 +2310,6 @@
           }
         }
 
-        // Buddy button event listener
-        document
-          .querySelector(".buddy-button")
-          .addEventListener("click", function () {
-            this.classList.toggle("active");
-            this.classList.add("shine");
-            setTimeout(() => {
-              this.classList.remove("shine");
-            }, 600);
-
-            const currentProfile = profiles[currentProfileIndex];
-            if (currentProfile) {
-              saveProfile("buddyUp", currentProfile);
-            } else {
-              console.error("No profile selected to save under Buddy Up.");
-            }
-          });
-
         // Save button event listener
         document
           .querySelector('button[title="Save"]')
@@ -2299,10 +2324,9 @@
 
             if (currentProfile.isSaved) {
               alert("Profile already saved!");
-              return; // Do nothing if already saved
+              return;
             }
 
-            // Optimistic UI update
             this.classList.add("saved");
 
             try {
@@ -2321,16 +2345,16 @@
               const result = await response.json();
               if (response.ok) {
                 console.log("Save successful:", result);
-                currentProfile.isSaved = true; // Update local state
+                currentProfile.isSaved = true;
                 alert("Profile saved successfully!");
               } else {
                 console.error("Save failed:", result);
-                this.classList.remove("saved"); // Revert on failure
+                this.classList.remove("saved");
                 alert("Failed to save profile: " + result.message);
               }
             } catch (error) {
               console.error("Error saving profile:", error);
-              this.classList.remove("saved"); // Revert on error
+              this.classList.remove("saved");
               alert("An error occurred while saving the profile.");
             }
           });

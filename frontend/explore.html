@@ -1351,7 +1351,6 @@
         const token = localStorage.getItem("jwtToken");
         const loadingOverlay = document.getElementById("profileLoadingOverlay");
 
-        // Show the loading overlay
         if (loadingOverlay) {
           loadingOverlay.classList.remove("hidden");
         }
@@ -1382,12 +1381,24 @@
               "Failed to fetch profiles: " + profilesResponse.status
             );
           }
-          const profiles = await profilesResponse.json();
+          let profiles = await profilesResponse.json();
           console.log("Raw profiles from /api/profiles:", profiles);
+
+          if (!Array.isArray(profiles)) {
+            console.error("Profiles response is not an array:", profiles);
+            throw new Error("Invalid profiles data format");
+          }
+          profiles = profiles.filter(
+            (profile) =>
+              profile &&
+              typeof profile === "object" &&
+              profile._id !== undefined
+          );
+          console.log("Filtered profiles:", profiles);
 
           // Fetch the current user's likes
           const likesResponse = await fetch(
-            "http://localhost:3000/api/my-likes",
+            "http://localhost:3000/api/liked-profiles",
             {
               method: "GET",
               headers: {
@@ -1400,10 +1411,12 @@
             throw new Error("Failed to fetch likes: " + likesResponse.status);
           }
           const myLikes = await likesResponse.json();
-          console.log("Raw likes from /api/my-likes:", myLikes);
+          console.log("Raw likes from /api/liked-profiles:", myLikes);
           const likedProfileIds = new Set(
-            Array.isArray(myLikes)
-              ? myLikes.map((like) => like.profileId.toString())
+            Array.isArray(myLikes.profiles)
+              ? myLikes.profiles
+                  .map((like) => like.id?.toString())
+                  .filter(Boolean)
               : []
           );
 
@@ -1430,13 +1443,15 @@
           );
           const savedProfileIds = new Set(
             Array.isArray(savedProfiles)
-              ? savedProfiles.map((saved) => saved._id.toString())
+              ? savedProfiles
+                  .map((saved) => saved._id?.toString())
+                  .filter(Boolean)
               : []
           );
 
           // Fetch sent roses and comments
           const rosesResponse = await fetch(
-            "http://localhost:3000/api/efforts",
+            "http://localhost:3000/api/sent-roses",
             {
               method: "GET",
               headers: {
@@ -1449,32 +1464,34 @@
             throw new Error("Failed to fetch roses: " + rosesResponse.status);
           }
           const myRoses = await rosesResponse.json();
-          console.log("Raw roses from /api/efforts:", myRoses);
+          console.log("Raw roses from /api/sent-roses:", myRoses);
           const roseData = new Map(
-            myRoses && Array.isArray(myRoses.efforts)
-              ? myRoses.efforts.map((rose) => [
-                  rose.toUserId.toString(), // Use toUserId as the key
-                  { hasRose: true, comment: rose.comment || "" },
-                ])
+            myRoses && Array.isArray(myRoses.roses)
+              ? myRoses.roses
+                  .filter((rose) => rose.toUserId)
+                  .map((rose) => [
+                    rose.toUserId.toString(),
+                    { hasRose: true, comment: rose.comment || "" },
+                  ])
               : []
           );
 
           // Add like, save, and rose/comment status to profiles
           const profilesWithStatus = profiles.map((profile) => {
-            const roseInfo = roseData.get(profile._id.toString()) || {
+            const profileIdStr = profile._id.toString();
+            const roseInfo = roseData.get(profileIdStr) || {
               hasRose: false,
               comment: "",
             };
             return {
               ...profile,
-              isLiked: likedProfileIds.has(profile._id.toString()),
-              isSaved: savedProfileIds.has(profile._id.toString()),
+              isLiked: likedProfileIds.has(profileIdStr),
+              isSaved: savedProfileIds.has(profileIdStr),
               hasRose: roseInfo.hasRose,
               comment: roseInfo.comment,
             };
           });
 
-          // Hide the loading overlay after successful fetch
           if (loadingOverlay) {
             loadingOverlay.classList.add("hidden");
           }

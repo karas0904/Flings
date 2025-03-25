@@ -371,65 +371,6 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
   }
 });
 
-// Add this inside profileRoutes.js, before export default router
-// Add this new route below the existing GET /api/profile
-router.get("/profile/:id", authenticateToken, async (req, res) => {
-  try {
-    const profileId = req.params.id;
-    const user = await User.findById(profileId).select(
-      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson height"
-    );
-    if (!user) {
-      return res.status(404).json({ message: "Profile not found" });
-    }
-
-    let age = "N/A";
-    if (
-      user.birthday &&
-      user.birthday.year &&
-      user.birthday.month &&
-      user.birthday.day
-    ) {
-      const today = new Date();
-      const birthDate = new Date(
-        `${user.birthday.year}-${user.birthday.month}-${user.birthday.day}`
-      );
-      age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
-      ) {
-        age--;
-      }
-    }
-
-    const responseData = {
-      firstName: user.firstName,
-      age: age, // Use calculated age
-      year: user.year,
-      email: user.email,
-      photos: user.photos || [],
-      quotes: user.quotes || [],
-      hometown: user.hometown || "N/A",
-      job: user.job || "None",
-      planTo: user.planTo || "None",
-      datingIntention: user.datingIntention || "None",
-      pets: user.pets || "None",
-      language: user.language || "None",
-      drinking: user.drinking || "None",
-      smoking: user.smoking || "None",
-      partyPerson: user.partyPerson || "None",
-      height: user.height || "None",
-    };
-
-    res.status(200).json(responseData);
-  } catch (error) {
-    console.error("Error fetching profile by ID:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-});
-
 // POST /api/profile - Update user profile
 router.post("/profile", authenticateToken, async (req, res) => {
   try {
@@ -544,7 +485,7 @@ router.get("/profile", authenticateToken, async (req, res) => {
 
     const responseData = {
       firstName: user.firstName,
-      age: age, // Use calculated age
+      age: user.age !== null ? user.age : age,
       year: user.year,
       email: user.email,
       photos: user.photos || [],
@@ -672,7 +613,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
         return {
           _id: profile._id,
           name: profile.firstName || "Unknown",
-          age: age, // Use calculated age
+          age: profile.age || age,
           year: profile.year || "N/A",
           department: profile.courseStudy || "N/A",
           bio: profile.bio || "No bio provided",

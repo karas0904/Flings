@@ -216,15 +216,8 @@
         font-size: 28px;
         font-weight: 700;
         background: white;
-        /* Fallback for unsupported browsers */
-        color: white; /* Default text color if effect fails */
-        /* Standard property (future-proofing) */
-        background-clip: text;
-        -webkit-background-clip: text; /* WebKit browsers (Chrome, Safari, Edge) */
-        -moz-background-clip: text; /* Firefox (limited support, may not work yet) */
-        /* Make text transparent to show background */
-        -webkit-text-fill-color: transparent; /* WebKit-specific */
-        /* Animation */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         animation: slideInLeft 0.6s ease-out 0.2s;
       }
 
@@ -362,192 +355,113 @@
     </style>
   </head>
   <body>
-    <!-- Background shapes -->
-    <div class="blur-shape red-shape"></div>
-    <div class="blur-shape blue-shape"></div>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <span class="brand">Amourette</span>
-      <div class="icon-container">
-        <a href="explore.html" class="sidebar-icon heart-icon"
-          ><i class="fa-solid fa-heart"></i
-        ></a>
-        <div class="icon-divider"></div>
-        <a href="saves.html" class="sidebar-icon"
-          ><i class="fa-solid fa-bookmark"></i
-        ></a>
-        <div class="icon-divider"></div>
-        <a href="messages.html" class="sidebar-icon"
-          ><i class="fa-solid fa-comment"></i
-        ></a>
-        <div class="icon-divider"></div>
-        <a href="trending.html" class="sidebar-icon"
-          ><i class="fa-solid fa-fire"></i
-        ></a>
+    <header class="app-header">
+      <div class="container">
+        <div class="logo">SRM Connect</div>
+        <nav>
+          <ul>
+            <li><a href="discover.html">Discover</a></li>
+            <li><a href="matches.html">Matches</a></li>
+            <li><a href="profile.html" class="active">Profile</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+          </ul>
+        </nav>
       </div>
-      <div class="profile-icon">
-        <a href="account.html" class="sidebar-icon">
-          <img src="default-profile.jpg" alt="Profile" id="profileIcon" />
-        </a>
-      </div>
-    </div>
+    </header>
 
-    <!-- Loading overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="loading-dots">
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-      </div>
-    </div>
+    <main class="container">
+      <section class="profile-section">
+        <h1>Your Profile</h1>
+        <p>Complete your profile to start matching with other students</p>
 
-    <!-- Profile content -->
-    <div class="profile-content">
-      <div class="profile-layout">
-        <div class="profile-photo-container">
-          <div class="profile-photo-wrapper">
-            <img
-              src="default-profile.jpg"
-              alt="Profile Photo"
-              class="profile-photo"
-              id="profilePhoto"
-            />
-          </div>
+        <div class="profile-form">
+          <form id="profile-form">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender" required>
+                <option value="">Select your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bio">Bio</label>
+              <textarea
+                id="bio"
+                name="bio"
+                rows="4"
+                placeholder="Tell others about yourself..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Interests</label>
+              <div class="interests-container" id="interests-container">
+                <div class="interest-tag">
+                  Movies <span class="remove-tag">×</span>
+                </div>
+                <div class="interest-tag">
+                  Music <span class="remove-tag">×</span>
+                </div>
+                <input
+                  type="text"
+                  id="interest-input"
+                  placeholder="Add interest..."
+                />
+              </div>
+            </div>
+
+            <h2>Preferences</h2>
+
+            <div class="form-group">
+              <label for="pref-gender">Interested in</label>
+              <select id="pref-gender" name="preferences.gender" required>
+                <option value="">Select gender preference</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="everyone">Everyone</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Age Range</label>
+              <div class="age-range">
+                <input
+                  type="number"
+                  id="age-min"
+                  name="preferences.ageRange.min"
+                  min="18"
+                  max="30"
+                  value="18"
+                />
+                <span>to</span>
+                <input
+                  type="number"
+                  id="age-max"
+                  name="preferences.ageRange.max"
+                  min="18"
+                  max="30"
+                  value="30"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary">Save Profile</button>
+          </form>
         </div>
-        <div class="profile-info">
-          <h1 class="profile-name" id="profileName">Loading...</h1>
-          <div class="profile-bio" id="profileBio"></div>
-          <div class="profile-detail" style="animation-delay: 0.5s">
-            <i class="fas fa-cake-candles"></i>
-            <span id="profileAge"></span>
-          </div>
-          <div class="profile-detail" style="animation-delay: 0.55s">
-            <i class="fas fa-calendar-alt"></i>
-            <span id="profileYear"></span>
-          </div>
-          <div class="profile-detail" style="animation-delay: 0.6s">
-            <i class="fas fa-graduation-cap"></i>
-            <span id="profileCourse"></span>
-          </div>
-          <div class="profile-detail" style="animation-delay: 0.65s">
-            <i class="fas fa-envelope"></i>
-            <span id="profileEmail"></span>
-          </div>
-        </div>
-        <div class="profile-images" id="profileImages">
-          <!-- Placeholder images -->
-          <img src="default-profile.jpg" alt="Image 1" class="profile-image" />
-          <img src="default-profile.jpg" alt="Image 2" class="profile-image" />
-          <img src="default-profile.jpg" alt="Image 3" class="profile-image" />
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
-    <script>
-      async function fetchProfile() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const profileId = urlParams.get("id");
-        const token = localStorage.getItem("jwtToken");
-
-        if (!profileId || profileId === "undefined") {
-          document.getElementById("profileName").textContent =
-            "Invalid Profile";
-          document.getElementById("loadingOverlay").classList.add("hidden");
-          return;
-        }
-
-        if (!token) {
-          window.location.href = "login.html";
-          return;
-        }
-
-        try {
-          const response = await fetch(
-            `http://localhost:3000/api/profile/${profileId}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          if (!response.ok) throw new Error("Failed to fetch profile");
-          const profileData = await response.json();
-
-          document.getElementById("profilePhoto").src =
-            profileData.photos?.[0] || "default-profile.jpg";
-          document.getElementById("profileIcon").src =
-            profileData.photos?.[0] || "default-profile.jpg";
-          document.getElementById("profileName").textContent =
-            profileData.firstName || "Unknown";
-          document.getElementById("profileBio").textContent =
-            profileData.bio || "";
-          document.getElementById("profileAge").textContent =
-            profileData.age || "";
-          document.getElementById("profileYear").textContent =
-            profileData.year || "";
-          document.getElementById("profileCourse").textContent =
-            profileData.courseStudy || "";
-          document.getElementById("profileEmail").textContent =
-            profileData.email || "";
-
-          // Populate additional images if available
-          const imagesContainer = document.getElementById("profileImages");
-          imagesContainer.innerHTML = "";
-          if (profileData.photos && profileData.photos.length > 1) {
-            profileData.photos.slice(1, 4).forEach((photo) => {
-              const img = document.createElement("img");
-              img.src = photo;
-              img.alt = "Profile Image";
-              img.classList.add("profile-image");
-              imagesContainer.appendChild(img);
-            });
-          }
-
-          document.getElementById("loadingOverlay").classList.add("hidden");
-        } catch (error) {
-          console.error("Error fetching profile:", error);
-          document.getElementById("profileName").textContent = "Error Loading";
-          document.getElementById("loadingOverlay").classList.add("hidden");
-        }
-      }
-
-      // Parallax effect on scroll
-      window.addEventListener("scroll", () => {
-        const scrollY = window.scrollY;
-        document.querySelector(
-          ".red-shape"
-        ).style.transform = `rotate(45deg) translateY(${scrollY * 0.2}px)`;
-        document.querySelector(
-          ".blue-shape"
-        ).style.transform = `rotate(45deg) translateY(-${scrollY * 0.2}px)`;
-      });
-
-      // Sidebar hover microinteractions
-      document.addEventListener("DOMContentLoaded", () => {
-        fetchProfile();
-
-        const icons = document.querySelectorAll(".sidebar-icon");
-        icons.forEach((icon) => {
-          icon.addEventListener("mouseenter", () => {
-            icons.forEach((otherIcon) => {
-              if (otherIcon !== icon) {
-                otherIcon.style.filter = "blur(2px)";
-                otherIcon.style.opacity = "0.5";
-              }
-            });
-          });
-          icon.addEventListener("mouseleave", () => {
-            icons.forEach((otherIcon) => {
-              otherIcon.style.filter = "none";
-              otherIcon.style.opacity = "1";
-            });
-          });
-        });
-      });
-    </script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
   </body>
 </html>

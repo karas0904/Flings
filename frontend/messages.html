@@ -902,6 +902,74 @@
         background: rgba(255, 0, 0, 0.7);
       }
 
+      .buddy-up-container {
+        flex: 1;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        z-index: 5;
+      }
+
+      .buddy-up-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .video-btn {
+        font-size: 40px;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: color 0.3s, background-color 0.3s;
+      }
+
+      .video-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .buddy-up-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .accept-btn,
+      .reject-btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .accept-btn {
+        background: rgba(0, 255, 0, 0.5);
+      }
+
+      .accept-btn:hover {
+        background: rgba(0, 255, 0, 0.7);
+      }
+
+      .reject-btn {
+        background: rgba(255, 0, 0, 0.5);
+      }
+
+      .reject-btn:hover {
+        background: rgba(255, 0, 0, 0.7);
+      }
+
       .efforts-container {
         flex: 1;
         display: flex;

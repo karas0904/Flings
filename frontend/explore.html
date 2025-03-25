@@ -1343,13 +1343,6 @@
       // Function to fetch all profiles from backend
       async function fetchProfiles() {
         const token = localStorage.getItem("jwtToken");
-        const loadingOverlay = document.getElementById("profileLoadingOverlay");
-
-        // Show the loading overlay
-        if (loadingOverlay) {
-          loadingOverlay.classList.remove("hidden");
-        }
-
         if (!token) {
           alert("Please log in!");
           window.location.href = "login.html";
@@ -1457,34 +1450,20 @@
           }
           const myRoses = await rosesResponse.json();
           console.log("Raw roses from /api/efforts:", myRoses);
-          const roseData = new Map(
+          // Safely handle the efforts array
+          const roseProfileIds = new Set(
             myRoses && Array.isArray(myRoses.efforts)
-              ? myRoses.efforts.map((rose) => [
-                  rose.toUserId.toString(), // Use toUserId as the key
-                  { hasRose: true, comment: rose.comment || "" },
-                ])
+              ? myRoses.efforts.map((rose) => rose.fromUserId.toString())
               : []
           );
 
-          // Add like, save, and rose/comment status to profiles
-          const profilesWithStatus = profiles.map((profile) => {
-            const roseInfo = roseData.get(profile._id.toString()) || {
-              hasRose: false,
-              comment: "",
-            };
-            return {
-              ...profile,
-              isLiked: likedProfileIds.has(profile._id.toString()),
-              isSaved: savedProfileIds.has(profile._id.toString()),
-              hasRose: roseInfo.hasRose,
-              comment: roseInfo.comment,
-            };
-          });
-
-          // Hide the loading overlay after successful fetch
-          if (loadingOverlay) {
-            loadingOverlay.classList.add("hidden");
-          }
+          // Add like, save, and rose status to profiles
+          const profilesWithStatus = profiles.map((profile) => ({
+            ...profile,
+            isLiked: likedProfileIds.has(profile._id.toString()),
+            isSaved: savedProfileIds.has(profile._id.toString()),
+            hasRose: roseProfileIds.has(profile._id.toString()), // Check received roses
+          }));
 
           return profilesWithStatus;
         } catch (error) {

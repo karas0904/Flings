@@ -3,544 +3,118 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile Vibe</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Raleway", sans-serif;
-        background: #000;
-        color: white;
-        min-height: 100vh;
-        overflow-y: auto;
-        position: relative;
-        opacity: 0;
-        animation: fadeIn 0.8s ease-out forwards;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      /* Blurred background shapes with subtle parallax */
-      .blur-shape {
-        position: fixed;
-        width: 250px;
-        height: 500px;
-        border-radius: 50px;
-        filter: blur(100px);
-        z-index: -1;
-        opacity: 0.4;
-        transition: transform 0.5s ease-out;
-      }
-
-      .red-shape {
-        background: rgba(220, 20, 60, 0.7); /* Crimson */
-        top: -50px;
-        left: -100px;
-        transform: rotate(45deg);
-      }
-
-      .blue-shape {
-        background: rgba(75, 0, 130, 0.7); /* Indigo */
-        bottom: -50px;
-        right: -100px;
-        transform: rotate(45deg);
-      }
-
-      /* Sidebar */
-      .sidebar {
-        width: 60px;
-        background: rgba(0, 0, 0, 0.9);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px 0;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 100;
-      }
-
-      .sidebar .brand {
-        font-size: 24px;
-        font-weight: bold;
-        color: #fff;
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        margin-top: 20px;
-      }
-
-      .icon-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        flex-grow: 1;
-        justify-content: center;
-      }
-
-      .sidebar-icon {
-        color: white;
-        font-size: 24px;
-        margin: 15px 0;
-        cursor: pointer;
-        transition: transform 0.3s ease-out;
-      }
-
-      .sidebar-icon.heart-icon:hover {
-        transform: scale(1.2);
-        color: #dc143c; /* Crimson red for heart */
-      }
-
-      .sidebar-icon:not(.heart-icon):hover {
-        transform: scale(1.2);
-      }
-
-      .icon-divider {
-        width: 20px;
-        height: 1px;
-        background-color: rgba(255, 255, 255, 0.3);
-        margin: 5px 0;
-      }
-
-      .profile-icon {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin-top: auto;
-        margin-bottom: 20px;
-        transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-      }
-
-      .profile-icon:hover {
-        transform: scale(1.1);
-        box-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
-      }
-
-      .profile-icon img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      /* Main content area */
-      .profile-content {
-        margin-left: 60px;
-        width: calc(100% - 60px);
-        min-height: 100vh;
-        padding: 40px;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-      }
-
-      /* Profile layout */
-      .profile-layout {
-        max-width: 1000px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      /* Profile photo */
-      .profile-photo-container {
-        width: 200px;
-        height: 250px;
-        position: relative;
-        transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
-      }
-
-      .profile-photo-wrapper {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        border-radius: 20px 0 20px 20px; /* Rounded top-left */
-        overflow: hidden;
-        animation: slideInLeft 0.6s ease-out;
-      }
-
-      .profile-photo {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      /* Custom blue blur effect at the bottom */
-      .profile-photo-wrapper::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 50%; /* Adjust height of the blur effect */
-        background: linear-gradient(
-          to top,
-          rgba(75, 0, 130, 0.7),
-          transparent
-        ); /* Custom indigo blur */
-        pointer-events: none;
-      }
-
-      .profile-photo-container:hover {
-        transform: translateY(-5px);
-      }
-
-      /* Profile info */
-      .profile-info {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .profile-name {
-        font-size: 28px;
-        font-weight: 700;
-        background: white;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: slideInLeft 0.6s ease-out 0.2s;
-      }
-
-      .profile-bio {
-        font-size: 16px;
-        line-height: 1.6;
-        color: rgba(255, 255, 255, 0.9);
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        padding: 20px;
-        transition: background 0.3s ease-out, transform 0.3s ease-out;
-        animation: slideInLeft 0.6s ease-out 0.4s;
-      }
-
-      .profile-bio:hover {
-        background: rgba(255, 255, 250, 0.1);
-        transform: translateY(-3px);
-      }
-
-      .profile-detail {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.7);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        animation: slideInLeft 0.6s ease-out;
-      }
-
-      .profile-detail i {
-        color: white;
-        font-size: 16px;
-      }
-
-      /* Images section */
-      .profile-images {
-        margin-top: 20px;
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        animation: slideInLeft 0.6s ease-out 0.8s;
-      }
-
-      .profile-image {
-        width: 150px;
-        height: 150px;
-        border-radius: 10px;
-        object-fit: cover;
-        transition: transform 0.3s ease-out;
-        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
-      }
-
-      .profile-image:hover {
-        transform: scale(1.05);
-      }
-
-      /* Loading overlay */
-      .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 200;
-        transition: opacity 0.5s ease-out;
-      }
-
-      .loading-overlay.hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .loading-dots {
-        display: flex;
-        gap: 8px;
-      }
-
-      .dot {
-        width: 10px;
-        height: 10px;
-        background: #dc143c;
-        border-radius: 50%;
-        animation: pulse 1.2s infinite ease-in-out;
-      }
-
-      .dot:nth-child(2) {
-        animation-delay: 0.4s;
-      }
-      .dot:nth-child(3) {
-        animation-delay: 0.8s;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-          opacity: 0.7;
-        }
-        50% {
-          transform: scale(1.5);
-          opacity: 1;
-        }
-      }
-
-      @keyframes slideInLeft {
-        from {
-          opacity: 0;
-          transform: translateX(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-
-      /* Responsive design */
-      @media (max-width: 768px) {
-        .profile-content {
-          padding: 20px;
-        }
-        .profile-photo-container {
-          width: 150px;
-          height: 200px;
-        }
-        .profile-name {
-          font-size: 24px;
-        }
-        .profile-images {
-          justify-content: center;
-        }
-      }
-    </style>
+    <title>Your Profile - SRM Connect</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/app.css" />
   </head>
   <body>
-    <!-- Background shapes -->
-    <div class="blur-shape red-shape"></div>
-    <div class="blur-shape blue-shape"></div>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <span class="brand">Amourette</span>
-      <div class="icon-container">
-        <a href="explore.html" class="sidebar-icon heart-icon"
-          ><i class="fa-solid fa-heart"></i
-        ></a>
-        <div class="icon-divider"></div>
-        <a href="saves.html" class="sidebar-icon"
-          ><i class="fa-solid fa-bookmark"></i
-        ></a>
-        <div class="icon-divider"></div>
-        <a href="messages.html" class="sidebar-icon"
-          ><i class="fa-solid fa-comment"></i
-        ></a>
-        <div class="icon-divider"></div>
-        <a href="trending.html" class="sidebar-icon"
-          ><i class="fa-solid fa-fire"></i
-        ></a>
+    <header class="app-header">
+      <div class="container">
+        <div class="logo">SRM Connect</div>
+        <nav>
+          <ul>
+            <li><a href="discover.html">Discover</a></li>
+            <li><a href="matches.html">Matches</a></li>
+            <li><a href="profile.html" class="active">Profile</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+          </ul>
+        </nav>
       </div>
-      <div class="profile-icon">
-        <a href="account.html" class="sidebar-icon">
-          <img src="default-profile.jpg" alt="Profile" id="profileIcon" />
-        </a>
-      </div>
-    </div>
+    </header>
 
-    <!-- Loading overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="loading-dots">
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-      </div>
-    </div>
+    <main class="container">
+      <section class="profile-section">
+        <h1>Your Profile</h1>
+        <p>Complete your profile to start matching with other students</p>
 
-    <!-- Profile content -->
-    <div class="profile-content">
-      <div class="profile-layout">
-        <div class="profile-photo-container">
-          <div class="profile-photo-wrapper">
-            <img
-              src="default-profile.jpg"
-              alt="Profile Photo"
-              class="profile-photo"
-              id="profilePhoto"
-            />
-          </div>
+        <div class="profile-form">
+          <form id="profile-form">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender" required>
+                <option value="">Select your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bio">Bio</label>
+              <textarea
+                id="bio"
+                name="bio"
+                rows="4"
+                placeholder="Tell others about yourself..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Interests</label>
+              <div class="interests-container" id="interests-container">
+                <div class="interest-tag">
+                  Movies <span class="remove-tag">×</span>
+                </div>
+                <div class="interest-tag">
+                  Music <span class="remove-tag">×</span>
+                </div>
+                <input
+                  type="text"
+                  id="interest-input"
+                  placeholder="Add interest..."
+                />
+              </div>
+            </div>
+
+            <h2>Preferences</h2>
+
+            <div class="form-group">
+              <label for="pref-gender">Interested in</label>
+              <select id="pref-gender" name="preferences.gender" required>
+                <option value="">Select gender preference</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="everyone">Everyone</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Age Range</label>
+              <div class="age-range">
+                <input
+                  type="number"
+                  id="age-min"
+                  name="preferences.ageRange.min"
+                  min="18"
+                  max="30"
+                  value="18"
+                />
+                <span>to</span>
+                <input
+                  type="number"
+                  id="age-max"
+                  name="preferences.ageRange.max"
+                  min="18"
+                  max="30"
+                  value="30"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary">Save Profile</button>
+          </form>
         </div>
-        <div class="profile-info">
-          <h1 class="profile-name" id="profileName">Loading...</h1>
-          <div class="profile-bio" id="profileBio"></div>
-          <div class="profile-detail" style="animation-delay: 0.5s">
-            <i class="fas fa-cake-candles"></i>
-            <span id="profileAge"></span>
-          </div>
-          <div class="profile-detail" style="animation-delay: 0.55s">
-            <i class="fas fa-calendar-alt"></i>
-            <span id="profileYear"></span>
-          </div>
-          <div class="profile-detail" style="animation-delay: 0.6s">
-            <i class="fas fa-graduation-cap"></i>
-            <span id="profileCourse"></span>
-          </div>
-          <div class="profile-detail" style="animation-delay: 0.65s">
-            <i class="fas fa-envelope"></i>
-            <span id="profileEmail"></span>
-          </div>
-        </div>
-        <div class="profile-images" id="profileImages">
-          <!-- Placeholder images -->
-          <img src="default-profile.jpg" alt="Image 1" class="profile-image" />
-          <img src="default-profile.jpg" alt="Image 2" class="profile-image" />
-          <img src="default-profile.jpg" alt="Image 3" class="profile-image" />
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
-    <script>
-      async function fetchProfile() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const profileId = urlParams.get("id");
-        const token = localStorage.getItem("jwtToken");
-
-        if (!profileId || profileId === "undefined") {
-          document.getElementById("profileName").textContent =
-            "Invalid Profile";
-          document.getElementById("loadingOverlay").classList.add("hidden");
-          return;
-        }
-
-        if (!token) {
-          window.location.href = "login.html";
-          return;
-        }
-
-        try {
-          const response = await fetch(
-            `http://localhost:3000/api/profile/${profileId}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          if (!response.ok) throw new Error("Failed to fetch profile");
-          const profileData = await response.json();
-
-          document.getElementById("profilePhoto").src =
-            profileData.photos?.[0] || "default-profile.jpg";
-          document.getElementById("profileIcon").src =
-            profileData.photos?.[0] || "default-profile.jpg";
-          document.getElementById("profileName").textContent =
-            profileData.firstName || "Unknown";
-          document.getElementById("profileBio").textContent =
-            profileData.bio || "";
-          document.getElementById("profileAge").textContent =
-            profileData.age || "";
-          document.getElementById("profileYear").textContent =
-            profileData.year || "";
-          document.getElementById("profileCourse").textContent =
-            profileData.courseStudy || "";
-          document.getElementById("profileEmail").textContent =
-            profileData.email || "";
-
-          // Populate additional images if available
-          const imagesContainer = document.getElementById("profileImages");
-          imagesContainer.innerHTML = "";
-          if (profileData.photos && profileData.photos.length > 1) {
-            profileData.photos.slice(1, 4).forEach((photo) => {
-              const img = document.createElement("img");
-              img.src = photo;
-              img.alt = "Profile Image";
-              img.classList.add("profile-image");
-              imagesContainer.appendChild(img);
-            });
-          }
-
-          document.getElementById("loadingOverlay").classList.add("hidden");
-        } catch (error) {
-          console.error("Error fetching profile:", error);
-          document.getElementById("profileName").textContent = "Error Loading";
-          document.getElementById("loadingOverlay").classList.add("hidden");
-        }
-      }
-
-      // Parallax effect on scroll
-      window.addEventListener("scroll", () => {
-        const scrollY = window.scrollY;
-        document.querySelector(
-          ".red-shape"
-        ).style.transform = `rotate(45deg) translateY(${scrollY * 0.2}px)`;
-        document.querySelector(
-          ".blue-shape"
-        ).style.transform = `rotate(45deg) translateY(-${scrollY * 0.2}px)`;
-      });
-
-      // Sidebar hover microinteractions
-      document.addEventListener("DOMContentLoaded", () => {
-        fetchProfile();
-
-        const icons = document.querySelectorAll(".sidebar-icon");
-        icons.forEach((icon) => {
-          icon.addEventListener("mouseenter", () => {
-            icons.forEach((otherIcon) => {
-              if (otherIcon !== icon) {
-                otherIcon.style.filter = "blur(2px)";
-                otherIcon.style.opacity = "0.5";
-              }
-            });
-          });
-          icon.addEventListener("mouseleave", () => {
-            icons.forEach((otherIcon) => {
-              otherIcon.style.filter = "none";
-              otherIcon.style.opacity = "1";
-            });
-          });
-        });
-      });
-    </script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
   </body>
 </html>

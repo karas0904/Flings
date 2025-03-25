@@ -2,7 +2,6 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Like from "../models/Like.js";
-import { getMatches } from "../utils/matching.js";
 
 const router = express.Router();
 
@@ -84,218 +83,6 @@ router.get("/my-likes", authenticateToken, async (req, res) => {
     res.status(200).json(likes); // Returns array of like objects with profileId
   } catch (error) {
     console.error("Error fetching my likes:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/rose", authenticateToken, async (req, res) => {
-  const { toUser, comment } = req.body;
-  const fromUser = req.user.id;
-
-  if (!toUser) {
-    return res.status(400).json({ message: "Target profile ID is required" });
-  }
-
-  try {
-    // Validate that toUser exists
-    const targetUser = await User.findById(toUser);
-    if (!targetUser) {
-      console.log(`Target user not found: ${toUser}`);
-      return res.status(404).json({ message: "Target user not found" });
-    }
-
-    // Validate that fromUser exists
-    const sender = await User.findById(fromUser);
-    if (!sender) {
-      console.log(`Sender user not found: ${fromUser}`);
-      return res.status(404).json({ message: "Sender user not found" });
-    }
-
-    const existingRose = await RoseInteraction.findOne({ fromUser, toUser });
-    if (existingRose) {
-      return res
-        .status(400)
-        .json({ message: "You already sent a Rose to this profile" });
-    }
-
-    const rose = new RoseInteraction({
-      fromUser,
-      toUser,
-      comment,
-    });
-    await rose.save();
-    console.log(
-      `RoseInteraction created: ${rose._id}, fromUser: ${fromUser}, toUser: ${toUser}`
-    );
-    res.status(200).json({ message: "Rose sent successfully" });
-  } catch (error) {
-    console.error("Error sending Rose:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.get("/efforts", authenticateToken, async (req, res) => {
-  const userId = req.user.id; // Logged-in user (receiver)
-
-  try {
-    const efforts = await RoseInteraction.find({
-      toUser: userId,
-      status: "pending",
-    })
-      .populate("fromUser", "firstName photos") // Change to firstName
-      .lean();
-
-    console.log("All efforts fetched:", JSON.stringify(efforts, null, 2)); // Debug
-
-    const formattedEfforts = efforts
-      .map((effort) => {
-        console.log("Processing effort:", JSON.stringify(effort, null, 2));
-        if (!effort.fromUser) {
-          console.log(`No fromUser found for RoseInteraction ${effort._id}`);
-          return null;
-        }
-        const fromUser = effort.fromUser;
-        const photos = Array.isArray(fromUser.photos) ? fromUser.photos : [];
-        return {
-          id: effort._id,
-          fromUserId: fromUser._id || "unknown",
-          name: fromUser.firstName || "Unknown", // Change to firstName
-          photo:
-            photos.length > 0
-              ? photos[0]
-              : "http://localhost:3000/default-profile.jpg",
-          comment: effort.comment || "",
-        };
-      })
-      .filter((effort) => effort !== null);
-
-    console.log("Formatted efforts:", formattedEfforts);
-    res
-      .status(200)
-      .json({ message: "Pending efforts", efforts: formattedEfforts });
-  } catch (error) {
-    console.error("Error fetching efforts:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.delete("/efforts/:id", authenticateToken, async (req, res) => {
-  const effortId = req.params.id;
-  const userId = req.user.id; // Logged-in user (receiver)
-
-  try {
-    // Find the effort by ID and ensure it belongs to the logged-in user
-    const effort = await RoseInteraction.findOne({
-      _id: effortId,
-      toUser: userId,
-    });
-
-    if (!effort) {
-      return res
-        .status(404)
-        .json({ message: "Effort not found or not authorized" });
-    }
-
-    // Delete the effort
-    await RoseInteraction.deleteOne({ _id: effortId });
-    res
-      .status(200)
-      .json({ message: "Effort declined and deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting effort:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Accept an effort (rose interaction)
-router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
-  const effortId = req.params.id;
-  const userId = req.user.id; // Logged-in user (receiver)
-
-  try {
-    // Find the effort by ID and ensure it belongs to the logged-in user
-    const effort = await RoseInteraction.findOne({
-      _id: effortId,
-      toUser: userId,
-      status: "pending",
-    }).populate("fromUser", "firstName photos");
-
-    if (!effort) {
-      return res
-        .status(404)
-        .json({ message: "Effort not found or not authorized" });
-    }
-
-    // Update the status to "accepted"
-    effort.status = "accepted";
-    await effort.save();
-
-    // Optionally, create a match or chat session (simplified here)
-    // For simplicity, we'll assume accepting a rose creates a match
-    const matchData = {
-      matchId: effort._id, // Use the rose interaction ID as a unique identifier
-      name: effort.fromUser.firstName || "Unknown",
-      photo: effort.fromUser.photos[0] || "default-profile.jpg",
-      snippet: effort.comment || "Rose accepted!",
-      time: new Date().toLocaleTimeString(),
-    };
-
-    res.status(200).json({
-      message: "Effort accepted successfully",
-      match: matchData,
-    });
-  } catch (error) {
-    console.error("Error accepting effort:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.get("/sent-roses", authenticateToken, async (req, res) => {
-  const userId = req.user.id;
-  try {
-    const sentRoses = await RoseInteraction.find({ fromUser: userId })
-      .populate("toUser", "firstName photos")
-      .lean();
-    const formattedRoses = sentRoses.map((rose) => ({
-      id: rose._id,
-      toUserId: rose.toUser._id,
-      name: rose.toUser.firstName || "Unknown",
-      photo: rose.toUser.photos[0] || "default-profile.jpg",
-      comment: rose.comment || "",
-    }));
-    res.status(200).json({ message: "Sent roses", roses: formattedRoses });
-  } catch (error) {
-    console.error("Error fetching sent roses:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/rose/comment", authenticateToken, async (req, res) => {
-  const { toUser, comment } = req.body;
-  const fromUser = req.user.id; // Current user from JWT
-
-  try {
-    // Find the existing rose interaction
-    const roseInteraction = await RoseInteraction.findOne({
-      fromUser,
-      toUser,
-      status: "pending", // Only update pending roses
-    });
-
-    if (!roseInteraction) {
-      return res.status(404).json({ message: "Rose interaction not found" });
-    }
-
-    // Update the comment
-    roseInteraction.comment = comment;
-    await roseInteraction.save();
-
-    res.status(200).json({
-      message: "Comment attached to rose successfully",
-      rose: roseInteraction,
-    });
-  } catch (error) {
-    console.error("Error attaching comment to rose:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -512,8 +299,47 @@ router.get("/profile", authenticateToken, async (req, res) => {
 // GET /api/profiles - Fetch all completed profiles
 router.get("/profiles", authenticateToken, async (req, res) => {
   try {
-    const matchedProfiles = await getMatches(req.user.id);
-    res.status(200).json(matchedProfiles);
+    const profiles = await User.find({ profileCompleted: true }).select(
+      "firstName photos bio courseStudy hobbies gender interestedIn birthday year quotes height hometown"
+    );
+
+    const formattedProfiles = profiles.map((profile) => {
+      const today = new Date();
+      const birthDate = new Date(
+        `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
+      );
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+
+      return {
+        _id: profile._id,
+        name: profile.firstName,
+        age: age || "N/A",
+        hometown: profile.hometown || "N/A",
+        year: profile.year || "N/A",
+        department: profile.courseStudy || "N/A",
+        bio: profile.bio || "No bio provided",
+        image:
+          profile.photos && profile.photos.length > 0
+            ? profile.photos[0]
+            : "https://via.placeholder.com/200",
+        photos: profile.photos || [], // Add the full photos array
+        interests: profile.interestedIn ? [profile.interestedIn] : [],
+        hobbies: profile.hobbies ? [profile.hobbies] : [],
+        favoriteQuote: profile.quotes?.[0] || "N/A",
+        additionalInfo: "N/A",
+        height: profile.height || "N/A",
+        quotes: profile.quotes || [],
+      };
+    });
+
+    res.status(200).json(formattedProfiles);
   } catch (error) {
     console.error("Error fetching profiles:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -564,11 +390,10 @@ router.post("/save-profile", authenticateToken, async (req, res) => {
 router.get("/saved-profiles", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId).populate({
-      path: "savedProfiles.profileId",
-      select:
-        "firstName photos bio courseStudy hobbies birthday year quotes height age",
-    });
+    const user = await User.findById(userId).populate(
+      "savedProfiles.profileId",
+      "firstName photos bio courseStudy hobbies birthday year quotes height age"
+    );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -577,43 +402,26 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
     const savedProfiles = user.savedProfiles
-      .filter((saved) => {
-        if (!saved.saveDate) {
-          console.warn(
-            `Missing saveDate for saved profile: ${saved.profileId}`
-          );
-          return false; // Skip if saveDate is missing
-        }
-        return new Date(saved.saveDate) >= oneWeekAgo;
-      })
+      .filter((saved) => new Date(saved.saveDate) >= oneWeekAgo)
       .map((saved) => {
-        if (!saved.profileId) {
-          console.warn(`Invalid saved profile for user ${userId}`);
-          return null; // Skip if profileId is missing
-        }
         const profile = saved.profileId;
         const today = new Date();
-        const birthDate = profile.birthday
-          ? new Date(
-              `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
-            )
-          : null;
-        let age = "N/A";
-        if (birthDate) {
-          age = today.getFullYear() - birthDate.getFullYear();
-          const monthDiff = today.getMonth() - birthDate.getMonth();
-          if (
-            monthDiff < 0 ||
-            (monthDiff === 0 && today.getDate() < birthDate.getDate())
-          ) {
-            age--;
-          }
+        const birthDate = new Date(
+          `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
+        );
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          age--;
         }
 
         return {
           _id: profile._id,
-          name: profile.firstName || "Unknown",
-          age: profile.age || age,
+          name: profile.firstName,
+          age: age || "N/A",
           year: profile.year || "N/A",
           department: profile.courseStudy || "N/A",
           bio: profile.bio || "No bio provided",
@@ -625,8 +433,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
           quotes: profile.quotes || [],
           saveDate: saved.saveDate,
         };
-      })
-      .filter((profile) => profile !== null); // Remove null entries
+      });
 
     res.status(200).json(savedProfiles);
   } catch (error) {

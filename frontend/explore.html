@@ -1376,35 +1376,12 @@
             savedProfiles.map((saved) => saved._id.toString())
           );
 
-          // Fetch sent roses (using /api/efforts as a proxy, adjust if incorrect)
-          const rosesResponse = await fetch(
-            "http://localhost:3000/api/efforts",
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          if (!rosesResponse.ok) {
-            throw new Error("Failed to fetch roses: " + rosesResponse.status);
-          }
-          const myRoses = await rosesResponse.json();
-          console.log("Raw roses from /api/efforts:", myRoses);
-          // Safely handle the efforts array
-          const roseProfileIds = new Set(
-            myRoses && Array.isArray(myRoses.efforts)
-              ? myRoses.efforts.map((rose) => rose.fromUserId.toString())
-              : []
-          );
-
-          // Add like, save, and rose status to profiles
+          // Add like and save status to profiles
           const profilesWithStatus = profiles.map((profile) => ({
             ...profile,
             isLiked: likedProfileIds.has(profile._id.toString()),
-            isSaved: savedProfileIds.has(profile._id.toString()),
-            hasRose: roseProfileIds.has(profile._id.toString()), // Check received roses
+            isSaved: savedProfileIds.has(profile._id.toString()), // New field
+            hasRose: false,
           }));
 
           return profilesWithStatus;

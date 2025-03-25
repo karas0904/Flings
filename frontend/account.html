@@ -1437,11 +1437,23 @@
         padding: 8px 10px;
         font-size: 14px;
         font-family: "Raleway", sans-serif;
+        display: flex;
+        align-items: center; /* Ensure vertical alignment */
       }
 
       .bell-dropdown li:hover {
         background: rgba(139, 139, 139, 0.1);
         border-radius: 5px;
+      }
+
+      /* Optional: Style the heart icon specifically */
+      .bell-dropdown .far.fa-heart {
+        font-size: 16px; /* Adjust size if needed */
+        transition: color 0.3s ease; /* Smooth color change on hover */
+      }
+
+      .bell-dropdown li:hover .far.fa-heart {
+        color: #ff6666; /* Lighter red on hover */
       }
 
       .bell-dropdown a {
@@ -1478,6 +1490,56 @@
       .gif-note.disabled-message {
         color: rgba(255, 255, 255, 0.8);
         font-style: italic;
+      }
+
+      /* Loading dots animation */
+      .loading-dots {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+        width: 100%;
+      }
+
+      .loading-dots .dot {
+        width: 8px;
+        height: 8px;
+        background-color: rgba(255, 255, 255, 0.7); /* White with slight transparency */
+        border-radius: 50%;
+        margin: 0 4px;
+        animation: pulse 1.2s infinite ease-in-out;
+      }
+
+      .loading-dots .dot:nth-child(2) {
+        animation-delay: 0.4s; /* Stagger the second dot */
+      }
+
+      .loading-dots .dot:nth-child(3) {
+        animation-delay: 0.8s; /* Stagger the third dot */
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 0.7;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0.7;
+        }
+      }
+
+      .bell-dropdown .fa-times {
+        font-size: 16px; /* Match heart icon size */
+        transition: color 0.3s ease; /* Smooth color change on hover */
+      }
+
+      .bell-dropdown li:hover .fa-times {
+        color: #ff0000; /* Darker red on hover */
       }
     </style>
   </head>
@@ -2653,8 +2715,7 @@
           await saveProfileData("photos", uploadedImages);
         }
       }
-      // Fetch liked profiles from the backend
-      // Fetch profiles that liked you
+
       async function fetchLikedProfiles() {
         const token = localStorage.getItem("jwtToken");
         if (!token) {
@@ -2662,17 +2723,20 @@
           return;
         }
 
+        const dropdownList = document.querySelector(".bell-dropdown ul");
+        dropdownList.innerHTML = ""; // Clear existing content
+
+        // Show loading animation
+        showLoadingAnimation(dropdownList);
+
         try {
-          const response = await fetch(
-            "http://localhost:3000/api/liked-profiles",
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await fetch("http://localhost:3000/api/liked-profiles", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
           const result = await response.json();
           if (response.ok) {
@@ -2687,12 +2751,26 @@
         }
       }
 
+      // Function to show loading animation
+      function showLoadingAnimation(dropdownList) {
+        const loadingDiv = document.createElement("div");
+        loadingDiv.classList.add("loading-dots");
+        loadingDiv.innerHTML = `
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        `;
+        dropdownList.appendChild(loadingDiv);
+      }
+
       // Display profiles that liked you in the bell dropdown
       function displayLikedProfiles(profiles) {
         const dropdownList = document.querySelector(".bell-dropdown ul");
-        dropdownList.innerHTML = ""; // Clear existing content
+        dropdownList.innerHTML = "";
 
-        if (profiles.length === 0) {
+        console.log("Profiles received:", profiles); // Debug
+
+        if (!profiles || profiles.length === 0) {
           const li = document.createElement("li");
           li.textContent = "No likes yet";
           dropdownList.appendChild(li);
@@ -2702,23 +2780,144 @@
         profiles.forEach((profile) => {
           const li = document.createElement("li");
           const a = document.createElement("a");
-          a.href = "#"; // Could link to their profile later
-          a.textContent = `${profile.name} liked you`;
+          a.href = `profile.html?id=${profile.id}`;
           a.style.display = "flex";
           a.style.alignItems = "center";
+          a.style.textDecoration = "none";
+
+          // Profile photo
           if (profile.photo) {
             const img = document.createElement("img");
             img.src = profile.photo;
-            img.alt = `${profile.name}'s photo`;
+            img.alt = `${profile.name || "Unknown"}'s photo`;
             img.style.width = "30px";
             img.style.height = "30px";
             img.style.borderRadius = "50%";
             img.style.marginRight = "10px";
-            a.insertBefore(img, a.firstChild);
+            a.appendChild(img);
           }
+
+          // Text based on direction
+          const text =
+            profile.direction === "matched"
+              ? `${profile.name || "Unknown"} (Match!)`
+              : `${profile.name || "Unknown"} liked you`;
+          const textNode = document.createTextNode(text);
+          a.appendChild(textNode);
+
+          // Heart icon based on status
+          const heartIcon = document.createElement("i");
+          const isMatched = profile.status === "matched";
+          heartIcon.classList.add("fa-heart", isMatched ? "fas" : "far");
+          heartIcon.style.marginLeft = "8px";
+          heartIcon.style.color = isMatched ? "#ff0000" : "#ff4444";
+          heartIcon.style.cursor = isMatched ? "default" : "pointer";
+
+          if (!isMatched) {
+            heartIcon.addEventListener("click", async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              heartIcon.classList.remove("far");
+              heartIcon.classList.add("fas");
+              heartIcon.style.color = "#ff0000";
+              heartIcon.style.cursor = "default";
+              await toggleLike(profile.id, true);
+              // Update text to indicate match
+              a.childNodes[1].textContent = `${profile.name || "Unknown"} (Match!)`;
+              heartIcon.removeEventListener("click", arguments.callee); // Remove listener after match
+            });
+          }
+          a.appendChild(heartIcon);
+
+          // Cross icon (only for incoming pending likes)
+          if (profile.status === "pending" && profile.direction === "incoming") {
+            const crossIcon = document.createElement("i");
+            crossIcon.classList.add("fa-solid", "fa-times");
+            crossIcon.style.marginLeft = "8px";
+            crossIcon.style.color = "#ff4444";
+            crossIcon.style.cursor = "pointer";
+            crossIcon.addEventListener("click", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              removeLikedProfile(profile.id, li);
+            });
+            a.appendChild(crossIcon);
+          }
+
           li.appendChild(a);
           dropdownList.appendChild(li);
         });
+      }
+
+      // Adjusted toggleLike to only send profileId (since backend handles status)
+      async function toggleLike(profileId, isLiked) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found");
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:3000/api/toggle-like", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ profileId }), // Removed isLiked as backend assumes liking
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to toggle like");
+          }
+
+          console.log(`Profile ${profileId} matched`);
+        } catch (error) {
+          console.error("Error toggling like:", error);
+          alert("Failed to match: " + error.message);
+        }
+      }
+
+      // Adjusted removeLikedProfile (unchanged, but included for context)
+      async function removeLikedProfile(profileId, listItem) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/remove-liked-profile",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ profileId }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to remove liked profile");
+          }
+
+          listItem.remove();
+          console.log(`Profile ${profileId} removed from liked profiles`);
+
+          const dropdownList = document.querySelector(".bell-dropdown ul");
+          if (dropdownList.children.length === 0) {
+            const li = document.createElement("li");
+            li.textContent = "No likes yet";
+            dropdownList.appendChild(li);
+          }
+        } catch (error) {
+          console.error("Error removing liked profile:", error);
+          alert("Failed to remove profile: " + error.message);
+        }
       }
 
       // Bell icon click handler

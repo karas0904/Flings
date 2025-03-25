@@ -52,6 +52,27 @@ export const getMatches = async (loggedInUserId) => {
     .map((profile) => {
       console.log(`Processing profile: ${profile._id} (${profile.firstName})`);
 
+      let age = "N/A";
+      if (
+        profile.birthday &&
+        profile.birthday.year &&
+        profile.birthday.month &&
+        profile.birthday.day
+      ) {
+        const today = new Date();
+        const birthDate = new Date(
+          `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
+        );
+        age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          age--;
+        }
+      }
+
       // Strict Filters
       const genderMatch =
         (loggedInUser.interestedIn === "Men" && profile.gender === "Men") ||
@@ -174,7 +195,7 @@ export const getMatches = async (loggedInUserId) => {
       return {
         _id: profile._id,
         name: profile.firstName,
-        age: profile.age || "N/A",
+        age: age,
         hometown: profile.hometown || "N/A",
         year: profile.year || "N/A",
         department: profile.courseStudy || "N/A",

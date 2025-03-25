@@ -1,71 +1,46 @@
-// Cache duration in milliseconds (5 minutes)
-const AUTH_CACHE_DURATION = 5 * 60 * 1000;
-
 // Check if user is authenticated and redirect accordingly
 async function checkAuthStatus() {
   try {
-    // Check cache first
-    const cachedAuth = localStorage.getItem("auth_cache");
-    if (cachedAuth) {
-      const { data, timestamp } = JSON.parse(cachedAuth);
-      if (Date.now() - timestamp < AUTH_CACHE_DURATION) {
-        return handleAuthResponse(data);
-      }
-    }
-
-    // Show loading indicator
-    const loadingIndicator = document.getElementById("auth-loading");
-    if (loadingIndicator) loadingIndicator.style.display = "block";
-
     // Make the fetch request directly instead of using API
     const response = await fetch("http://localhost:3000/auth/current-user", {
       method: "GET",
       credentials: "include",
     });
     const data = await response.json();
+    const { isAuthenticated, user } = data;
 
-    // Cache the response
-    localStorage.setItem(
-      "auth_cache",
-      JSON.stringify({
-        data,
-        timestamp: Date.now(),
-      })
-    );
+    // Get current page path
+    const currentPath = window.location.pathname;
+    const isLoginPage = currentPath.includes("login.html");
+    const isIndexPage =
+      currentPath === "/" || currentPath.includes("index.html");
 
-    // Hide loading indicator
-    if (loadingIndicator) loadingIndicator.style.display = "none";
+    if (isAuthenticated) {
+      // User is logged in
+      if (isLoginPage || isIndexPage) {
+        // Redirect to discover page if on login or index page
+        window.location.href = "discover.html";
+      }
 
-    return handleAuthResponse(data);
+      // Store user data in localStorage for easy access
+      localStorage.setItem("user", JSON.stringify(user));
+
+      return user;
+    } else {
+      // User is not logged in
+      if (!isLoginPage && !isIndexPage) {
+        // Redirect to login page if not on login or index page
+        window.location.href = "login.html";
+      }
+
+      // Clear user data from localStorage
+      localStorage.removeItem("user");
+
+      return null;
+    }
   } catch (error) {
     console.error("Error checking auth status:", error);
-    // Hide loading indicator in case of error
-    const loadingIndicator = document.getElementById("auth-loading");
-    if (loadingIndicator) loadingIndicator.style.display = "none";
-    // Clear cache in case of error
-    localStorage.removeItem("auth_cache");
-    return null;
-  }
-}
-
-function handleAuthResponse(data) {
-  const { isAuthenticated, user } = data;
-  const currentPath = window.location.pathname;
-  const isLoginPage = currentPath.includes("login.html");
-  const isIndexPage = currentPath === "/" || currentPath.includes("index.html");
-
-  if (isAuthenticated) {
-    if (isLoginPage || isIndexPage) {
-      window.location.href = "discover.html";
-    }
-    localStorage.setItem("user", JSON.stringify(user));
-    return user;
-  } else {
-    if (!isLoginPage && !isIndexPage) {
-      window.location.href = "login.html";
-    }
-    localStorage.removeItem("user");
-    localStorage.removeItem("auth_cache");
+    // Handle error (e.g., show error message)
     return null;
   }
 }

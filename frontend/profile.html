@@ -216,8 +216,15 @@
         font-size: 28px;
         font-weight: 700;
         background: white;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        /* Fallback for unsupported browsers */
+        color: white; /* Default text color if effect fails */
+        /* Standard property (future-proofing) */
+        background-clip: text;
+        -webkit-background-clip: text; /* WebKit browsers (Chrome, Safari, Edge) */
+        -moz-background-clip: text; /* Firefox (limited support, may not work yet) */
+        /* Make text transparent to show background */
+        -webkit-text-fill-color: transparent; /* WebKit-specific */
+        /* Animation */
         animation: slideInLeft 0.6s ease-out 0.2s;
       }
 

@@ -6,9 +6,13 @@
     <title>Explore</title>
     <link rel="icon" type="image/svg" href="assets/icons/Frame 1.svg" />
     <link
-      rel="stylesheet"
+      rel="preload"
+      as="style"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <script type="module" src="js/performance.js"></script>
+    <script src="js/sw-register.js"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
@@ -1220,7 +1224,12 @@
         </div>
         <div class="profile-details-content" id="profileDetailsContent">
           <div class="detail-section" id="imageSection">
-            <img id="profileImage" alt="Profile Image" />
+            <img
+              id="profileImage"
+              alt="Profile Image"
+              loading="lazy"
+              data-src=""
+            />
             <button class="heart-button detail-heart-button">
               <img
                 src="assets/icons/heart-icon.svg"
@@ -1249,7 +1258,12 @@
 
     <div class="external-buttons">
       <button title="Rose" class="rose-button">
-        <img src="assets/icons/rose-icon.svg" alt="Rose" class="rose-icon" />
+        <img
+          data-src="assets/icons/rose-icon.svg"
+          alt="Rose"
+          class="rose-icon"
+          loading="lazy"
+        />
       </button>
       <button title="Save">
         <i class="fa-solid fa-bookmark"></i>

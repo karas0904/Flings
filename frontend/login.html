@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simple Navbar</title>
     <link rel="icon" type="image/svg" href="assets/icons/Frame 1.svg" />
-    <link rel="stylesheet" href="css/navbar.css" />
+    <link
+      rel="preload"
+      as="style"
+      href="css/navbar.css"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <script type="module" src="js/performance.js"></script>
+    <script src="js/sw-register.js"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=DM+Serif+Text:ital@1&display=swap"
       rel="stylesheet"
@@ -648,7 +655,11 @@
       <!-- Image-Text Section (Left Image) -->
       <section class="image-text-section left">
         <div class="image-container">
-          <img src="assets/images/Couple1-image.jpg" alt="Left Image" />
+          <img
+            data-src="assets/images/Couple1-image.jpg"
+            alt="Left Image"
+            loading="lazy"
+          />
         </div>
         <div class="text-content">
           <h2>Find Your Kind of Crazy</h2>
@@ -664,7 +675,11 @@
       <!-- Image-Text Section (Right Image) -->
       <section class="image-text-section right">
         <div class="image-container">
-          <img src="assets/images/couple2-image.jpg" alt="Right Image" />
+          <img
+            data-src="assets/images/couple2-image.jpg"
+            alt="Right Image"
+            loading="lazy"
+          />
         </div>
         <div class="text-content">
           <h2>Make Friends, Make Mistakes, Make It Interesting</h2>
@@ -722,6 +737,34 @@
         <button id="modalOkButton">OK</button>
       </div>
     </div>
+    <div id="auth-error" class="error-message" style="display: none"></div>
+    <div id="auth-loading" class="loading-indicator" style="display: none">
+      <div class="spinner"></div>
+      <span>Logging in...</span>
+    </div>
+    <style>
+      .loading-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 10px 0;
+        color: white;
+      }
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>

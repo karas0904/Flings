@@ -1345,6 +1345,7 @@
         const token = localStorage.getItem("jwtToken");
         const loadingOverlay = document.getElementById("profileLoadingOverlay");
 
+        // Show the loading overlay
         if (loadingOverlay) {
           loadingOverlay.classList.remove("hidden");
         }
@@ -1439,34 +1440,32 @@
             throw new Error("Failed to fetch roses: " + rosesResponse.status);
           }
           const myRoses = await rosesResponse.json();
-          console.log("Raw roses from /api/sent-roses:", myRoses);
+          console.log("Raw roses from /api/efforts:", myRoses);
           const roseData = new Map(
-            myRoses && Array.isArray(myRoses.roses)
-              ? myRoses.roses
-                  .filter((rose) => rose.toUserId)
-                  .map((rose) => [
-                    rose.toUserId.toString(),
-                    { hasRose: true, comment: rose.comment || "" },
-                  ])
+            myRoses && Array.isArray(myRoses.efforts)
+              ? myRoses.efforts.map((rose) => [
+                  rose.toUserId.toString(), // Use toUserId as the key
+                  { hasRose: true, comment: rose.comment || "" },
+                ])
               : []
           );
 
           // Add like, save, and rose/comment status to profiles
           const profilesWithStatus = profiles.map((profile) => {
-            const profileIdStr = profile._id.toString();
-            const roseInfo = roseData.get(profileIdStr) || {
+            const roseInfo = roseData.get(profile._id.toString()) || {
               hasRose: false,
               comment: "",
             };
             return {
               ...profile,
-              isLiked: likedProfileIds.has(profileIdStr),
-              isSaved: savedProfileIds.has(profileIdStr),
+              isLiked: likedProfileIds.has(profile._id.toString()),
+              isSaved: savedProfileIds.has(profile._id.toString()),
               hasRose: roseInfo.hasRose,
               comment: roseInfo.comment,
             };
           });
 
+          // Hide the loading overlay after successful fetch
           if (loadingOverlay) {
             loadingOverlay.classList.add("hidden");
           }

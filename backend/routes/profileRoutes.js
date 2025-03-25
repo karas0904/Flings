@@ -35,7 +35,7 @@ router.post("/like-profile", authenticateToken, async (req, res) => {
         .json({ message: "You already liked this profile" });
     }
 
-    const like = new Like({ userId, profileId, status: "pending" });
+    const like = new Like({ userId, profileId });
     await like.save();
     res.status(201).json({ message: "Profile liked successfully", like });
   } catch (error) {
@@ -50,44 +50,12 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
   const userId = req.user.id; // Current user's ID from JWT
 
   try {
-    const incomingLikes = await Like.find({ profileId: userId })
-      .populate("userId", "firstName photos")
+    // Find all likes where this user's profile was liked
+    const likes = await Like.find({ profileId: userId })
+      .populate("userId", "firstName photos") // Populate the liker's details
       .lean();
 
-    const outgoingMatches = await Like.find({
-      userId,
-      status: "matched",
-    })
-      .populate("profileId", "firstName photos")
-      .lean();
-
-    const profilesMap = new Map();
-
-    incomingLikes.forEach((like) => {
-      profilesMap.set(like.userId._id.toString(), {
-        id: like.userId._id,
-        name: like.userId.firstName,
-        photo: like.userId.photos[0] || "default-profile.jpg",
-        status: like.status,
-        timestamp: like.timestamp,
-        direction: "incoming",
-      });
-    });
-
-    outgoingMatches.forEach((match) => {
-      profilesMap.set(match.profileId._id.toString(), {
-        id: match.profileId._id,
-        name: match.profileId.firstName,
-        photo: match.profileId.photos[0] || "default-profile.jpg",
-        status: match.status,
-        timestamp: match.timestamp,
-        direction: "matched",
-      });
-    });
-
-    const profiles = Array.from(profilesMap.values());
-
-    if (!profiles.length) {
+    if (!likes.length) {
       return res
         .status(200)
         .json({ message: "No one has liked your profile yet", profiles: [] });
@@ -110,88 +78,13 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
   }
 });
 
-router.post("/toggle-like", authenticateToken, async (req, res) => {
-  const { profileId } = req.body;
+router.get("/my-likes", authenticateToken, async (req, res) => {
   const userId = req.user.id;
-
   try {
-    let like = await Like.findOne({ userId: profileId, profileId: userId });
-    if (!like) {
-      return res.status(404).json({ message: "Like not found" });
-    }
-
-    if (like.status === "pending") {
-      like.status = "matched";
-      like.timestamp = new Date();
-
-      const matches = await getMatches(userId);
-      const matchedProfile = matches.find(
-        (p) => p._id.toString() === profileId
-      );
-      like.score = matchedProfile ? matchedProfile.score : 0;
-
-      await like.save();
-
-      let reverseLike = await Like.findOne({ userId, profileId });
-      if (reverseLike && reverseLike.status === "pending") {
-        reverseLike.status = "matched";
-        reverseLike.timestamp = new Date();
-        reverseLike.score = like.score;
-        await reverseLike.save();
-      }
-
-      res.status(200).json({ message: "Match created", matchId: like._id });
-    } else {
-      res.status(400).json({ message: "Already matched" });
-    }
+    const likes = await Like.find({ userId }).lean();
+    res.status(200).json(likes); // Returns array of like objects with profileId
   } catch (error) {
-    console.error("Error toggling like:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.get("/matches", authenticateToken, async (req, res) => {
-  const userId = req.user.id;
-
-  try {
-    const matches = await Like.find({
-      $and: [
-        { status: "matched" },
-        { $or: [{ userId }, { profileId: userId }] },
-      ],
-    })
-      .populate("userId", "firstName photos")
-      .populate("profileId", "firstName photos")
-      .lean();
-
-    if (!matches.length) {
-      return res.status(200).json({ message: "No matches yet", profiles: [] });
-    }
-
-    const profiles = matches.map((match) => {
-      const isCurrentUserInitiator = match.userId._id.toString() === userId;
-      const otherUser = isCurrentUserInitiator ? match.profileId : match.userId;
-      return {
-        matchId: match._id.toString(),
-        name: otherUser.firstName || "Unknown",
-        photo:
-          otherUser.photos && otherUser.photos.length > 0
-            ? otherUser.photos[0]
-            : "default-profile.jpg",
-        snippet: "Say hi!",
-        time: match.timestamp
-          ? new Date(match.timestamp).toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            })
-          : "Just now",
-        score: match.score || 0,
-      };
-    });
-
-    res.status(200).json({ message: "Your matches", profiles });
-  } catch (error) {
-    console.error("Error fetching matches:", error);
+    console.error("Error fetching my likes:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -315,6 +208,8 @@ router.delete("/efforts/:id", authenticateToken, async (req, res) => {
   }
 });
 
+// Accept an effort (rose interaction)
+// profileRoutes.js
 router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
   const effortId = req.params.id;
   const userId = req.user.id; // Logged-in user (receiver)
@@ -340,7 +235,7 @@ router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
     // Optionally, create a match or chat session (simplified here)
     // For simplicity, we'll assume accepting a rose creates a match
     const matchData = {
-      matchId: effort._id.toString(),
+      matchId: effort._id.toString(), // Convert ObjectId to string
       name: effort.fromUser.firstName || "Unknown",
       photo: effort.fromUser.photos[0] || "default-profile.jpg",
       snippet: effort.comment || "Rose accepted!",
@@ -507,11 +402,13 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
   }
 });
 
+// Add this inside profileRoutes.js, before export default router
+// Add this new route below the existing GET /api/profile
 router.get("/profile/:id", authenticateToken, async (req, res) => {
   try {
     const profileId = req.params.id;
     const user = await User.findById(profileId).select(
-      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson height bio"
+      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson height"
     );
     if (!user) {
       return res.status(404).json({ message: "Profile not found" });
@@ -540,7 +437,7 @@ router.get("/profile/:id", authenticateToken, async (req, res) => {
 
     const responseData = {
       firstName: user.firstName,
-      age: age,
+      age: age, // Use calculated age
       year: user.year,
       email: user.email,
       photos: user.photos || [],
@@ -555,7 +452,6 @@ router.get("/profile/:id", authenticateToken, async (req, res) => {
       smoking: user.smoking || "None",
       partyPerson: user.partyPerson || "None",
       height: user.height || "None",
-      bio: user.bio || "No bio provided",
     };
 
     res.status(200).json(responseData);
@@ -565,6 +461,7 @@ router.get("/profile/:id", authenticateToken, async (req, res) => {
   }
 });
 
+// POST /api/profile - Update user profile
 router.post("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id });
@@ -678,7 +575,7 @@ router.get("/profile", authenticateToken, async (req, res) => {
 
     const responseData = {
       firstName: user.firstName,
-      age: age,
+      age: age, // Use calculated age
       year: user.year,
       email: user.email,
       photos: user.photos || [],
@@ -806,7 +703,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
         return {
           _id: profile._id,
           name: profile.firstName || "Unknown",
-          age: age,
+          age: age, // Use calculated age
           year: profile.year || "N/A",
           department: profile.courseStudy || "N/A",
           bio: profile.bio || "No bio provided",
@@ -852,28 +749,6 @@ router.delete("/delete-account", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Error deleting account:", error);
     res.status(500).json({ message: "Server error", error: error.message });
-  }
-});
-
-router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
-  const { profileId } = req.body;
-  const userId = req.user.id;
-
-  if (!profileId) {
-    return res.status(400).json({ message: "Profile ID is required" });
-  }
-
-  try {
-    const result = await Like.deleteOne({ userId, profileId });
-
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "Like not found" });
-    }
-
-    res.status(200).json({ message: "Profile removed from liked profiles" });
-  } catch (error) {
-    console.error("Error removing liked profile:", error);
-    res.status(500).json({ message: "Server error" });
   }
 });
 

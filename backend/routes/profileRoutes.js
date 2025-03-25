@@ -262,12 +262,12 @@ router.delete("/efforts/:id", authenticateToken, async (req, res) => {
 });
 
 // Accept an effort (rose interaction)
-// profileRoutes.js
 router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
   const effortId = req.params.id;
   const userId = req.user.id; // Logged-in user (receiver)
 
   try {
+    // Find the effort by ID and ensure it belongs to the logged-in user
     const effort = await RoseInteraction.findOne({
       _id: effortId,
       toUser: userId,
@@ -280,16 +280,16 @@ router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
         .json({ message: "Effort not found or not authorized" });
     }
 
+    // Update the status to "accepted"
     effort.status = "accepted";
     await effort.save();
 
+    // Optionally, create a match or chat session (simplified here)
+    // For simplicity, we'll assume accepting a rose creates a match
     const matchData = {
-      matchId: effort._id.toString(), // Convert ObjectId to string
+      matchId: effort._id, // Use the rose interaction ID as a unique identifier
       name: effort.fromUser.firstName || "Unknown",
-      photo:
-        effort.fromUser.photos && effort.fromUser.photos.length > 0
-          ? effort.fromUser.photos[0]
-          : "default-profile.jpg",
+      photo: effort.fromUser.photos[0] || "default-profile.jpg",
       snippet: effort.comment || "Rose accepted!",
       time: new Date().toLocaleTimeString(),
     };
@@ -455,11 +455,12 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
 });
 
 // Add this inside profileRoutes.js, before export default router
+// Add this new route below the existing GET /api/profile
 router.get("/profile/:id", authenticateToken, async (req, res) => {
   try {
     const profileId = req.params.id;
     const user = await User.findById(profileId).select(
-      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson height bio" // Add 'bio' here
+      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson height"
     );
     if (!user) {
       return res.status(404).json({ message: "Profile not found" });
@@ -488,7 +489,7 @@ router.get("/profile/:id", authenticateToken, async (req, res) => {
 
     const responseData = {
       firstName: user.firstName,
-      age: age,
+      age: age, // Use calculated age
       year: user.year,
       email: user.email,
       photos: user.photos || [],
@@ -503,7 +504,6 @@ router.get("/profile/:id", authenticateToken, async (req, res) => {
       smoking: user.smoking || "None",
       partyPerson: user.partyPerson || "None",
       height: user.height || "None",
-      bio: user.bio || "No bio provided", // Add bio here
     };
 
     res.status(200).json(responseData);
@@ -606,50 +606,42 @@ router.post("/profile", authenticateToken, async (req, res) => {
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id }).select(
-      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson height"
+      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson age height" // Updated
     );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    let age = "N/A";
+    const today = new Date();
+    const birthDate = new Date(
+      `${user.birthday.year}-${user.birthday.month}-${user.birthday.day}`
+    );
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
     if (
-      user.birthday &&
-      user.birthday.year &&
-      user.birthday.month &&
-      user.birthday.day
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
     ) {
-      const today = new Date();
-      const birthDate = new Date(
-        `${user.birthday.year}-${user.birthday.month}-${user.birthday.day}`
-      );
-      age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
-      ) {
-        age--;
-      }
+      age--;
     }
 
     const responseData = {
       firstName: user.firstName,
-      age: age, // Use calculated age
+      age: user.age !== null ? user.age : age,
       year: user.year,
       email: user.email,
       photos: user.photos || [],
-      quotes: user.quotes || [],
+      quotes: user.quotes,
       hometown: user.hometown || "N/A",
-      job: user.job || "None",
-      planTo: user.planTo || "None",
-      datingIntention: user.datingIntention || "None",
-      pets: user.pets || "None",
-      language: user.language || "None",
-      drinking: user.drinking || "None",
-      smoking: user.smoking || "None",
-      partyPerson: user.partyPerson || "None",
-      height: user.height || "None",
+      job: user.job || "None", // New
+      planTo: user.planTo || "None", // New
+      datingIntention: user.datingIntention || "None", // New
+      pets: user.pets || "None", // New
+      language: user.language || "None", // New
+      drinking: user.drinking || "None", // New
+      smoking: user.smoking || "None", // New
+      partyPerson: user.partyPerson || "None", // New
+      height: user.height || "None", // New
     };
     res.status(200).json(responseData);
   } catch (error) {
@@ -717,7 +709,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
     const user = await User.findById(userId).populate({
       path: "savedProfiles.profileId",
       select:
-        "firstName photos bio courseStudy hobbies birthday year quotes height",
+        "firstName photos bio courseStudy hobbies birthday year quotes height age",
     });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -732,28 +724,24 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
           console.warn(
             `Missing saveDate for saved profile: ${saved.profileId}`
           );
-          return false;
+          return false; // Skip if saveDate is missing
         }
         return new Date(saved.saveDate) >= oneWeekAgo;
       })
       .map((saved) => {
         if (!saved.profileId) {
           console.warn(`Invalid saved profile for user ${userId}`);
-          return null;
+          return null; // Skip if profileId is missing
         }
         const profile = saved.profileId;
-
+        const today = new Date();
+        const birthDate = profile.birthday
+          ? new Date(
+              `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
+            )
+          : null;
         let age = "N/A";
-        if (
-          profile.birthday &&
-          profile.birthday.year &&
-          profile.birthday.month &&
-          profile.birthday.day
-        ) {
-          const today = new Date();
-          const birthDate = new Date(
-            `${profile.birthday.year}-${profile.birthday.month}-${profile.birthday.day}`
-          );
+        if (birthDate) {
           age = today.getFullYear() - birthDate.getFullYear();
           const monthDiff = today.getMonth() - birthDate.getMonth();
           if (
@@ -767,7 +755,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
         return {
           _id: profile._id,
           name: profile.firstName || "Unknown",
-          age: age, // Use calculated age
+          age: profile.age || age,
           year: profile.year || "N/A",
           department: profile.courseStudy || "N/A",
           bio: profile.bio || "No bio provided",
@@ -780,7 +768,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
           saveDate: saved.saveDate,
         };
       })
-      .filter((profile) => profile !== null);
+      .filter((profile) => profile !== null); // Remove null entries
 
     res.status(200).json(savedProfiles);
   } catch (error) {

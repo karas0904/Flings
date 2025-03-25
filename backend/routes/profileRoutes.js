@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Like from "../models/Like.js";
 import { getMatches } from "../utils/matching.js";
-import RoseInteraction from "../models/roseInteraction.js";
 
 const router = express.Router();
 
@@ -209,7 +208,6 @@ router.delete("/efforts/:id", authenticateToken, async (req, res) => {
 });
 
 // Accept an effort (rose interaction)
-// profileRoutes.js
 router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
   const effortId = req.params.id;
   const userId = req.user.id; // Logged-in user (receiver)
@@ -235,7 +233,7 @@ router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
     // Optionally, create a match or chat session (simplified here)
     // For simplicity, we'll assume accepting a rose creates a match
     const matchData = {
-      matchId: effort._id.toString(), // Convert ObjectId to string
+      matchId: effort._id, // Use the rose interaction ID as a unique identifier
       name: effort.fromUser.firstName || "Unknown",
       photo: effort.fromUser.photos[0] || "default-profile.jpg",
       snippet: effort.comment || "Rose accepted!",
@@ -308,6 +306,7 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
+    // Aggregate likes from the past week
     const trendingProfiles = await Like.aggregate([
       { $match: { timestamp: { $gte: oneWeekAgo } } },
       { $group: { _id: "$profileId", likeCount: { $sum: 1 } } },
@@ -315,49 +314,19 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
       { $limit: 10 },
     ]);
 
-    if (!trendingProfiles.length) {
-      return res
-        .status(200)
-        .json({ message: "No trending profiles found", profiles: [] });
-    }
-
     const profileIds = trendingProfiles.map((profile) => profile._id);
     const profiles = await User.find({ _id: { $in: profileIds } }).select(
       "firstName photos age courseStudy height birthday year partyPerson smoking drinking pets bio"
     );
 
-    console.log("Trending Profile IDs:", profileIds); // Debug
-    console.log("Fetched Profiles:", profiles); // Debug
+    console.log("Profiles from DB:", profiles); // Debugging
 
     const formattedProfiles = trendingProfiles.map((trend) => {
       const user = profiles.find((p) => p._id.equals(trend._id));
-      if (!user) {
-        console.warn(`No user found for profileId: ${trend._id}`);
-        return {
-          id: trend._id,
-          name: "Unknown",
-          photos: ["https://via.placeholder.com/200"],
-          likeCount: trend.likeCount,
-          age: "N/A",
-          courseStudy: "N/A",
-          height: "N/A",
-          year: "N/A",
-          partyPerson: "N/A",
-          smoking: "N/A",
-          drinking: "N/A",
-          pets: "N/A",
-          bio: "No bio provided",
-        };
-      }
+      console.log("User for profileId", trend._id, ":", user); // Debugging
 
       let calculatedAge = user.age;
-      if (
-        !calculatedAge &&
-        user.birthday &&
-        user.birthday.year &&
-        user.birthday.month &&
-        user.birthday.day
-      ) {
+      if (!calculatedAge && user.birthday) {
         const today = new Date();
         const birthDate = new Date(
           `${user.birthday.year}-${user.birthday.month}-${user.birthday.day}`
@@ -374,21 +343,21 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
 
       return {
         id: trend._id,
-        name: user.firstName || "Unknown",
+        name: user ? user.firstName : "Unknown",
         photos:
-          user.photos.length > 0
+          user && user.photos.length > 0
             ? user.photos
-            : ["https://via.placeholder.com/200"],
+            : ["https://via.placeholder.com/200"], // Return full photos array
         likeCount: trend.likeCount,
         age: calculatedAge || "N/A",
-        courseStudy: user.courseStudy || "N/A",
-        height: user.height || "N/A",
-        year: user.year || "N/A",
-        partyPerson: user.partyPerson || "N/A",
-        smoking: user.smoking || "N/A",
-        drinking: user.drinking || "N/A",
-        pets: user.pets || "N/A",
-        bio: user.bio || "No bio provided",
+        courseStudy: user ? user.courseStudy || "N/A" : "N/A",
+        height: user ? user.height || "N/A" : "N/A",
+        year: user ? user.year || "N/A" : "N/A",
+        partyPerson: user ? user.partyPerson || "N/A" : "N/A",
+        smoking: user ? user.smoking || "N/A" : "N/A",
+        drinking: user ? user.drinking || "N/A" : "N/A",
+        pets: user ? user.pets || "N/A" : "N/A",
+        bio: user ? user.bio || "No bio provided" : "No bio provided",
       };
     });
 
@@ -724,6 +693,46 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
+
+// DELETE /api/saved-profiles/date/:date - Remove all saved profiles for a specific date
+router.delete(
+  "/saved-profiles/date/:date",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { date } = req.params; // e.g., "March 19"
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const originalLength = user.savedProfiles.length;
+      user.savedProfiles = user.savedProfiles.filter((saved) => {
+        const saveDate = new Date(saved.saveDate).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+        });
+        return saveDate !== date;
+      });
+
+      if (user.savedProfiles.length === originalLength) {
+        return res
+          .status(404)
+          .json({ message: "No saved profiles found for this date" });
+      }
+
+      await user.save();
+      res
+        .status(200)
+        .json({ message: "All profiles for this date removed successfully" });
+    } catch (error) {
+      console.error("Error deleting saved profiles for date:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+);
 
 // POST /api/logout - Logout endpoint
 router.post("/logout", authenticateToken, async (req, res) => {

@@ -546,61 +546,9 @@
         background: rgba(0, 0, 0, 0.2);
         border-radius: 3px;
       }
-
-      /* Loading Animation Styles */
-      .loading-container {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: #fff;
-        font-size: 24px;
-        font-family: "Teko", sans-serif;
-        z-index: 1001;
-        display: none;
-      }
-
-      .loading-text {
-        display: inline-block;
-      }
-
-      .loading-dot {
-        opacity: 0;
-        animation: dotFade 1.5s infinite;
-      }
-
-      .loading-dot:nth-child(1) {
-        animation-delay: 0s;
-      }
-
-      .loading-dot:nth-child(2) {
-        animation-delay: 0.5s;
-      }
-
-      .loading-dot:nth-child(3) {
-        animation-delay: 1s;
-      }
-
-      @keyframes dotFade {
-        0% {
-          opacity: 0;
-        }
-        50% {
-          opacity: 1;
-        }
-        100% {
-          opacity: 0;
-        }
-      }
     </style>
   </head>
   <body>
-    <div class="loading-container" id="loadingContainer">
-      <span class="loading-text">Loading</span>
-      <span class="loading-dot">.</span>
-      <span class="loading-dot">.</span>
-      <span class="loading-dot">.</span>
-    </div>
     <div class="blur-shape red-shape"></div>
     <div class="blur-shape blue-shape"></div>
 
@@ -881,17 +829,6 @@
         });
       }
 
-      // Helper functions for loading animation
-      function showLoading() {
-        const loadingContainer = document.getElementById("loadingContainer");
-        loadingContainer.style.display = "block";
-      }
-
-      function hideLoading() {
-        const loadingContainer = document.getElementById("loadingContainer");
-        loadingContainer.style.display = "none";
-      }
-
       // DOMContentLoaded listener
       document.addEventListener("DOMContentLoaded", async () => {
         const profileIcon = document.querySelector(".profile-icon img");
@@ -901,24 +838,14 @@
           profileIcon.src = storedImage;
         }
 
-        console.log("Starting fetch operations...");
-        showLoading();
+        console.log("Fetching user profile...");
+        await fetchUserProfile();
 
-        try {
-          console.log("Fetching user profile...");
-          await fetchUserProfile();
+        console.log("Fetching saved profiles...");
+        savesData = await fetchSavedProfiles();
 
-          console.log("Fetching saved profiles...");
-          savesData = await fetchSavedProfiles();
-
-          console.log("Rendering initial content...");
-          renderContent();
-        } catch (error) {
-          console.error("Error during initialization:", error);
-          alert("An error occurred while loading data: " + error.message);
-        } finally {
-          hideLoading();
-        }
+        console.log("Rendering initial content...");
+        renderContent();
 
         const searchInput = document.getElementById("dateSearch");
         searchInput.addEventListener("input", function () {

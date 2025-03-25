@@ -1343,6 +1343,12 @@
       // Function to fetch all profiles from backend
       async function fetchProfiles() {
         const token = localStorage.getItem("jwtToken");
+        const loadingOverlay = document.getElementById("profileLoadingOverlay");
+
+        if (loadingOverlay) {
+          loadingOverlay.classList.remove("hidden");
+        }
+
         if (!token) {
           alert("Please log in!");
           window.location.href = "login.html";
@@ -1366,24 +1372,12 @@
               "Failed to fetch profiles: " + profilesResponse.status
             );
           }
-          let profiles = await profilesResponse.json();
+          const profiles = await profilesResponse.json();
           console.log("Raw profiles from /api/profiles:", profiles);
-
-          if (!Array.isArray(profiles)) {
-            console.error("Profiles response is not an array:", profiles);
-            throw new Error("Invalid profiles data format");
-          }
-          profiles = profiles.filter(
-            (profile) =>
-              profile &&
-              typeof profile === "object" &&
-              profile._id !== undefined
-          );
-          console.log("Filtered profiles:", profiles);
 
           // Fetch the current user's likes
           const likesResponse = await fetch(
-            "http://localhost:3000/api/liked-profiles",
+            "http://localhost:3000/api/my-likes",
             {
               method: "GET",
               headers: {
@@ -1396,12 +1390,10 @@
             throw new Error("Failed to fetch likes: " + likesResponse.status);
           }
           const myLikes = await likesResponse.json();
-          console.log("Raw likes from /api/liked-profiles:", myLikes);
+          console.log("Raw likes from /api/my-likes:", myLikes);
           const likedProfileIds = new Set(
-            Array.isArray(myLikes.profiles)
-              ? myLikes.profiles
-                  .map((like) => like.id?.toString())
-                  .filter(Boolean)
+            Array.isArray(myLikes)
+              ? myLikes.map((like) => like.profileId.toString())
               : []
           );
 
@@ -1428,15 +1420,13 @@
           );
           const savedProfileIds = new Set(
             Array.isArray(savedProfiles)
-              ? savedProfiles
-                  .map((saved) => saved._id?.toString())
-                  .filter(Boolean)
+              ? savedProfiles.map((saved) => saved._id.toString())
               : []
           );
 
           // Fetch sent roses (using /api/efforts as a proxy, adjust if incorrect)
           const rosesResponse = await fetch(
-            "http://localhost:3000/api/sent-roses",
+            "http://localhost:3000/api/efforts",
             {
               method: "GET",
               headers: {
@@ -1449,21 +1439,37 @@
             throw new Error("Failed to fetch roses: " + rosesResponse.status);
           }
           const myRoses = await rosesResponse.json();
-          console.log("Raw roses from /api/efforts:", myRoses);
-          // Safely handle the efforts array
-          const roseProfileIds = new Set(
-            myRoses && Array.isArray(myRoses.efforts)
-              ? myRoses.efforts.map((rose) => rose.fromUserId.toString())
+          console.log("Raw roses from /api/sent-roses:", myRoses);
+          const roseData = new Map(
+            myRoses && Array.isArray(myRoses.roses)
+              ? myRoses.roses
+                  .filter((rose) => rose.toUserId)
+                  .map((rose) => [
+                    rose.toUserId.toString(),
+                    { hasRose: true, comment: rose.comment || "" },
+                  ])
               : []
           );
 
-          // Add like, save, and rose status to profiles
-          const profilesWithStatus = profiles.map((profile) => ({
-            ...profile,
-            isLiked: likedProfileIds.has(profile._id.toString()),
-            isSaved: savedProfileIds.has(profile._id.toString()),
-            hasRose: roseProfileIds.has(profile._id.toString()), // Check received roses
-          }));
+          // Add like, save, and rose/comment status to profiles
+          const profilesWithStatus = profiles.map((profile) => {
+            const profileIdStr = profile._id.toString();
+            const roseInfo = roseData.get(profileIdStr) || {
+              hasRose: false,
+              comment: "",
+            };
+            return {
+              ...profile,
+              isLiked: likedProfileIds.has(profileIdStr),
+              isSaved: savedProfileIds.has(profileIdStr),
+              hasRose: roseInfo.hasRose,
+              comment: roseInfo.comment,
+            };
+          });
+
+          if (loadingOverlay) {
+            loadingOverlay.classList.add("hidden");
+          }
 
           return profilesWithStatus;
         } catch (error) {

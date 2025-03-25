@@ -1,15 +1,25 @@
 import mongoose from "mongoose";
 
-const likeSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  profileId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+const likeSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // References your 'users' collection
+      required: true,
+    },
+    profileId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // Also references 'users' since profiles are users
+      required: true,
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now, // Automatically set to current time
+    },
   },
-  status: { type: String, enum: ["pending", "matched"], default: "pending" },
-  timestamp: { type: Date, default: Date.now },
-  score: { type: Number, default: 0 }, // New field for score
-});
+  {
+    timestamps: true, // Adds createdAt and updatedAt fields
+  }
+);
 
 export default mongoose.model("Like", likeSchema);

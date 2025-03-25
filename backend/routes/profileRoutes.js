@@ -35,7 +35,7 @@ router.post("/like-profile", authenticateToken, async (req, res) => {
         .json({ message: "You already liked this profile" });
     }
 
-    const like = new Like({ userId, profileId, status: "pending" }); // Add status
+    const like = new Like({ userId, profileId, status: "pending" });
     await like.save();
     res.status(201).json({ message: "Profile liked successfully", like });
   } catch (error) {
@@ -50,12 +50,10 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
   const userId = req.user.id; // Current user's ID from JWT
 
   try {
-    // Fetch likes where this user was liked (incoming likes)
     const incomingLikes = await Like.find({ profileId: userId })
       .populate("userId", "firstName photos")
       .lean();
 
-    // Fetch matches where this user liked someone and it’s matched (outgoing matches)
     const outgoingMatches = await Like.find({
       userId,
       status: "matched",
@@ -63,10 +61,8 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
       .populate("profileId", "firstName photos")
       .lean();
 
-    // Combine and deduplicate profiles
     const profilesMap = new Map();
 
-    // Process incoming likes
     incomingLikes.forEach((like) => {
       profilesMap.set(like.userId._id.toString(), {
         id: like.userId._id,
@@ -74,11 +70,10 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
         photo: like.userId.photos[0] || "default-profile.jpg",
         status: like.status,
         timestamp: like.timestamp,
-        direction: "incoming", // Indicates they liked you
+        direction: "incoming",
       });
     });
 
-    // Process outgoing matches (overwrites if already in map to prioritize match status)
     outgoingMatches.forEach((match) => {
       profilesMap.set(match.profileId._id.toString(), {
         id: match.profileId._id,
@@ -86,7 +81,7 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
         photo: match.profileId.photos[0] || "default-profile.jpg",
         status: match.status,
         timestamp: match.timestamp,
-        direction: "matched", // Indicates mutual match
+        direction: "matched",
       });
     });
 
@@ -98,7 +93,17 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
         .json({ message: "No one has liked your profile yet", profiles: [] });
     }
 
-    res.status(200).json({ message: "Profiles related to you", profiles });
+    // Map to a format showing who liked you
+    const likedByProfiles = likes.map((like) => ({
+      id: like.userId._id,
+      name: like.userId.firstName,
+      photo: like.userId.photos[0] || "default-profile.jpg",
+      timestamp: like.timestamp, // Optional: when they liked you
+    }));
+
+    res
+      .status(200)
+      .json({ message: "Profiles that liked you", profiles: likedByProfiles });
   } catch (error) {
     console.error("Error fetching liked profiles:", error);
     res.status(500).json({ message: "Server error" });
@@ -106,38 +111,87 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
 });
 
 router.post("/toggle-like", authenticateToken, async (req, res) => {
-  const { profileId } = req.body; // profileId is the user who liked you (e.g., User A)
-  const userId = req.user.id; // Current user (e.g., User B)
-
-  if (!profileId) {
-    return res.status(400).json({ message: "Profile ID is required" });
-  }
+  const { profileId } = req.body;
+  const userId = req.user.id;
 
   try {
-    // Find the existing like where profileId (User A) liked userId (User B)
-    const existingLike = await Like.findOne({
-      userId: profileId,
-      profileId: userId,
-    });
-    if (!existingLike) {
+    let like = await Like.findOne({ userId: profileId, profileId: userId });
+    if (!like) {
       return res.status(404).json({ message: "Like not found" });
     }
 
-    // Check if the current user has already liked this profile back
-    const reverseLike = await Like.findOne({ userId, profileId });
-    if (reverseLike) {
-      return res
-        .status(400)
-        .json({ message: "You already liked this profile back" });
+    if (like.status === "pending") {
+      like.status = "matched";
+      like.timestamp = new Date();
+
+      const matches = await getMatches(userId);
+      const matchedProfile = matches.find(
+        (p) => p._id.toString() === profileId
+      );
+      like.score = matchedProfile ? matchedProfile.score : 0;
+
+      await like.save();
+
+      let reverseLike = await Like.findOne({ userId, profileId });
+      if (reverseLike && reverseLike.status === "pending") {
+        reverseLike.status = "matched";
+        reverseLike.timestamp = new Date();
+        reverseLike.score = like.score;
+        await reverseLike.save();
+      }
+
+      res.status(200).json({ message: "Match created", matchId: like._id });
+    } else {
+      res.status(400).json({ message: "Already matched" });
     }
-
-    // Update the existing like to "matched"
-    existingLike.status = "matched";
-    await existingLike.save();
-
-    res.status(200).json({ message: "Match confirmed", status: "matched" });
   } catch (error) {
     console.error("Error toggling like:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/matches", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const matches = await Like.find({
+      $and: [
+        { status: "matched" },
+        { $or: [{ userId }, { profileId: userId }] },
+      ],
+    })
+      .populate("userId", "firstName photos")
+      .populate("profileId", "firstName photos")
+      .lean();
+
+    if (!matches.length) {
+      return res.status(200).json({ message: "No matches yet", profiles: [] });
+    }
+
+    const profiles = matches.map((match) => {
+      const isCurrentUserInitiator = match.userId._id.toString() === userId;
+      const otherUser = isCurrentUserInitiator ? match.profileId : match.userId;
+      return {
+        matchId: match._id.toString(),
+        name: otherUser.firstName || "Unknown",
+        photo:
+          otherUser.photos && otherUser.photos.length > 0
+            ? otherUser.photos[0]
+            : "default-profile.jpg",
+        snippet: "Say hi!",
+        time: match.timestamp
+          ? new Date(match.timestamp).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            })
+          : "Just now",
+        score: match.score || 0,
+      };
+    });
+
+    res.status(200).json({ message: "Your matches", profiles });
+  } catch (error) {
+    console.error("Error fetching matches:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -261,7 +315,6 @@ router.delete("/efforts/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Accept an effort (rose interaction)
 router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
   const effortId = req.params.id;
   const userId = req.user.id; // Logged-in user (receiver)
@@ -287,7 +340,7 @@ router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
     // Optionally, create a match or chat session (simplified here)
     // For simplicity, we'll assume accepting a rose creates a match
     const matchData = {
-      matchId: effort._id, // Use the rose interaction ID as a unique identifier
+      matchId: effort._id.toString(),
       name: effort.fromUser.firstName || "Unknown",
       photo: effort.fromUser.photos[0] || "default-profile.jpg",
       snippet: effort.comment || "Rose accepted!",
@@ -454,7 +507,64 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
   }
 });
 
-// POST /api/profile - Update user profile
+router.get("/profile/:id", authenticateToken, async (req, res) => {
+  try {
+    const profileId = req.params.id;
+    const user = await User.findById(profileId).select(
+      "firstName birthday year photos email quotes hometown job planTo datingIntention pets language drinking smoking partyPerson height bio"
+    );
+    if (!user) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    let age = "N/A";
+    if (
+      user.birthday &&
+      user.birthday.year &&
+      user.birthday.month &&
+      user.birthday.day
+    ) {
+      const today = new Date();
+      const birthDate = new Date(
+        `${user.birthday.year}-${user.birthday.month}-${user.birthday.day}`
+      );
+      age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+    }
+
+    const responseData = {
+      firstName: user.firstName,
+      age: age,
+      year: user.year,
+      email: user.email,
+      photos: user.photos || [],
+      quotes: user.quotes || [],
+      hometown: user.hometown || "N/A",
+      job: user.job || "None",
+      planTo: user.planTo || "None",
+      datingIntention: user.datingIntention || "None",
+      pets: user.pets || "None",
+      language: user.language || "None",
+      drinking: user.drinking || "None",
+      smoking: user.smoking || "None",
+      partyPerson: user.partyPerson || "None",
+      height: user.height || "None",
+      bio: user.bio || "No bio provided",
+    };
+
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error("Error fetching profile by ID:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 router.post("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id });
@@ -568,7 +678,7 @@ router.get("/profile", authenticateToken, async (req, res) => {
 
     const responseData = {
       firstName: user.firstName,
-      age: user.age !== null ? user.age : age,
+      age: age,
       year: user.year,
       email: user.email,
       photos: user.photos || [],
@@ -696,7 +806,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
         return {
           _id: profile._id,
           name: profile.firstName || "Unknown",
-          age: profile.age || age,
+          age: age,
           year: profile.year || "N/A",
           department: profile.courseStudy || "N/A",
           bio: profile.bio || "No bio provided",
@@ -747,14 +857,13 @@ router.delete("/delete-account", authenticateToken, async (req, res) => {
 
 router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
   const { profileId } = req.body;
-  const userId = req.user.id; // Current user from JWT
+  const userId = req.user.id;
 
   if (!profileId) {
     return res.status(400).json({ message: "Profile ID is required" });
   }
 
   try {
-    // Find and delete the Like document where userId liked profileId
     const result = await Like.deleteOne({ userId, profileId });
 
     if (result.deletedCount === 0) {

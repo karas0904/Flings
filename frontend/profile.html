@@ -3,118 +3,737 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Your Profile - SRM Connect</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/app.css" />
+    <title>Profile Vibe</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Raleway", sans-serif;
+        background: #000000;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .profile-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        width: 60%;
+        max-width: 1200px;
+        height: 100vh; /* Ensure container takes full height */
+        justify-content: center; /* Center contents vertically */
+      }
+
+      .profile-card {
+        width: 70%;
+        max-width: 1100px;
+        height: 400px;
+        background: #2a2a2a;
+        border-radius: 20px;
+        display: flex;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        margin-bottom: 80px;
+      }
+
+      .fade-card {
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.537) 0%,
+          transparent 60%
+        );
+        width: 70%;
+        max-width: 1100px;
+        height: 200px;
+        border-radius: 20px;
+        filter: blur(5px);
+        opacity: 0.8;
+        position: absolute;
+        top: calc(50% + 210px); /* Position below profile-card */
+        transform: translateY(0); /* Remove previous transform */
+        box-shadow: none;
+        z-index: 0;
+      }
+
+      .sidebar {
+        width: 60px;
+        background: #222;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 100;
+      }
+
+      .sidebar .brand {
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        margin-top: 20px;
+      }
+
+      .icon-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-grow: 1;
+        justify-content: center;
+      }
+
+      .sidebar-icon {
+        color: #ccc;
+        font-size: 24px;
+        margin: 15px 0;
+        cursor: pointer;
+        transition: color 0.3s ease-out, transform 0.3s ease-out;
+      }
+
+      .sidebar-icon.heart-icon:hover {
+        color: #ff4444;
+        transform: scale(1.2);
+      }
+
+      .sidebar-icon:not(.heart-icon):hover {
+        color: #fff;
+        transform: scale(1.2);
+      }
+
+      /* Profile icon at the bottom of sidebar */
+      .profile-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%; /* Makes it round */
+        overflow: hidden;
+        margin-top: auto; /* Pushes it to the bottom */
+        margin-bottom: 20px; /* Spacing from the bottom */
+        box-sizing: border-box;
+      }
+
+      .profile-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .profile-icon:hover {
+        outline: 5px solid rgba(144, 136, 136, 0.432);
+        transition: 0.5s;
+      }
+
+      .profile-left {
+        width: 50%;
+        background: #c8c8c8;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-right {
+        width: 50%;
+        background: #f5f5f5;
+        padding: 20px;
+        color: #333;
+        height: 100%; /* Matches profile-card height */
+        overflow-y: auto; /* Scrollable */
+        animation: fadeIn 0.5s ease-in-out forwards; /* Fade-in animation */
+      }
+
+      .profile-right::-webkit-scrollbar {
+        width: 6px;
+      }
+      .profile-right::-webkit-scrollbar-track {
+        background: #e0e0e0;
+      }
+      .profile-right::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+      }
+      .profile-right::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      .carousel {
+        height: 100%;
+        width: 100%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        perspective: 1000px;
+      }
+
+      .carousel-item {
+        position: absolute;
+        width: 150px;
+        height: 200px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        transform-style: preserve-3d;
+      }
+
+      .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      @keyframes rollInOut {
+        0% {
+          opacity: 0;
+          transform: translateX(-50%) rotateY(-45deg) scale(0.8);
+        }
+        25% {
+          opacity: 1;
+          transform: translateX(0) rotateY(0deg) scale(1);
+        }
+        75% {
+          opacity: 1;
+          transform: translateX(0) rotateY(0deg) scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(50%) rotateY(45deg) scale(0.8);
+        }
+      }
+
+      .profile-info {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .profile-name {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        letter-spacing: 1px;
+      }
+
+      .profile-bio-container {
+        position: relative;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+        padding: 10px;
+      }
+
+      .profile-bio {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #666;
+        border-radius: 10px;
+        padding: 10px;
+      }
+
+      .profile-details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .profile-detail {
+        font-size: 12px;
+        color: #888;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        transition: all 0.3s ease-out;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .profile-detail:hover {
+        background: #fff;
+        transform: translateX(5px); /* Slide right on hover */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .profile-detail i {
+        color: #333;
+        font-size: 14px;
+        transition: transform 0.3s ease-out;
+      }
+
+      .profile-detail:hover i {
+        transform: scale(1.2); /* Icon grows on hover */
+      }
+
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 200;
+        transition: opacity 0.5s ease-out;
+      }
+
+      .profile-detail::before {
+        content: attr(data-label);
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        font-size: 10px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease-out;
+      }
+
+      .profile-detail:hover::before {
+        opacity: 1;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .loading-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .loading-dots {
+        display: flex;
+        gap: 8px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        background: #fff;
+        border-radius: 50%;
+        animation: pulse 1.2s infinite ease-in-out;
+      }
+
+      .dot:nth-child(2) {
+        animation-delay: 0.4s;
+      }
+      .dot:nth-child(3) {
+        animation-delay: 0.8s;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.7;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 1;
+        }
+      }
+
+      /* Improved Responsive Design */
+      @media (max-width: 1024px) {
+        .profile-container {
+          padding-left: 60px;
+        }
+        .profile-card,
+        .fade-card {
+          max-width: 90%;
+          height: auto;
+          min-height: 400px;
+        }
+        .fade-card {
+          height: 250px;
+          top: calc(50% + 210px); /* Adjust for responsive */
+        }
+        .profile-left,
+        .profile-right {
+          width: 50%;
+          padding: 15px;
+        }
+        .carousel-item {
+          width: 130px;
+          height: 180px;
+        }
+        .profile-name {
+          font-size: 24px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .profile-container {
+          padding-left: 60px;
+        }
+        .profile-card,
+        .fade-card {
+          max-width: 95%;
+          height: auto;
+          flex-direction: column;
+          margin-left: 0;
+          min-height: 350px;
+        }
+        .fade-card {
+          height: 200px;
+          position: static; /* Reset for stacking */
+          margin-top: 10px;
+        }
+        .profile-left,
+        .profile-right {
+          width: 100%;
+          padding: 15px;
+        }
+        .profile-left {
+          border-right: none; /* Remove border in vertical stack */
+          border-bottom: 1px solid #888; /* Add bottom border instead */
+        }
+        .carousel-item {
+          width: 120px;
+          height: 160px;
+        }
+        .profile-name {
+          font-size: 22px;
+        }
+        .profile-bio {
+          font-size: 13px;
+          padding: 8px;
+        }
+        .profile-detail {
+          font-size: 11px;
+        }
+        .profile-detail i {
+          font-size: 12px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .sidebar {
+          width: 50px;
+        }
+        .profile-container {
+          padding-left: 50px;
+        }
+        .profile-card,
+        .fade-card {
+          max-width: 100%;
+          height: auto;
+          min-height: 300px;
+          margin-left: 0;
+        }
+        .fade-card {
+          height: 150px;
+          position: static;
+          margin-top: 10px;
+        }
+        .carousel-item {
+          width: 100px;
+          height: 140px;
+        }
+        .profile-name {
+          font-size: 20px;
+        }
+        .profile-bio {
+          font-size: 12px;
+        }
+        .profile-detail {
+          font-size: 10px;
+        }
+        .sidebar .brand {
+          font-size: 20px;
+        }
+        .sidebar-icon {
+          font-size: 20px;
+          margin: 12px 0;
+        }
+      }
+    </style>
   </head>
   <body>
-    <header class="app-header">
-      <div class="container">
-        <div class="logo">SRM Connect</div>
-        <nav>
-          <ul>
-            <li><a href="discover.html">Discover</a></li>
-            <li><a href="matches.html">Matches</a></li>
-            <li><a href="profile.html" class="active">Profile</a></li>
-            <li><a href="#" id="logout-btn">Logout</a></li>
-          </ul>
-        </nav>
+    <div class="sidebar">
+      <span class="brand">Amourette</span>
+      <div class="icon-container">
+        <a href="explore.html" class="sidebar-icon heart-icon"
+          ><i class="fa-solid fa-heart"></i
+        ></a>
+        <a href="saves.html" class="sidebar-icon"
+          ><i class="fa-solid fa-bookmark"></i
+        ></a>
+        <a href="messages.html" class="sidebar-icon"
+          ><i class="fa-solid fa-comment"></i
+        ></a>
+        <a href="trending.html" class="sidebar-icon"
+          ><i class="fa-solid fa-fire"></i
+        ></a>
       </div>
-    </header>
-
-    <main class="container">
-      <section class="profile-section">
-        <h1>Your Profile</h1>
-        <p>Complete your profile to start matching with other students</p>
-
-        <div class="profile-form">
-          <form id="profile-form">
-            <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" name="name" required />
-            </div>
-
-            <div class="form-group">
-              <label for="gender">Gender</label>
-              <select id="gender" name="gender" required>
-                <option value="">Select your gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="non-binary">Non-binary</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="bio">Bio</label>
-              <textarea
-                id="bio"
-                name="bio"
-                rows="4"
-                placeholder="Tell others about yourself..."
-              ></textarea>
-            </div>
-
-            <div class="form-group">
-              <label>Interests</label>
-              <div class="interests-container" id="interests-container">
-                <div class="interest-tag">
-                  Movies <span class="remove-tag">×</span>
-                </div>
-                <div class="interest-tag">
-                  Music <span class="remove-tag">×</span>
-                </div>
-                <input
-                  type="text"
-                  id="interest-input"
-                  placeholder="Add interest..."
-                />
-              </div>
-            </div>
-
-            <h2>Preferences</h2>
-
-            <div class="form-group">
-              <label for="pref-gender">Interested in</label>
-              <select id="pref-gender" name="preferences.gender" required>
-                <option value="">Select gender preference</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="everyone">Everyone</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Age Range</label>
-              <div class="age-range">
-                <input
-                  type="number"
-                  id="age-min"
-                  name="preferences.ageRange.min"
-                  min="18"
-                  max="30"
-                  value="18"
-                />
-                <span>to</span>
-                <input
-                  type="number"
-                  id="age-max"
-                  name="preferences.ageRange.max"
-                  min="18"
-                  max="30"
-                  value="30"
-                />
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary">Save Profile</button>
-          </form>
+      <!-- Add profile icon here -->
+      <div class="profile-icon">
+        <a href="account.html">
+          <img src="default-profile.jpg" alt="Profile" id="sidebarProfileImage" />
+        </a>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
 
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/profile.js"></script>
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
+
+    <div class="profile-container">
+      <div class="profile-card">
+        <div class="profile-left">
+          <div class="carousel" id="carousel"></div>
+        </div>
+        <div class="profile-right">
+          <div class="profile-info">
+            <h1 class="profile-name" id="profileName">Loading...</h1>
+            <div class="profile-bio-container">
+              <div class="profile-bio" id="profileBio"></div>
+            </div>
+            <div class="profile-details-list">
+              <div class="profile-detail" data-label="Age">
+                <i class="fas fa-cake-candles"></i>
+                <span id="profileAge"></span>
+              </div>
+              <div class="profile-detail" data-label="Year">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="profileYear"></span>
+              </div>
+              <div class="profile-detail" data-label="Course">
+                <i class="fas fa-graduation-cap"></i>
+                <span id="profileCourse"></span>
+              </div>
+              <div class="profile-detail" data-label="Email">
+                <i class="fas fa-envelope"></i>
+                <span id="profileEmail"></span>
+              </div>
+              <div class="profile-detail" data-label="Quotes">
+                <i class="fas fa-quote-left"></i>
+                <span id="profileQuotes"></span>
+              </div>
+              <div class="profile-detail" data-label="Hometown">
+                <i class="fas fa-home"></i>
+                <span id="profileHometown"></span>
+              </div>
+              <div class="profile-detail" data-label="Job">
+                <i class="fas fa-briefcase"></i>
+                <span id="profileJob"></span>
+              </div>
+              <div class="profile-detail" data-label="Plans">
+                <i class="fas fa-map-signs"></i>
+                <span id="profilePlanTo"></span>
+              </div>
+              <div class="profile-detail" data-label="Dating Intention">
+                <i class="fas fa-heart"></i>
+                <span id="profileDatingIntention"></span>
+              </div>
+              <div class="profile-detail" data-label="Pets">
+                <i class="fas fa-paw"></i>
+                <span id="profilePets"></span>
+              </div>
+              <div class="profile-detail" data-label="Language">
+                <i class="fas fa-language"></i>
+                <span id="profileLanguage"></span>
+              </div>
+              <div class="profile-detail" data-label="Drinking">
+                <i class="fas fa-beer"></i>
+                <span id="profileDrinking"></span>
+              </div>
+              <div class="profile-detail" data-label="Smoking">
+                <i class="fas fa-smoking"></i>
+                <span id="profileSmoking"></span>
+              </div>
+              <div class="profile-detail" data-label="Party Person">
+                <i class="fas fa-glass-cheers"></i>
+                <span id="profilePartyPerson"></span>
+              </div>
+              <div class="profile-detail" data-label="Height">
+                <i class="fas fa-ruler-vertical"></i>
+                <span id="profileHeight"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fade-card"></div>
+    </div>
+
+    <script>
+      async function fetchProfile() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileId = urlParams.get("id");
+        const token = localStorage.getItem("jwtToken");
+
+        if (!profileId || profileId === "undefined") {
+          document.getElementById("profileName").textContent =
+            "Invalid Profile";
+          document.getElementById("loadingOverlay").classList.add("hidden");
+          return;
+        }
+
+        if (!token) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `http://localhost:3000/api/profile/${profileId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (!response.ok) throw new Error("Failed to fetch profile");
+          const profileData = await response.json();
+
+          // Populate existing fields
+          document.getElementById("profileName").textContent =
+            profileData.firstName || "Unknown";
+          document.getElementById("profileBio").textContent =
+            profileData.bio || "No bio provided";
+          document.getElementById("profileAge").textContent =
+            profileData.age || "N/A";
+          document.getElementById("profileYear").textContent =
+            profileData.year || "N/A";
+          document.getElementById("profileCourse").textContent =
+            profileData.courseStudy || "N/A";
+          document.getElementById("profileEmail").textContent =
+            profileData.email || "N/A";
+
+          // Populate new fields
+          document.getElementById("profileQuotes").textContent =
+            profileData.quotes && profileData.quotes.length > 0
+              ? profileData.quotes.join(", ")
+              : "None";
+          document.getElementById("profileHometown").textContent =
+            profileData.hometown || "N/A";
+          document.getElementById("profileJob").textContent =
+            profileData.job || "None";
+          document.getElementById("profilePlanTo").textContent =
+            profileData.planTo || "None";
+          document.getElementById("profileDatingIntention").textContent =
+            profileData.datingIntention || "None";
+          document.getElementById("profilePets").textContent =
+            profileData.pets || "None";
+          document.getElementById("profileLanguage").textContent =
+            profileData.language || "None";
+          document.getElementById("profileDrinking").textContent =
+            profileData.drinking || "None";
+          document.getElementById("profileSmoking").textContent =
+            profileData.smoking || "None";
+          document.getElementById("profilePartyPerson").textContent =
+            profileData.partyPerson || "None";
+          document.getElementById("profileHeight").textContent =
+            profileData.height || "None";
+
+          // Update sidebar profile image
+          const sidebarProfileImage = document.getElementById(
+            "sidebarProfileImage"
+          );
+          if (profileData.photos && profileData.photos.length > 0) {
+            sidebarProfileImage.src = profileData.photos[0]; // Use the first photo as the profile image
+          } else {
+            sidebarProfileImage.src = "default-profile.jpg"; // Fallback to default
+          }
+
+          const carousel = document.getElementById("carousel");
+          const photos = profileData.photos || ["default-profile.jpg"];
+          let currentIndex = 0;
+
+          function createCarouselItem(src) {
+            const item = document.createElement("div");
+            item.classList.add("carousel-item");
+            const img = document.createElement("img");
+            img.src = src;
+            item.appendChild(img);
+            return item;
+          }
+
+          function animateCarousel() {
+            const currentItem = createCarouselItem(photos[currentIndex]);
+            carousel.innerHTML = "";
+            carousel.appendChild(currentItem);
+            currentItem.style.animation = "rollInOut 2s ease-in-out forwards";
+
+            currentIndex = (currentIndex + 1) % photos.length;
+            setTimeout(animateCarousel, 2000);
+          }
+
+          animateCarousel();
+          document.getElementById("loadingOverlay").classList.add("hidden");
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          document.getElementById("profileName").textContent = "Error Loading";
+          document.getElementById("loadingOverlay").classList.add("hidden");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchProfile();
+
+        const icons = document.querySelectorAll(".sidebar-icon");
+        icons.forEach((icon) => {
+          icon.addEventListener("mouseenter", () => {
+            icons.forEach((otherIcon) => {
+              if (otherIcon !== icon) {
+                otherIcon.style.filter = "blur(2px)";
+                otherIcon.style.opacity = "0.5";
+              }
+            });
+          });
+          icon.addEventListener("mouseleave", () => {
+            icons.forEach((otherIcon) => {
+              otherIcon.style.filter = "none";
+              otherIcon.style.opacity = "1";
+            });
+          });
+        });
+      });
+    </script>
   </body>
 </html>

@@ -17,14 +17,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap"
-      rel="stylesheet"
-    />
     <style>
       * {
         margin: 0;
@@ -56,52 +48,6 @@
         }
         100% {
           opacity: 1;
-        }
-      }
-
-      /* Loading Animation Styles */
-      .loading-container {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: #fff;
-        font-size: 24px;
-        font-family: "Teko", sans-serif;
-        z-index: 1001; /* Above carousel */
-        display: none; /* Hidden by default */
-      }
-
-      .loading-text {
-        display: inline-block;
-      }
-
-      .loading-dot {
-        opacity: 0;
-        animation: dotFade 1.5s infinite;
-      }
-
-      .loading-dot:nth-child(1) {
-        animation-delay: 0s;
-      }
-
-      .loading-dot:nth-child(2) {
-        animation-delay: 0.5s;
-      }
-
-      .loading-dot:nth-child(3) {
-        animation-delay: 1s;
-      }
-
-      @keyframes dotFade {
-        0% {
-          opacity: 0;
-        }
-        50% {
-          opacity: 1;
-        }
-        100% {
-          opacity: 0;
         }
       }
 
@@ -577,12 +523,6 @@
     </style>
   </head>
   <body>
-    <div class="loading-container" id="loadingContainer">
-      <span class="loading-text">Loading</span>
-      <span class="loading-dot">.</span>
-      <span class="loading-dot">.</span>
-      <span class="loading-dot">.</span>
-    </div>
     <!-- Red and Blue blurred shapes -->
     <div class="blur-shape red-shape"></div>
     <div class="blur-shape blue-shape"></div>
@@ -627,17 +567,6 @@
     </div>
 
     <script>
-      // Helper functions for loading animation
-      function showLoading() {
-        const loadingContainer = document.getElementById("loadingContainer");
-        loadingContainer.style.display = "block";
-      }
-
-      function hideLoading() {
-        const loadingContainer = document.getElementById("loadingContainer");
-        loadingContainer.style.display = "none";
-      }
-
       document.addEventListener("DOMContentLoaded", async function () {
         const profileIcon = document.getElementById("profileImage");
         const carousel = document.querySelector(".carousel");
@@ -647,291 +576,278 @@
         const storedImage = localStorage.getItem("profileImage");
         if (storedImage) {
           profileIcon.src = storedImage;
+        } else {
+          await fetchUserProfile();
         }
 
-        showLoading(); // Show loading animation
-
-        try {
-          if (!storedImage) {
-            await fetchUserProfile();
+        async function fetchTrendingProfiles() {
+          const token = localStorage.getItem("jwtToken");
+          if (!token) {
+            console.error("No token found, please log in.");
+            return [];
           }
-
-          async function fetchTrendingProfiles() {
-            const token = localStorage.getItem("jwtToken");
-            if (!token) {
-              console.error("No token found, please log in.");
-              return [];
-            }
-            try {
-              const response = await fetch(
-                "http://localhost:3000/api/trending-profiles",
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
-              if (!response.ok)
-                throw new Error(`HTTP error! Status: ${response.status}`);
-              const data = await response.json();
-              console.log("Fetched trending profiles:", data.profiles);
-              return data.profiles;
-            } catch (error) {
-              console.error("Error fetching trending profiles:", error);
-              return [];
-            }
+          try {
+            const response = await fetch(
+              "http://localhost:3000/api/trending-profiles",
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            if (!response.ok)
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            const data = await response.json();
+            console.log("Fetched trending profiles:", data.profiles);
+            return data.profiles;
+          } catch (error) {
+            console.error("Error fetching trending profiles:", error);
+            return [];
           }
+        }
 
-          const cardData = await fetchTrendingProfiles();
+        const cardData = await fetchTrendingProfiles();
 
-          cardData.forEach((data) => {
-            const card = document.createElement("div");
-            card.classList.add("carousel-card");
-            card.setAttribute("data-id", data.id);
-            card.setAttribute("data-photos", JSON.stringify(data.photos));
-            card.setAttribute("data-bio", data.bio);
-            card.innerHTML = `
-              <div class="card-image">
-                <img src="${data.photos[0]}" alt="${data.name}">
+        cardData.forEach((data) => {
+          const card = document.createElement("div");
+          card.classList.add("carousel-card");
+          card.setAttribute("data-id", data.id);
+          card.setAttribute("data-photos", JSON.stringify(data.photos));
+          card.setAttribute("data-bio", data.bio); // Store bio in a data attribute
+          card.innerHTML = `
+            <div class="card-image">
+              <img src="${data.photos[0]}" alt="${data.name}">
+            </div>
+            <div class="card-text">
+              <h3>${data.name}</h3>
+              <div class="profile-details">
+                <p><i class="fas fa-user"></i> ${data.age}</p>
+                <p><i class="fas fa-ruler-vertical"></i> ${data.height}</p>
+                <p><i class="fas fa-book"></i> ${data.courseStudy}</p>
+                <p><i class="fas fa-calendar"></i> ${data.year}</p>
               </div>
-              <div class="card-text">
-                <h3>${data.name}</h3>
-                <div class="profile-details">
-                  <p><i class="fas fa-user"></i> ${data.age}</p>
-                  <p><i class="fas fa-ruler-vertical"></i> ${data.height}</p>
-                  <p><i class="fas fa-book"></i> ${data.courseStudy}</p>
-                  <p><i class="fas fa-calendar"></i> ${data.year}</p>
-                </div>
-                <div class="profile-extras">
-                  <span class="like-bubble"><i class="fas fa-heart"></i> ${data.likeCount}</span>
-                  <span class="extra-item">${data.partyPerson}</span>
-                  <span class="extra-item">${data.smoking}</span>
-                  <span class="extra-item">${data.drinking}</span>
-                  <span class="extra-item">${data.pets}</span>
-                </div>
+              <div class="profile-extras">
+                <span class="like-bubble"><i class="fas fa-heart"></i> ${data.likeCount}</span>
+                <span class="extra-item">${data.partyPerson}</span>
+                <span class="extra-item">${data.smoking}</span>
+                <span class="extra-item">${data.drinking}</span>
+                <span class="extra-item">${data.pets}</span>
               </div>
-              <div class="overlay-box">
-                <p class="bio-text">${data.bio}</p>
-              </div>
-            `;
-            carousel.insertBefore(card, rightNav);
+            </div>
+            <div class="overlay-box">
+              <p class="bio-text">${data.bio}</p> <!-- Display bio here -->
+            </div>
+          `;
+          carousel.insertBefore(card, rightNav);
+        });
+
+        const cards = document.querySelectorAll(".carousel-card");
+        let currentIndex = 0;
+        const totalCards = cards.length;
+        let expandedCard = null;
+        let photoInterval = null;
+
+        function updateCarousel() {
+          cards.forEach((card, index) => {
+            if (card === expandedCard) return;
+
+            card.classList.remove("focused", "blurred", "expanded");
+            const cardWidthPercentage =
+              window.innerWidth > 768
+                ? 100 / 2
+                : window.innerWidth > 480
+                ? 66.67
+                : 80;
+
+            const leftIndex = (currentIndex - 1 + totalCards) % totalCards;
+            const rightIndex = (currentIndex + 1) % totalCards;
+
+            if (index === currentIndex) {
+              card.classList.add("focused");
+              card.style.left = "50%";
+              card.style.transform =
+                "translateX(-50%) scale(1.2) translateY(-20px)";
+              card.style.opacity = "1";
+              card.style.pointerEvents = "auto";
+            } else if (index === leftIndex) {
+              card.classList.add("blurred");
+              card.style.left = `calc(50% - ${cardWidthPercentage / 2}%)`;
+              card.style.transform =
+                "translateX(-100%) scale(0.9) translateY(10px)";
+              card.style.opacity = "0.8";
+              card.style.pointerEvents = "auto";
+            } else if (index === rightIndex) {
+              card.classList.add("blurred");
+              card.style.left = `calc(50% + ${cardWidthPercentage / 2}%)`;
+              card.style.transform =
+                "translateX(0%) scale(0.9) translateY(10px)";
+              card.style.opacity = "0.8";
+              card.style.pointerEvents = "auto";
+            } else {
+              card.style.left = "50%";
+              card.style.transform = "translateX(-50%) scale(0)";
+              card.style.opacity = "0";
+              card.style.pointerEvents = "none";
+            }
           });
 
-          const cards = document.querySelectorAll(".carousel-card");
-          let currentIndex = 0;
-          const totalCards = cards.length;
-          let expandedCard = null;
-          let photoInterval = null;
-
-          function updateCarousel() {
-            cards.forEach((card, index) => {
-              if (card === expandedCard) return;
-
-              card.classList.remove("focused", "blurred", "expanded");
-              const cardWidthPercentage =
-                window.innerWidth > 768
-                  ? 100 / 2
-                  : window.innerWidth > 480
-                  ? 66.67
-                  : 80;
-
-              const leftIndex = (currentIndex - 1 + totalCards) % totalCards;
-              const rightIndex = (currentIndex + 1) % totalCards;
-
-              if (index === currentIndex) {
-                card.classList.add("focused");
-                card.style.left = "50%";
-                card.style.transform =
-                  "translateX(-50%) scale(1.2) translateY(-20px)";
-                card.style.opacity = "1";
-                card.style.pointerEvents = "auto";
-              } else if (index === leftIndex) {
-                card.classList.add("blurred");
-                card.style.left = `calc(50% - ${cardWidthPercentage / 2}%)`;
-                card.style.transform =
-                  "translateX(-100%) scale(0.9) translateY(10px)";
-                card.style.opacity = "0.8";
-                card.style.pointerEvents = "auto";
-              } else if (index === rightIndex) {
-                card.classList.add("blurred");
-                card.style.left = `calc(50% + ${cardWidthPercentage / 2}%)`;
-                card.style.transform =
-                  "translateX(0%) scale(0.9) translateY(10px)";
-                card.style.opacity = "0.8";
-                card.style.pointerEvents = "auto";
-              } else {
-                card.style.left = "50%";
-                card.style.transform = "translateX(-50%) scale(0)";
-                card.style.opacity = "0";
-                card.style.pointerEvents = "none";
-              }
-            });
-
-            if (expandedCard) {
-              leftNav.style.opacity = "0";
-              rightNav.style.opacity = "0";
-              leftNav.style.pointerEvents = "none";
-              rightNav.style.pointerEvents = "none";
-            } else {
-              leftNav.style.opacity = "1";
-              rightNav.style.opacity = "1";
-              leftNav.style.pointerEvents = "auto";
-              rightNav.style.pointerEvents = "auto";
-            }
-          }
-
-          function hideOtherCards(expanded) {
-            cards.forEach((card) => {
-              if (card !== expanded) {
-                card.style.opacity = "0";
-                card.style.pointerEvents = "none";
-              }
-            });
+          if (expandedCard) {
             leftNav.style.opacity = "0";
             rightNav.style.opacity = "0";
             leftNav.style.pointerEvents = "none";
             rightNav.style.pointerEvents = "none";
+          } else {
+            leftNav.style.opacity = "1";
+            rightNav.style.opacity = "1";
+            leftNav.style.pointerEvents = "auto";
+            rightNav.style.pointerEvents = "auto";
           }
+        }
 
-          function showAllCards() {
-            if (expandedCard) {
-              expandedCard.classList.remove("expanded");
-              stopPhotoCycle();
-              expandedCard = null;
+        function hideOtherCards(expanded) {
+          cards.forEach((card) => {
+            if (card !== expanded) {
+              card.style.opacity = "0";
+              card.style.pointerEvents = "none";
             }
+          });
+          leftNav.style.opacity = "0";
+          rightNav.style.opacity = "0";
+          leftNav.style.pointerEvents = "none";
+          rightNav.style.pointerEvents = "none";
+        }
+
+        function showAllCards() {
+          if (expandedCard) {
+            expandedCard.classList.remove("expanded");
+            stopPhotoCycle();
+            expandedCard = null;
+          }
+          setTimeout(() => {
+            updateCarousel();
+          }, 500);
+        }
+
+        async function fetchUserProfile() {
+          const token = localStorage.getItem("jwtToken");
+          if (!token) return;
+
+          try {
+            const response = await fetch("http://localhost:3000/api/profile", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            const userData = await response.json();
+            if (userData.photo) {
+              document.getElementById("profileImage").src = userData.photo;
+            }
+          } catch (error) {
+            console.error("Error fetching profile:", error);
+          }
+        }
+
+        // Photo cycling functions
+        function startPhotoCycle(card) {
+          const photos = JSON.parse(card.getAttribute("data-photos"));
+          if (photos.length <= 1) return;
+
+          const img = card.querySelector(".card-image img");
+          let currentPhotoIndex = 0;
+
+          function changeImage() {
+            img.classList.remove("fade-in");
+            img.classList.add("fade-out");
             setTimeout(() => {
-              updateCarousel();
-            }, 500);
+              currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+              img.src = photos[currentPhotoIndex];
+              img.classList.remove("fade-out");
+              img.classList.add("fade-in");
+            }, 200); // Match CSS transition duration
           }
 
-          async function fetchUserProfile() {
-            const token = localStorage.getItem("jwtToken");
-            if (!token) return;
+          photoInterval = setInterval(changeImage, 3000); // Auto-cycle every 3 seconds
+          img.classList.add("fade-in"); // Initial fade-in
+        }
 
-            try {
-              const response = await fetch(
-                "http://localhost:3000/api/profile",
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
-              const userData = await response.json();
-              if (userData.photo) {
-                document.getElementById("profileImage").src = userData.photo;
-              }
-            } catch (error) {
-              console.error("Error fetching profile:", error);
-            }
+        function stopPhotoCycle() {
+          if (photoInterval) {
+            clearInterval(photoInterval);
+            photoInterval = null;
           }
+        }
 
-          // Photo cycling functions
-          function startPhotoCycle(card) {
-            const photos = JSON.parse(card.getAttribute("data-photos"));
-            if (photos.length <= 1) return;
+        updateCarousel();
 
-            const img = card.querySelector(".card-image img");
-            let currentPhotoIndex = 0;
-
-            function changeImage() {
-              img.classList.remove("fade-in");
-              img.classList.add("fade-out");
-              setTimeout(() => {
-                currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
-                img.src = photos[currentPhotoIndex];
-                img.classList.remove("fade-out");
-                img.classList.add("fade-in");
-              }, 200);
-            }
-
-            photoInterval = setInterval(changeImage, 3000);
-            img.classList.add("fade-in");
-          }
-
-          function stopPhotoCycle() {
-            if (photoInterval) {
-              clearInterval(photoInterval);
-              photoInterval = null;
-            }
-          }
-
+        leftNav.addEventListener("click", function () {
+          if (expandedCard) return;
+          currentIndex = (currentIndex - 1 + totalCards) % totalCards;
           updateCarousel();
+        });
 
-          leftNav.addEventListener("click", function () {
-            if (expandedCard) return;
+        rightNav.addEventListener("click", function () {
+          if (expandedCard) return;
+          currentIndex = (currentIndex + 1) % totalCards;
+          updateCarousel();
+        });
+
+        document.addEventListener("keydown", function (e) {
+          if (expandedCard) return;
+          if (e.key === "ArrowLeft") {
             currentIndex = (currentIndex - 1 + totalCards) % totalCards;
             updateCarousel();
-          });
-
-          rightNav.addEventListener("click", function () {
-            if (expandedCard) return;
+          } else if (e.key === "ArrowRight") {
             currentIndex = (currentIndex + 1) % totalCards;
             updateCarousel();
-          });
+          }
+        });
 
-          document.addEventListener("keydown", function (e) {
-            if (expandedCard) return;
-            if (e.key === "ArrowLeft") {
-              currentIndex = (currentIndex - 1 + totalCards) % totalCards;
-              updateCarousel();
-            } else if (e.key === "ArrowRight") {
-              currentIndex = (currentIndex + 1) % totalCards;
-              updateCarousel();
+        cards.forEach((card) => {
+          card.addEventListener("click", function (e) {
+            e.stopPropagation();
+            // Only allow expansion if the card is focused
+            if (!card.classList.contains("focused")) {
+              return; // Do nothing if the card is not focused (i.e., blurred)
             }
-          });
-
-          cards.forEach((card) => {
-            card.addEventListener("click", function (e) {
-              e.stopPropagation();
-              if (!card.classList.contains("focused")) {
-                return;
-              }
-              if (!card.classList.contains("expanded")) {
-                if (expandedCard) {
-                  expandedCard.classList.remove("expanded");
-                  stopPhotoCycle();
-                  showAllCards();
-                }
-                card.classList.add("expanded");
-                expandedCard = card;
-                hideOtherCards(card);
-                startPhotoCycle(card);
-              } else {
-                card.classList.remove("expanded");
+            if (!card.classList.contains("expanded")) {
+              if (expandedCard) {
+                expandedCard.classList.remove("expanded");
                 stopPhotoCycle();
-                expandedCard = null;
                 showAllCards();
               }
-            });
-          });
-
-          document.addEventListener("click", function (e) {
-            if (expandedCard && !e.target.closest(".carousel-card")) {
-              expandedCard.classList.remove("expanded");
-              stopPhotoCycle();
+              card.classList.add("expanded");
+              expandedCard = card;
+              hideOtherCards(card);
+              startPhotoCycle(card); // Start cycling when expanded
+            } else {
+              card.classList.remove("expanded");
+              stopPhotoCycle(); // Stop cycling when collapsed
               expandedCard = null;
               showAllCards();
             }
           });
+        });
 
-          window.addEventListener("resize", function () {
-            if (!expandedCard) {
-              updateCarousel();
-            } else {
-              hideOtherCards(expandedCard);
-            }
-          });
-        } catch (error) {
-          console.error("Error during initialization:", error);
-          alert("An error occurred while loading data: " + error.message);
-        } finally {
-          hideLoading(); // Hide loading animation
-        }
+        document.addEventListener("click", function (e) {
+          if (expandedCard && !e.target.closest(".carousel-card")) {
+            expandedCard.classList.remove("expanded");
+            stopPhotoCycle();
+            expandedCard = null;
+            showAllCards();
+          }
+        });
+
+        window.addEventListener("resize", function () {
+          if (!expandedCard) {
+            updateCarousel();
+          } else {
+            hideOtherCards(expandedCard);
+          }
+        });
       });
     </script>
   </body>

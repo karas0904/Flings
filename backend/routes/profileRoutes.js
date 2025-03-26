@@ -7,6 +7,7 @@ import RoseInteraction from "../models/roseInteraction.js";
 
 const router = express.Router();
 
+// Middleware to authenticate JWT token
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -19,6 +20,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// Like a profile
 router.post("/like-profile", authenticateToken, async (req, res) => {
   const { profileId } = req.body;
   const userId = req.user.id;
@@ -44,6 +46,7 @@ router.post("/like-profile", authenticateToken, async (req, res) => {
   }
 });
 
+// Get liked profiles
 router.get("/liked-profiles", authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
@@ -98,6 +101,7 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
   }
 });
 
+// Toggle like status to match
 router.post("/toggle-like", authenticateToken, async (req, res) => {
   const { profileId } = req.body;
   const userId = req.user.id;
@@ -138,11 +142,12 @@ router.post("/toggle-like", authenticateToken, async (req, res) => {
   }
 });
 
+// Get matches
 router.get("/matches", authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const matches = await Like.find({
+    const likeMatches = await Like.find({
       $and: [
         { status: "matched" },
         { $or: [{ userId }, { profileId: userId }] },
@@ -152,30 +157,60 @@ router.get("/matches", authenticateToken, async (req, res) => {
       .populate("profileId", "firstName photos")
       .lean();
 
-    if (!matches.length) {
-      return res.status(200).json({ message: "No matches yet", profiles: [] });
-    }
+    const roseMatches = await RoseInteraction.find({
+      $and: [
+        { status: "accepted" },
+        { $or: [{ fromUser: userId }, { toUser: userId }] },
+      ],
+    })
+      .populate("fromUser", "firstName photos")
+      .populate("toUser", "firstName photos")
+      .lean();
 
-    const profiles = matches.map((match) => {
-      const isCurrentUserInitiator = match.userId._id.toString() === userId;
-      const otherUser = isCurrentUserInitiator ? match.profileId : match.userId;
-      return {
-        matchId: match._id.toString(),
+    const allMatches = [...likeMatches, ...roseMatches];
+    const uniqueMatches = new Map();
+
+    allMatches.forEach((match) => {
+      let matchId, otherUser, snippet, timestamp, score;
+      if (match.userId) {
+        const isCurrentUserInitiator = match.userId._id.toString() === userId;
+        otherUser = isCurrentUserInitiator ? match.profileId : match.userId;
+        matchId = match._id.toString();
+        snippet = "Say hi!";
+        timestamp = match.timestamp;
+        score = match.score || 0;
+      } else {
+        const isSender = match.fromUser._id.toString() === userId;
+        otherUser = isSender ? match.toUser : match.fromUser;
+        matchId = match._id.toString();
+        snippet = match.comment || "Rose accepted!";
+        timestamp = match.updatedAt || match.createdAt;
+        score = 0;
+      }
+
+      uniqueMatches.set(matchId, {
+        matchId,
         name: otherUser.firstName || "Unknown",
         photo:
           otherUser.photos && otherUser.photos.length > 0
             ? otherUser.photos[0]
             : "default-profile.jpg",
-        snippet: "Say hi!",
-        time: match.timestamp
-          ? new Date(match.timestamp).toLocaleTimeString([], {
+        snippet,
+        time: timestamp
+          ? new Date(timestamp).toLocaleTimeString([], {
               hour: "numeric",
               minute: "2-digit",
             })
           : "Just now",
-        score: match.score || 0,
-      };
+        score,
+      });
     });
+
+    const profiles = Array.from(uniqueMatches.values());
+
+    if (!profiles.length) {
+      return res.status(200).json({ message: "No matches yet", profiles: [] });
+    }
 
     res.status(200).json({ message: "Your matches", profiles });
   } catch (error) {
@@ -184,6 +219,7 @@ router.get("/matches", authenticateToken, async (req, res) => {
   }
 });
 
+// Send a rose
 router.post("/rose", authenticateToken, async (req, res) => {
   const { toUser, comment } = req.body;
   const fromUser = req.user.id;
@@ -228,6 +264,7 @@ router.post("/rose", authenticateToken, async (req, res) => {
   }
 });
 
+// Get pending efforts
 router.get("/efforts", authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
@@ -239,11 +276,8 @@ router.get("/efforts", authenticateToken, async (req, res) => {
       .populate("fromUser", "firstName photos")
       .lean();
 
-    console.log("All efforts fetched:", JSON.stringify(efforts, null, 2));
-
     const formattedEfforts = efforts
       .map((effort) => {
-        console.log("Processing effort:", JSON.stringify(effort, null, 2));
         if (!effort.fromUser) {
           console.log(`No fromUser found for RoseInteraction ${effort._id}`);
           return null;
@@ -263,7 +297,6 @@ router.get("/efforts", authenticateToken, async (req, res) => {
       })
       .filter((effort) => effort !== null);
 
-    console.log("Formatted efforts:", formattedEfforts);
     res
       .status(200)
       .json({ message: "Pending efforts", efforts: formattedEfforts });
@@ -273,6 +306,7 @@ router.get("/efforts", authenticateToken, async (req, res) => {
   }
 });
 
+// Decline an effort
 router.delete("/efforts/:id", authenticateToken, async (req, res) => {
   const effortId = req.params.id;
   const userId = req.user.id;
@@ -299,6 +333,7 @@ router.delete("/efforts/:id", authenticateToken, async (req, res) => {
   }
 });
 
+// Accept an effort
 router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
   const effortId = req.params.id;
   const userId = req.user.id;
@@ -340,6 +375,7 @@ router.post("/efforts/:id/accept", authenticateToken, async (req, res) => {
   }
 });
 
+// Get sent roses
 router.get("/sent-roses", authenticateToken, async (req, res) => {
   const userId = req.user.id;
   try {
@@ -360,6 +396,7 @@ router.get("/sent-roses", authenticateToken, async (req, res) => {
   }
 });
 
+// Add comment to a rose
 router.post("/rose/comment", authenticateToken, async (req, res) => {
   const { toUser, comment } = req.body;
   const fromUser = req.user.id;
@@ -388,6 +425,39 @@ router.post("/rose/comment", authenticateToken, async (req, res) => {
   }
 });
 
+// Block a user and remove interactions
+router.delete("/block/:matchId", authenticateToken, async (req, res) => {
+  console.log(
+    `Block endpoint hit: matchId = ${req.params.matchId}, userId = ${req.user.id}`
+  );
+  const { matchId } = req.params; // e.g., "67e3de94d4a875c1c79a67cf"
+  const userId = req.user.id; // e.g., "67dad23fb177154b1a2504fa"
+
+  try {
+    const roseResult = await RoseInteraction.deleteMany({
+      _id: matchId,
+      $or: [{ fromUser: userId }, { toUser: userId }],
+    });
+
+    const likeResult = await Like.deleteMany({
+      _id: matchId, // Match the Like document by its _id
+      $or: [{ userId: userId }, { profileId: userId }],
+    });
+
+    if (roseResult.deletedCount === 0 && likeResult.deletedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "No interactions found to block" });
+    }
+
+    res.status(200).json({ message: "User blocked and interactions removed" });
+  } catch (error) {
+    console.error("Error blocking user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get trending profiles
 router.get("/trending-profiles", authenticateToken, async (req, res) => {
   try {
     const oneWeekAgo = new Date();
@@ -411,13 +481,9 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
       "firstName photos age courseStudy height birthday year partyPerson smoking drinking pets bio"
     );
 
-    console.log("Trending Profile IDs:", profileIds);
-    console.log("Fetched Profiles:", profiles);
-
     const formattedProfiles = trendingProfiles.map((trend) => {
       const user = profiles.find((p) => p._id.equals(trend._id));
       if (!user) {
-        console.warn(`No user found for profileId: ${trend._id}`);
         return {
           id: trend._id,
           name: "Unknown",
@@ -487,6 +553,7 @@ router.get("/trending-profiles", authenticateToken, async (req, res) => {
   }
 });
 
+// Get profile by ID
 router.get("/profile/:id", authenticateToken, async (req, res) => {
   try {
     const profileId = req.params.id;
@@ -545,6 +612,7 @@ router.get("/profile/:id", authenticateToken, async (req, res) => {
   }
 });
 
+// Update profile
 router.post("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id });
@@ -633,6 +701,7 @@ router.post("/profile", authenticateToken, async (req, res) => {
   }
 });
 
+// Get current user's profile
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user.id }).select(
@@ -688,6 +757,7 @@ router.get("/profile", authenticateToken, async (req, res) => {
   }
 });
 
+// Get all matched profiles
 router.get("/profiles", authenticateToken, async (req, res) => {
   try {
     const matchedProfiles = await getMatches(req.user.id);
@@ -698,6 +768,7 @@ router.get("/profiles", authenticateToken, async (req, res) => {
   }
 });
 
+// Save a profile
 router.post("/save-profile", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -737,6 +808,7 @@ router.post("/save-profile", authenticateToken, async (req, res) => {
   }
 });
 
+// Get saved profiles
 router.get("/saved-profiles", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -815,6 +887,7 @@ router.get("/saved-profiles", authenticateToken, async (req, res) => {
   }
 });
 
+// Logout
 router.post("/logout", authenticateToken, async (req, res) => {
   try {
     res.status(200).json({ message: "Logged out successfully" });
@@ -824,6 +897,7 @@ router.post("/logout", authenticateToken, async (req, res) => {
   }
 });
 
+// Delete account
 router.delete("/delete-account", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -840,6 +914,7 @@ router.delete("/delete-account", authenticateToken, async (req, res) => {
   }
 });
 
+// Remove liked profile
 router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
   const { profileId } = req.body;
   const userId = req.user.id;

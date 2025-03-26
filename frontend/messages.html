@@ -773,6 +773,7 @@
       .accept-btn:hover {
         background-color: #218838; /* Darker green on hover */
         transform: scale(1.05); /* Slight scale-up effect */
+        color: #ffff;
       }
 
       .reject-btn {
@@ -875,7 +876,9 @@
                 <div class="chat-actions-dropdown" id="chatActionsDropdown">
                   <div class="action-item" data-action="mute">Mute</div>
                   <div class="action-item" data-action="block">Block</div>
-                  <div class="action-item" data-action="report">Report</div>
+                  <a href="report-account.html">
+                    <div class="action-item">Report</div>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1348,13 +1351,71 @@
               alert("User muted");
               break;
             case "block":
-              alert("User blocked");
-              break;
-            case "report":
-              alert("User reported");
+              blockUser(currentMatchId);
               break;
             default:
               console.log("Unknown action:", action);
+          }
+        }
+
+        async function blockUser(matchId) {
+          try {
+            const token = localStorage.getItem("jwtToken");
+            if (!token) {
+              alert("Please log in to block users.");
+              window.location.href = "login.html";
+              return;
+            }
+
+            // Remove from UI
+            const messageItem = document.querySelector(
+              `.message-item[data-match-id="${matchId}"]`
+            );
+            if (messageItem) {
+              messageItem.remove();
+            } else {
+              const effortItem = document.querySelector(
+                `.message-item[data-effort-id="${matchId}"]`
+              );
+              if (effortItem) effortItem.remove();
+            }
+
+            // Clear chat or efforts display if the blocked user is currently selected
+            if (currentMatchId === matchId) {
+              const chatBody = document.querySelector(".chat-body");
+              chatBody.innerHTML = "<p>User blocked and removed.</p>";
+              const effortsContent = document.querySelector(".efforts-content");
+              if (effortsContent) {
+                effortsContent.innerHTML = "<p>User blocked and removed.</p>";
+              }
+            }
+
+            // Send request to server
+            const response = await fetch(
+              `http://localhost:3000/api/block/${matchId}`,
+              {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                credentials: "include",
+              }
+            );
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(
+                `Failed to block user: ${response.status} - ${errorText}`
+              );
+            }
+
+            console.log(
+              `User with matchId ${matchId} blocked and removed from interactions`
+            );
+          } catch (error) {
+            console.error("Error blocking user:", error);
+            alert("Failed to block user: " + error.message);
           }
         }
 
@@ -1378,15 +1439,28 @@
             }
 
             const messages = await response.json();
-            chatBody.innerHTML = "";
+            const chatBody = document.querySelector(".chat-body");
+            const chatHeaderName = document.querySelector(".chat-header .name");
+            const chatHeaderAvatar = document.querySelector(
+              ".chat-header .user-info .avatar"
+            );
 
-            // Add messages before the score
+            // Find the match data to get the photo
+            const match = messagesData.find((m) => m.matchId === matchId);
+            if (match && match.photo) {
+              chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
+            } else {
+              chatHeaderAvatar.innerHTML = ""; // Clear it if no photo
+              chatHeaderAvatar.style.background = "rgba(255, 255, 255, 0.2)"; // Reset to placeholder
+            }
+
+            chatBody.innerHTML = "";
+            // Add messages and score logic as before...
             const halfMessages = Math.ceil(messages.length / 2);
             messages.slice(0, halfMessages).forEach((msg) => {
               appendMessage(msg);
             });
 
-            // Add score and fun/kink lines in the middle if score >= 6.6
             if (score >= 6.6) {
               let funLine, kinkLine;
               if (score >= 6.6 && score <= 7.5) {
@@ -1403,14 +1477,13 @@
               const scoreDiv = document.createElement("div");
               scoreDiv.classList.add("score-info");
               scoreDiv.innerHTML = `
-                <p>Your match score: ${score.toFixed(1)}</p>
-                <p class="fun-line">${funLine}</p>
-                <p class="kink-line">${kinkLine}</p>
-              `;
+        <p>Your match score: ${score.toFixed(1)}</p>
+        <p class="fun-line">${funLine}</p>
+        <p class="kink-line">${kinkLine}</p>
+      `;
               chatBody.appendChild(scoreDiv);
             }
 
-            // Add remaining messages
             messages.slice(halfMessages).forEach((msg) => {
               appendMessage(msg);
             });

@@ -916,21 +916,28 @@ router.delete("/delete-account", authenticateToken, async (req, res) => {
 
 // Remove liked profile
 router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
-  const { profileId } = req.body;
-  const userId = req.user.id;
+  const { profileId } = req.body; // "67ddecd9e2d30367593d155a" (User B)
+  const userId = req.user.id; // "67dad23fb177154b1a2504fa" (User A)
 
   if (!profileId) {
     return res.status(400).json({ message: "Profile ID is required" });
   }
 
   try {
-    const result = await Like.deleteOne({ userId, profileId });
+    console.log(`Removing like: liker=${profileId}, target=${userId}`);
+    const result = await Like.deleteOne({
+      userId: profileId, // User B (liker)
+      profileId: userId, // User A (target)
+      status: "pending", // Only remove pending likes
+    });
 
     if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "Like not found" });
+      return res
+        .status(404)
+        .json({ message: "No pending like found to remove" });
     }
 
-    res.status(200).json({ message: "Profile removed from liked profiles" });
+    res.status(200).json({ message: "Liked profile removed successfully" });
   } catch (error) {
     console.error("Error removing liked profile:", error);
     res.status(500).json({ message: "Server error" });

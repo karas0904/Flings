@@ -2,12 +2,11 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose"; // Add this import
+import mongoose from "mongoose";
 import User from "../models/User.js";
 
 dotenv.config();
 
-// Single GoogleStrategy implementation
 passport.use(
   new GoogleStrategy(
     {
@@ -36,7 +35,7 @@ passport.use(
         if (!user) {
           // If the user doesn't exist, create a new user
           user = new User({
-            googleId: profile.id, // Ensure googleId is a string
+            googleId: profile.id,
             email: email,
             displayName: profile.displayName,
             photo:
@@ -49,18 +48,20 @@ passport.use(
 
         // Generate a JWT token
         const token = jwt.sign(
-          { id: user._id, email: user.email },
+          { id: user._id.toString() }, // Ensure _id is a string
           process.env.JWT_SECRET,
-          { expiresIn: "1h" } // Token expires in 1 hour
+          { expiresIn: "1h" }
         );
 
         // Create a plain JS object with the user data and token
         const userWithToken = {
-          ...user.toObject(), // Convert Mongoose document to plain JS object
+          _id: user._id.toString(), // Ensure _id is a string
+          email: user.email,
+          displayName: user.displayName,
+          profileCompleted: user.profileCompleted || false, // Include this for authRoutes logic
           token, // Add the token
         };
 
-        // Log the user and token before passing to done
         console.log("MongoDB User:", user.toObject());
         console.log("User with token:", userWithToken);
         return done(null, userWithToken);
@@ -72,13 +73,10 @@ passport.use(
   )
 );
 
-// In your passport.js file
-
 // Serialize user to store in session
-// Fix the serialization/deserialization issue
 passport.serializeUser((user, done) => {
-  // The user object might be userWithToken which has _id in the nested user object
-  const userId = user._id ? user._id : user.id;
+  // user is userWithToken from the strategy
+  const userId = user._id; // Use _id from userWithToken
   console.log("Serializing user with ID:", userId);
   done(null, userId);
 });
@@ -87,7 +85,6 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
   try {
     console.log("Deserializing user with ID:", id);
-    // Make sure id is a valid ObjectId before querying
     if (!mongoose.Types.ObjectId.isValid(id)) {
       console.error("Invalid ObjectId:", id);
       return done(null, false);

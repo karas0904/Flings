@@ -16,6 +16,7 @@ import profileRoutes from "./routes/profileRoutes.js"; // Default import
 import { createServer } from "http"; // Import HTTP server module
 import { Server } from "socket.io"; // Import Socket.IO
 import wrap from "./utils/wrap.js"; // Import a utility to wrap middleware for Socket.IO
+import Message from "./models/Message.js";
 
 import "./config/passport.js";
 
@@ -105,15 +106,28 @@ app.get("/", (req, res) => {
 });
 
 // Socket.IO authentication middleware
-io.use(wrap(sessionMiddleware));
-io.use(wrap(passport.initialize()));
-io.use(wrap(passport.session()));
+//io.use(wrap(sessionMiddleware));
+//io.use(wrap(passport.initialize()));
+//io.use(wrap(passport.session()));
+
+import jwt from "jsonwebtoken"; // Add this at the top if not already there
 
 io.use((socket, next) => {
-  if (socket.request.user) {
-    next(); // User is authenticated, allow connection
-  } else {
-    next(new Error("Unauthorized")); // User is not authenticated, reject connection
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error("Unauthorized: No token provided"));
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "your-secret-key"
+    );
+    socket.request.user = decoded; // Attach decoded user to socket.request.user
+    next();
+  } catch (error) {
+    console.error("JWT verification error:", error);
+    next(new Error("Unauthorized: Invalid token"));
   }
 });
 
@@ -121,42 +135,56 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
   console.log("Authenticated user:", socket.request.user);
+  const userId = socket.request.user.id.toString(); // Change _id to id
+  console.log(`User ${userId} connected`);
 
-  // Join a room based on the user's ID
-  const userId = socket.request.user._id.toString();
-  socket.join(userId); // Each user joins a room named after their user ID
-  console.log(`User ${userId} joined room ${userId}`);
+  socket.on("joinMatches", async (callback) => {
+    try {
+      const matchesResponse = await fetch("http://localhost:3000/api/matches", {
+        headers: { Authorization: `Bearer ${socket.handshake.auth.token}` },
+      });
+      const matches = await matchesResponse.json();
+      const matchIds = matches.profiles.map((profile) => profile.matchId);
+      matchIds.forEach((matchId) => {
+        socket.join(matchId);
+        console.log(`User ${userId} joined match room ${matchId}`);
+      });
+      callback({ success: true, matchIds });
+    } catch (error) {
+      console.error("Error fetching matches:", error);
+      callback({ error: "Failed to join matches" });
+    }
+  });
 
-  // Handle sending a message
+  socket.on("loadMessages", async (matchId, callback) => {
+    try {
+      const messages = await Message.find({ matchId })
+        .populate("senderId", "name email")
+        .sort("createdAt");
+      callback({ success: true, messages });
+    } catch (error) {
+      console.error("Error loading messages:", error);
+      callback({ error: "Failed to load messages" });
+    }
+  });
+
   socket.on("sendMessage", async (data, callback) => {
     try {
-      const { recipientId, content } = data;
-
-      // Validate input
-      if (!recipientId || !content) {
-        return callback({ error: "Recipient ID and content are required" });
+      const { matchId, content } = data;
+      if (!matchId || !content) {
+        return callback({ error: "Match ID and content are required" });
       }
-
-      // Create and save the message to MongoDB
       const message = new Message({
         senderId: userId,
-        recipientId,
+        matchId,
         content,
       });
       await message.save();
-
-      // Populate sender and recipient details (optional, for richer message data)
-      const populatedMessage = await Message.findById(message._id)
-        .populate("senderId", "name email")
-        .populate("recipientId", "name email");
-
-      // Emit the message to the recipient's room
-      io.to(recipientId).emit("receiveMessage", populatedMessage);
-
-      // Emit the message back to the sender (for confirmation)
-      socket.emit("receiveMessage", populatedMessage);
-
-      // Callback to confirm message was sent
+      const populatedMessage = await Message.findById(message._id).populate(
+        "senderId",
+        "name email"
+      );
+      io.to(matchId).emit("new-message", populatedMessage);
       callback({ success: true, message: populatedMessage });
     } catch (error) {
       console.error("Error sending message:", error);
@@ -164,7 +192,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Handle disconnection
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
   });

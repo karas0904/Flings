@@ -1188,6 +1188,78 @@
           background: #ff0000d3; /* Lighter gray at peak */
         }
       }
+      .custom-alert-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+      }
+
+      .custom-alert-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .custom-alert-box {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: auto;
+        max-width: 400px;
+        background: rgba(243, 8, 8, 0.01);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        position: fixed; /* Fixed to position relative to viewport */
+        top: 20px; /* Distance from top */
+        right: 20px; /* Distance from right */
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        transform: translateX(100%); /* Start off-screen to the right */
+        opacity: 0; /* Start invisible */
+      }
+
+      /* Active state when the alert is shown */
+      .custom-alert-overlay.active .custom-alert-box {
+        transform: translateX(0); /* Slide in to visible position */
+        opacity: 1; /* Fully visible */
+        pointer-events: auto; /* Allow interaction */
+      }
+
+      .custom-alert-box p {
+        margin: 0 0 15px;
+        font-size: 16px;
+        color: white;
+      }
+
+      .custom-alert-button {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 20px;
+        border: none;
+        padding: 10px 20px;
+        margin-right: 250px;
+        text-decoration: none;
+        transition: background 0.3s;
+        font-size: 8px;
+        font-family: "Open Sans", sans-serif;
+        display: inline-block;
+        margin-top: 10px;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .custom-alert-button:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
     </style>
   </head>
   <body>
@@ -1247,6 +1319,13 @@
       </div>
     </div>
 
+    <div class="custom-alert-overlay" id="customAlertOverlay">
+      <div class="custom-alert-box" id="customAlertBox">
+        <p id="customAlertMessage"></p>
+        <button class="custom-alert-button" id="customAlertButton">OK</button>
+      </div>
+    </div>
+
     <div class="external-buttons">
       <button title="Rose" class="rose-button">
         <img src="assets/icons/rose-icon.svg" alt="Rose" class="rose-icon" />
@@ -1298,6 +1377,36 @@
     </div>
 
     <script>
+      // Function to show custom alert
+      function showCustomAlert(message) {
+        const overlay = document.getElementById("customAlertOverlay");
+        const messageElement = document.getElementById("customAlertMessage");
+        const button = document.getElementById("customAlertButton");
+
+        messageElement.textContent = message;
+        overlay.classList.add("active");
+
+        return new Promise((resolve) => {
+          button.onclick = () => {
+            overlay.classList.remove("active");
+            resolve();
+          };
+          overlay.onclick = (e) => {
+            if (e.target === overlay) {
+              overlay.classList.remove("active");
+              resolve();
+            }
+          };
+          document.addEventListener("keydown", function handler(e) {
+            if (e.key === "Enter" || e.key === "Escape") {
+              overlay.classList.remove("active");
+              document.removeEventListener("keydown", handler);
+              resolve();
+            }
+          });
+        });
+      }
+
       // Function to clear URL parameters
       function clearUrlParams() {
         const url = new URL(window.location);
@@ -1305,14 +1414,48 @@
         window.history.replaceState({}, document.title, url);
       }
 
-      // Function to store the JWT token
-      function storeToken() {
+      // Function to store token and user data from URL
+      function storeTokenAndUser() {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get("token");
-        if (token) {
+        const user = urlParams.get("user");
+
+        if (token && user) {
           localStorage.setItem("jwtToken", token);
+          localStorage.setItem("user", decodeURIComponent(user));
           console.log("JWT token stored:", token);
-          clearUrlParams(); // Clear the token from the URL for security
+          console.log("User stored:", JSON.parse(decodeURIComponent(user)));
+          clearUrlParams();
+        } else if (token) {
+          localStorage.setItem("jwtToken", token);
+          console.log("JWT token stored, fetching user data...");
+          fetchUserData(token);
+        } else {
+          console.error("No token found in URL parameters");
+        }
+      }
+
+      // Fallback to fetch user data if only token is provided
+      async function fetchUserData(token) {
+        try {
+          const response = await fetch("http://localhost:3000/api/profile", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to fetch user data");
+          }
+
+          const userData = await response.json();
+          localStorage.setItem("user", JSON.stringify(userData));
+          console.log("User data fetched and stored:", userData);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
       }
 
@@ -1356,7 +1499,7 @@
         }
 
         if (!token) {
-          alert("Please log in!");
+          await showCustomAlert("Please log in!");
           window.location.href = "login.html";
           if (loadingOverlay) {
             loadingOverlay.classList.add("hidden");
@@ -1556,6 +1699,7 @@
         }
 
         localStorage.removeItem("jwtToken");
+        localStorage.removeItem("user");
         window.location.href = "login.html";
 
         button.textContent = "Logout";
@@ -1564,7 +1708,7 @@
 
       // Main DOMContentLoaded event listener
       document.addEventListener("DOMContentLoaded", async function () {
-        storeToken();
+        storeTokenAndUser();
         fetchUserProfile();
 
         let loadedProfiles = 0;
@@ -1573,10 +1717,11 @@
 
         profiles = await fetchProfiles();
         console.log("Profiles loaded:", profiles);
+        loadProfiles(); // Explicitly call to load initial profiles
 
         function loadProfiles() {
           console.log(
-            "Loading profiles, current loadedProfiles:",
+            "loadProfiles called with loadedProfiles:",
             loadedProfiles
           );
           console.log("Profiles array:", profiles);
@@ -1608,20 +1753,24 @@
 
             const profileImage = document.createElement("img");
             profileImage.classList.add("profile-image");
-            profileImage.src = profile.image;
+            profileImage.src = profile.image || "default-image.jpg";
             profileImage.alt = `${profile.name}'s profile image`;
 
             const profileInfo = document.createElement("div");
             profileInfo.classList.add("profile-info");
 
             const profileNameAge = document.createElement("h3");
-            profileNameAge.innerHTML = `${profile.name}, <span class="profile-age">${profile.age}</span>`;
+            profileNameAge.innerHTML = `${
+              profile.name || "Unknown"
+            }, <span class="profile-age">${profile.age || "N/A"}</span>`;
             const profileDetails = document.createElement("p");
             profileDetails.classList.add("profile-details");
-            profileDetails.textContent = `${profile.hometown} | ${profile.year} | ${profile.department}`;
+            profileDetails.textContent = `${profile.hometown || "N/A"} | ${
+              profile.year || "N/A"
+            } | ${profile.department || "N/A"}`;
             const profileBio = document.createElement("p");
             profileBio.classList.add("profile-bio");
-            profileBio.textContent = profile.bio;
+            profileBio.textContent = profile.bio || "No bio available";
 
             profileInfo.appendChild(profileNameAge);
             profileInfo.appendChild(profileDetails);
@@ -1639,7 +1788,6 @@
             const commentInput = document.createElement("input");
             commentInput.type = "text";
             commentInput.classList.add("comment-input");
-            // Set initial state based on profile data
             if (profile.hasRose) {
               if (profile.comment && profile.comment.trim()) {
                 commentInput.placeholder = "Comment sent!";
@@ -1660,7 +1808,7 @@
             }
 
             const sendIcon = document.createElement("img");
-            sendIcon.src = "assets/icons/Comment-send.svg"; // Ensure you have this SVG
+            sendIcon.src = "assets/icons/Comment-send.svg";
             sendIcon.alt = "Send Comment";
             sendIcon.classList.add("send-icon");
             commentInbox.appendChild(commentInput);
@@ -1708,7 +1856,7 @@
 
               const token = localStorage.getItem("jwtToken");
               if (!token) {
-                alert("Please log in to like profiles!");
+                await showCustomAlert("Please log in to like profiles!");
                 this.classList.toggle("active", wasLiked);
                 return;
               }
@@ -1731,16 +1879,20 @@
                 if (response.ok) {
                   console.log("Like saved:", result);
                   profile.isLiked = !wasLiked;
-                  alert("Profile liked successfully!");
+                  await showCustomAlert("Profile liked successfully!");
                 } else {
                   console.error("Like failed:", result);
                   this.classList.toggle("active", wasLiked);
-                  alert("Failed to like profile: " + result.message);
+                  await showCustomAlert(
+                    "Failed to like profile: " + result.message
+                  );
                 }
               } catch (error) {
                 console.error("Error liking profile:", error);
                 this.classList.toggle("active", wasLiked);
-                alert("An error occurred while liking the profile.");
+                await showCustomAlert(
+                  "An error occurred while liking the profile."
+                );
               }
             });
 
@@ -1763,7 +1915,7 @@
             ) {
               const token = localStorage.getItem("jwtToken");
               if (!token) {
-                alert("Please log in to send a comment!");
+                await showCustomAlert("Please log in to send a comment!");
                 return;
               }
 
@@ -1786,24 +1938,27 @@
                 const result = await response.json();
                 if (response.ok) {
                   console.log("Comment attached to rose:", result);
-                  commentInput.value = ""; // Clear input after sending
-                  commentInput.disabled = true; // Disable input
+                  commentInput.value = "";
+                  commentInput.disabled = true;
                   commentInput.placeholder = "Comment sent!";
-                  commentInput.classList.remove("enabled"); // Hide send icon
-                  commentInbox.classList.remove("enabled"); // Update inbox state
-                  profiles[i].comment = commentText; // Update local profile state
-                  alert("Comment sent successfully!");
+                  commentInput.classList.remove("enabled");
+                  commentInbox.classList.remove("enabled");
+                  profiles[i].comment = commentText;
+                  await showCustomAlert("Comment sent successfully!");
                 } else {
                   console.error("Failed to attach comment:", result);
-                  alert(result.message || "Failed to send comment");
+                  await showCustomAlert(
+                    result.message || "Failed to send comment"
+                  );
                 }
               } catch (error) {
                 console.error("Error sending comment:", error);
-                alert("An error occurred while sending the comment.");
+                await showCustomAlert(
+                  "An error occurred while sending the comment."
+                );
               }
             }
 
-            // Send comment on Enter key
             commentInput.addEventListener("keypress", function (event) {
               if (
                 event.key === "Enter" &&
@@ -1819,7 +1974,6 @@
               }
             });
 
-            // Send comment on send icon click
             sendIcon.addEventListener("click", function () {
               if (!commentInput.disabled && commentInput.value.trim()) {
                 submitComment(
@@ -1842,16 +1996,17 @@
               const token = localStorage.getItem("jwtToken");
 
               if (!token) {
-                alert("Please log in to send a Rose!");
+                await showCustomAlert("Please log in to send a Rose!");
                 return;
               }
 
               if (currentProfile.hasRose) {
-                alert("You’ve already sent a Rose to this profile!");
+                await showCustomAlert(
+                  "You’ve already sent a Rose to this profile!"
+                );
                 return;
               }
 
-              // Add shine effect
               this.classList.add("shine");
               setTimeout(() => this.classList.remove("shine"), 600);
 
@@ -1887,25 +2042,29 @@
                     currentCommentInput.classList.remove("enabled");
                     currentCommentInbox.classList.remove("enabled");
                   }
-                  alert("Rose sent successfully! You can now add a comment.");
+                  await showCustomAlert(
+                    "Rose sent successfully! You can now add a comment."
+                  );
                 } else {
                   console.error("Rose failed:", result);
-                  alert(result.message || "Failed to send Rose");
+                  await showCustomAlert(
+                    result.message || "Failed to send Rose"
+                  );
                 }
               } catch (error) {
                 console.error("Error sending Rose:", error);
-                alert("An error occurred while sending the Rose.");
+                await showCustomAlert(
+                  "An error occurred while sending the Rose."
+                );
               }
             });
 
-            // Clickable profile info to show details
             [profileNameAge, profileDetails, profileBio].forEach((element) => {
               element.addEventListener("click", () =>
                 showProfileDetails(profile)
               );
             });
 
-            // No-named button to scroll to next profile
             noNamedButton.addEventListener("click", function () {
               currentProfileIndex++;
               if (currentProfileIndex >= loadedProfiles) {
@@ -1926,10 +2085,6 @@
           }
         }
 
-        // Load initial profiles
-        loadProfiles();
-
-        // Utility function to check if scrolled near bottom
         function isNearBottom(element) {
           const lastProfile = element.lastElementChild;
           if (!lastProfile) return false;
@@ -1938,7 +2093,6 @@
           return lastProfileRect.bottom <= containerRect.bottom + 50;
         }
 
-        // Scroll to specific profile
         function scrollToProfile(index) {
           const profileList = document.getElementById("profileList");
           const profilesElements = profileList.children;
@@ -1960,7 +2114,6 @@
             const currentCommentInbox =
               profilesElements[index].querySelector(".comment-inbox");
 
-            // Sync rose button and comment state
             if (currentProfile.hasRose) {
               roseButton.classList.add("active");
               roseButton.disabled = true;
@@ -1994,7 +2147,6 @@
 
         let currentProfileIndex = 0;
 
-        // Scroll event listener for profile list
         document
           .getElementById("profileList")
           .addEventListener("scroll", function () {
@@ -2009,7 +2161,7 @@
                 profileRect.bottom <= containerRect.bottom + 50
               ) {
                 currentProfileIndex = i;
-                scrollToProfile(currentProfileIndex); // Sync button states
+                scrollToProfile(currentProfileIndex);
                 break;
               }
             }
@@ -2019,7 +2171,6 @@
             }
           });
 
-        // Keyboard navigation for profile list
         document
           .getElementById("profileList")
           .addEventListener("keydown", function (event) {
@@ -2046,7 +2197,6 @@
         document.getElementById("profileList").setAttribute("tabindex", "0");
         document.getElementById("profileList").focus();
 
-        // Sidebar hover effects
         document
           .querySelectorAll(".side-navbar .top-items a")
           .forEach((link) => {
@@ -2069,7 +2219,6 @@
             });
           });
 
-        // Show profile details
         function showProfileDetails(profile) {
           console.log("Profile object:", profile);
           const profileList = document.getElementById("profileList");
@@ -2084,13 +2233,13 @@
 
           profileList.classList.add("blur");
 
-          profileName.textContent = profile.name;
+          profileName.textContent = profile.name || "Unknown";
           const firstImage =
             profile.photos && profile.photos.length > 0
               ? profile.photos[0]
               : profile.image || "default-image.jpg";
           profileImage.src = firstImage;
-          profileImage.alt = `${profile.name}'s image 1`;
+          profileImage.alt = `${profile.name || "Unknown"}'s image 1`;
 
           scrollContainer.innerHTML = "";
           const details = [
@@ -2125,7 +2274,7 @@
             ...additionalImages.map((src, index) => ({
               type: "image",
               src,
-              alt: `${profile.name}'s image ${index + 2}`,
+              alt: `${profile.name || "Unknown"}'s image ${index + 2}`,
             })),
             ...quotes.map((text) => ({ type: "quote", text })),
           ];
@@ -2177,7 +2326,7 @@
 
             const token = localStorage.getItem("jwtToken");
             if (!token) {
-              alert("Please log in to like profiles!");
+              await showCustomAlert("Please log in to like profiles!");
               return;
             }
 
@@ -2198,19 +2347,22 @@
               const result = await response.json();
               if (response.ok) {
                 console.log("Like saved:", result);
-                alert("Profile liked successfully!");
+                await showCustomAlert("Profile liked successfully!");
               } else {
                 console.error("Like failed:", result);
-                alert("Failed to like profile: " + result.message);
+                await showCustomAlert(
+                  "Failed to like profile: " + result.message
+                );
               }
             } catch (error) {
               console.error("Error liking profile:", error);
-              alert("An error occurred while liking the profile.");
+              await showCustomAlert(
+                "An error occurred while liking the profile."
+              );
             }
           });
         }
 
-        // Close profile details
         window.closeProfileDetails = function () {
           const profileList = document.getElementById("profileList");
           const profileDetailsBox =
@@ -2246,10 +2398,11 @@
         profileDetailsBox.addEventListener(
           "touchmove",
           (event) => event.stopPropagation(),
-          { passive: false }
+          {
+            passive: false,
+          }
         );
 
-        // Share functionality
         const shareButton = document.querySelector('button[title="Share"]');
         const shareOptions = document.querySelector(".share-options");
 
@@ -2276,8 +2429,10 @@
 
           function shareProfile(platform) {
             const profile = profiles[currentProfileIndex];
-            const shareUrl = `${window.location.origin}/profile?id=${profile.id}`;
-            const shareText = `Check out ${profile.name}'s profile on Amourette: ${profile.bio}`;
+            const shareUrl = `${window.location.origin}/profile?id=${profile._id}`;
+            const shareText = `Check out ${
+              profile.name || "this user"
+            }'s profile on Amourette: ${profile.bio || "No bio"}`;
 
             switch (platform) {
               case "whatsapp":
@@ -2293,7 +2448,7 @@
                 window.open(twitterUrl, "_blank");
                 break;
               default:
-                alert(`Sharing on ${platform} is not supported yet.`);
+                showCustomAlert(`Sharing on ${platform} is not supported yet.`);
             }
 
             shareOptions.classList.remove("active");
@@ -2311,23 +2466,6 @@
           );
         }
 
-        // Save profile function
-        function saveProfile(category, profile) {
-          const existingProfiles =
-            JSON.parse(localStorage.getItem(category)) || [];
-          const isAlreadySaved = existingProfiles.some(
-            (p) => p.id === profile.id
-          );
-          if (!isAlreadySaved) {
-            existingProfiles.push(profile);
-            localStorage.setItem(category, JSON.stringify(existingProfiles));
-            console.log(`Profile saved to ${category}:`, profile);
-          } else {
-            console.log(`Profile already exists in ${category}:`, profile);
-          }
-        }
-
-        // Save button event listener
         document
           .querySelector('button[title="Save"]')
           .addEventListener("click", async function () {
@@ -2335,12 +2473,12 @@
             const token = localStorage.getItem("jwtToken");
             if (!token) {
               console.error("No JWT token found");
-              alert("Please log in to save profiles!");
+              await showCustomAlert("Please log in to save profiles!");
               return;
             }
 
             if (currentProfile.isSaved) {
-              alert("Profile already saved!");
+              await showCustomAlert("Profile already saved!");
               return;
             }
 
@@ -2363,21 +2501,24 @@
               if (response.ok) {
                 console.log("Save successful:", result);
                 currentProfile.isSaved = true;
-                alert("Profile saved successfully!");
+                await showCustomAlert("Profile saved successfully!");
               } else {
                 console.error("Save failed:", result);
                 this.classList.remove("saved");
-                alert("Failed to save profile: " + result.message);
+                await showCustomAlert(
+                  "Failed to save profile: " + result.message
+                );
               }
             } catch (error) {
               console.error("Error saving profile:", error);
               this.classList.remove("saved");
-              alert("An error occurred while saving the profile.");
+              await showCustomAlert(
+                "An error occurred while saving the profile."
+              );
             }
           });
       });
 
-      // Toggle sidebar
       function toggleSidebar() {
         const sideNavbar = document.getElementById("sideNavbar");
         const hamburger = document.querySelector(".hamburger");

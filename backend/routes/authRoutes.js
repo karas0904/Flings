@@ -51,18 +51,21 @@ router.get("/google/callback", (req, res, next) => {
             redirectUrl = "http://127.0.0.1:5500/login.html?error=exists";
           } else {
             // New user: Redirect to discover.html
-            redirectUrl = "http://127.0.0.1:5500/discover.html?token=" + token;
+            redirectUrl = "http://127.0.0.1:5500/discover.html";
           }
         } else if (flowType === "sinkin") {
-          // "Sinkin" flow: Unchanged
+          // "Sinkin" flow
           if (user.profileCompleted) {
             redirectUrl = "http://127.0.0.1:5500/explore.html";
           } else {
             redirectUrl = "http://127.0.0.1:5500/discover.html";
           }
-          redirectUrl += `?token=${token}`;
         }
 
+        // Append token and user data to the redirect URL
+        redirectUrl += `?token=${token}&user=${encodeURIComponent(
+          JSON.stringify(user)
+        )}`;
         return res.redirect(redirectUrl);
       });
     } catch (error) {

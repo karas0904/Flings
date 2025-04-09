@@ -37,8 +37,8 @@
         gap: 10px;
         width: 60%;
         max-width: 1200px;
-        height: 100vh; /* Ensure container takes full height */
-        justify-content: center; /* Center contents vertically */
+        height: 100vh;
+        justify-content: center;
       }
 
       .profile-card {
@@ -68,8 +68,7 @@
         filter: blur(5px);
         opacity: 0.8;
         position: absolute;
-        top: calc(50% + 210px); /* Position below profile-card */
-        transform: translateY(0); /* Remove previous transform */
+        top: calc(50% + 210px);
         box-shadow: none;
         z-index: 0;
       }
@@ -123,14 +122,13 @@
         transform: scale(1.2);
       }
 
-      /* Profile icon at the bottom of sidebar */
       .profile-icon {
         width: 30px;
         height: 30px;
-        border-radius: 50%; /* Makes it round */
+        border-radius: 50%;
         overflow: hidden;
-        margin-top: auto; /* Pushes it to the bottom */
-        margin-bottom: 20px; /* Spacing from the bottom */
+        margin-top: auto;
+        margin-bottom: 20px;
         box-sizing: border-box;
       }
 
@@ -158,9 +156,9 @@
         background: #f5f5f5;
         padding: 20px;
         color: #333;
-        height: 100%; /* Matches profile-card height */
-        overflow-y: auto; /* Scrollable */
-        animation: fadeIn 0.5s ease-in-out forwards; /* Fade-in animation */
+        height: 100%;
+        overflow-y: auto;
+        animation: fadeIn 0.5s ease-in-out forwards;
       }
 
       .profile-right::-webkit-scrollbar {
@@ -273,7 +271,7 @@
 
       .profile-detail:hover {
         background: #fff;
-        transform: translateX(5px); /* Slide right on hover */
+        transform: translateX(5px);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
@@ -284,7 +282,7 @@
       }
 
       .profile-detail:hover i {
-        transform: scale(1.2); /* Icon grows on hover */
+        transform: scale(1.2);
       }
 
       .loading-overlay {
@@ -369,7 +367,6 @@
         }
       }
 
-      /* Improved Responsive Design */
       @media (max-width: 1024px) {
         .profile-container {
           padding-left: 60px;
@@ -382,7 +379,7 @@
         }
         .fade-card {
           height: 250px;
-          top: calc(50% + 210px); /* Adjust for responsive */
+          top: calc(50% + 210px);
         }
         .profile-left,
         .profile-right {
@@ -412,7 +409,7 @@
         }
         .fade-card {
           height: 200px;
-          position: static; /* Reset for stacking */
+          position: static;
           margin-top: 10px;
         }
         .profile-left,
@@ -421,8 +418,8 @@
           padding: 15px;
         }
         .profile-left {
-          border-right: none; /* Remove border in vertical stack */
-          border-bottom: 1px solid #888; /* Add bottom border instead */
+          border-right: none;
+          border-bottom: 1px solid #888;
         }
         .carousel-item {
           width: 120px;
@@ -502,12 +499,14 @@
           ><i class="fa-solid fa-fire"></i
         ></a>
       </div>
-      <!-- Add profile icon here -->
       <div class="profile-icon">
         <a href="account.html">
-          <img src="default-profile.jpg" alt="Profile" id="sidebarProfileImage" />
+          <img
+            src="default-profile.jpg"
+            alt="Profile"
+            id="sidebarProfileImage"
+          />
         </a>
-        </div>
       </div>
     </div>
 
@@ -604,14 +603,18 @@
         const profileId = urlParams.get("id");
         const token = localStorage.getItem("jwtToken");
 
+        console.log("Fetching profile with ID:", profileId); // Debug: Log profile ID
+        console.log("Token:", token ? "Present" : "Missing"); // Debug: Check token presence
+
         if (!profileId || profileId === "undefined") {
           document.getElementById("profileName").textContent =
-            "Invalid Profile";
+            "Invalid Profile ID";
           document.getElementById("loadingOverlay").classList.add("hidden");
           return;
         }
 
         if (!token) {
+          document.getElementById("profileName").textContent = "Please Log In";
           window.location.href = "login.html";
           return;
         }
@@ -628,8 +631,15 @@
             }
           );
 
-          if (!response.ok) throw new Error("Failed to fetch profile");
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `Failed to fetch profile: ${response.status} - ${errorText}`
+            );
+          }
+
           const profileData = await response.json();
+          console.log("Profile data received:", profileData); // Debug: Log response data
 
           // Populate existing fields
           document.getElementById("profileName").textContent =
@@ -675,14 +685,18 @@
           const sidebarProfileImage = document.getElementById(
             "sidebarProfileImage"
           );
-          if (profileData.photos && profileData.photos.length > 0) {
-            sidebarProfileImage.src = profileData.photos[0]; // Use the first photo as the profile image
-          } else {
-            sidebarProfileImage.src = "default-profile.jpg"; // Fallback to default
-          }
+          const userPhoto =
+            profileData.photos && profileData.photos.length > 0
+              ? profileData.photos[0]
+              : "default-profile.jpg";
+          sidebarProfileImage.src = userPhoto;
 
+          // Carousel setup
           const carousel = document.getElementById("carousel");
-          const photos = profileData.photos || ["default-profile.jpg"];
+          const photos =
+            profileData.photos && profileData.photos.length > 0
+              ? profileData.photos
+              : ["default-profile.jpg"];
           let currentIndex = 0;
 
           function createCarouselItem(src) {
@@ -699,7 +713,6 @@
             carousel.innerHTML = "";
             carousel.appendChild(currentItem);
             currentItem.style.animation = "rollInOut 2s ease-in-out forwards";
-
             currentIndex = (currentIndex + 1) % photos.length;
             setTimeout(animateCarousel, 2000);
           }
@@ -707,8 +720,10 @@
           animateCarousel();
           document.getElementById("loadingOverlay").classList.add("hidden");
         } catch (error) {
-          console.error("Error fetching profile:", error);
-          document.getElementById("profileName").textContent = "Error Loading";
+          console.error("Error fetching profile:", error.message);
+          document.getElementById("profileName").textContent =
+            "Error Loading Profile";
+          document.getElementById("profileBio").textContent = error.message;
           document.getElementById("loadingOverlay").classList.add("hidden");
         }
       }

@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Like from "../models/Like.js";
 import { getMatches } from "../utils/matching.js";
 import RoseInteraction from "../models/roseInteraction.js";
+import Message from "../models/Message.js";
 
 const router = express.Router();
 
@@ -147,6 +148,7 @@ router.get("/matches", authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
+    // Fetch Like matches
     const likeMatches = await Like.find({
       $and: [
         { status: "matched" },
@@ -157,6 +159,7 @@ router.get("/matches", authenticateToken, async (req, res) => {
       .populate("profileId", "firstName photos")
       .lean();
 
+    // Fetch Rose matches
     const roseMatches = await RoseInteraction.find({
       $and: [
         { status: "accepted" },
@@ -170,22 +173,39 @@ router.get("/matches", authenticateToken, async (req, res) => {
     const allMatches = [...likeMatches, ...roseMatches];
     const uniqueMatches = new Map();
 
-    allMatches.forEach((match) => {
+    // Process matches and fetch latest messages
+    for (const match of allMatches) {
       let matchId, otherUser, snippet, timestamp, score;
+
       if (match.userId) {
+        // Like match
         const isCurrentUserInitiator = match.userId._id.toString() === userId;
         otherUser = isCurrentUserInitiator ? match.profileId : match.userId;
         matchId = match._id.toString();
-        snippet = "Say hi!";
-        timestamp = match.timestamp;
         score = match.score || 0;
       } else {
+        // Rose match
         const isSender = match.fromUser._id.toString() === userId;
         otherUser = isSender ? match.toUser : match.fromUser;
         matchId = match._id.toString();
-        snippet = match.comment || "Rose accepted!";
-        timestamp = match.updatedAt || match.createdAt;
         score = 0;
+      }
+
+      // Fetch the latest message for this matchId
+      const latestMessage = await Message.findOne({ matchId })
+        .sort({ createdAt: -1 }) // Sort by most recent
+        .lean();
+
+      if (latestMessage) {
+        snippet = latestMessage.content;
+        timestamp = latestMessage.createdAt;
+      } else if (match.comment) {
+        // Fallback to rose comment if no messages exist
+        snippet = match.comment;
+        timestamp = match.updatedAt || match.createdAt;
+      } else {
+        snippet = "Say hi!";
+        timestamp = match.timestamp || match.createdAt;
       }
 
       uniqueMatches.set(matchId, {
@@ -204,7 +224,7 @@ router.get("/matches", authenticateToken, async (req, res) => {
           : "Just now",
         score,
       });
-    });
+    }
 
     const profiles = Array.from(uniqueMatches.values());
 

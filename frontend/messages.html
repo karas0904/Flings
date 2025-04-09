@@ -318,6 +318,7 @@
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.2);
         margin-right: 10px;
+        overflow: hidden;
       }
 
       .message-item .avatar img {
@@ -414,6 +415,15 @@
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.2);
         margin-right: 10px;
+        overflow: hidden;
+      }
+
+      .chat-header .user-info .avatar img {
+        /* Add this block */
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
       }
 
       .chat-header .user-info .name {
@@ -449,6 +459,8 @@
         padding: 20px 0;
         overflow-y: auto;
         min-height: 0;
+        display: block; /* Ensures block-level container */
+        width: 100%; /* Full width for alignment */
       }
 
       .chat-footer {
@@ -596,6 +608,7 @@
         height: 100%;
         object-fit: cover; /* Ensures the image fills the circle without distortion */
         display: block;
+        border-radius: 50%;
       }
 
       .profile-icon:hover {
@@ -604,31 +617,52 @@
       }
 
       .message {
-        max-width: 70%;
-        margin: 10px;
-        padding: 10px 15px;
-        border-radius: 15px;
+        display: table; /* Shrinks to content width, stacks vertically */
+        max-width: 70%; /* Limits long messages */
+        margin: 5px 10px; /* Reduced vertical margin, keep horizontal */
+        padding: 8px 12px; /* Tight padding */
+        border-radius: 20px;
         position: relative;
+        word-wrap: break-word;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .message p {
+        margin: 0; /* Remove default margins */
+        padding: 0; /* Remove padding */
+        display: inline; /* Prevents stretching */
+        line-height: 1.2; /* Ensures text height is natural */
       }
 
       .message.sent {
-        background: rgba(255, 255, 255, 0.1);
-        margin-left: auto;
-        border-bottom-right-radius: 5px;
+        background: rgb(255, 23, 23);
+        float: right; /* Aligns right */
+        border-bottom-right-radius: 2px;
+        text-align: left;
+        clear: both; /* Ensures stacking */
       }
 
       .message.received {
         background: rgba(255, 255, 255, 0.2);
-        margin-right: auto;
+        float: left; /* Aligns left */
         border-bottom-left-radius: 5px;
+        text-align: left;
+        clear: both; /* Ensures stacking */
+      }
+
+      .message:hover {
+        transform: translateY(-2px); /* Slight lift */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
       }
 
       .message .timestamp {
         font-size: 10px;
         color: rgba(255, 255, 255, 0.5);
-        position: absolute;
-        bottom: -15px;
-        right: 5px;
+        display: block; /* Below message text */
+        text-align: right;
+        margin-top: 2px;
+        line-height: 1; /* Prevents extra height */
       }
 
       .chat-actions-dropdown {
@@ -962,6 +996,7 @@
         const messageInput = document.querySelector(".message-input");
         const sendBtn = document.querySelector(".send-btn");
         const effortsContainer = document.querySelector(".efforts-container");
+        const searchBar = document.querySelector(".search-bar");
 
         function updateDropdownOptions(selectedOption) {
           dropdownMenu.innerHTML = "";
@@ -977,6 +1012,71 @@
             );
             item.textContent = option;
             dropdownMenu.appendChild(item);
+          });
+        }
+
+        function renderMessageList(data, type) {
+          messageList.innerHTML = "";
+          if (data.length === 0) {
+            messageList.innerHTML = `
+              <div class="message-item simplified">
+                <div class="name">No ${
+                  type === "messages" ? "matches" : "pending efforts"
+                } yet.</div>
+              </div>
+            `;
+            return;
+          }
+
+          data.forEach((item) => {
+            const div = document.createElement("div");
+            div.classList.add("message-item");
+            if (type === "messages") {
+              div.dataset.matchId = item.matchId;
+              div.dataset.score = item.score;
+              div.innerHTML = `
+                <div class="avatar">
+                  <img src="${item.photo}" alt="${item.name}'s photo">
+                </div>
+                <div class="details">
+                  <div class="name">${item.name}</div>
+                  <div class="snippet">${item.snippet}</div>
+                </div>
+                <div class="time">${item.time}</div>
+              `;
+            } else {
+              div.dataset.effortId = item.id;
+              div.innerHTML = `
+                <div class="avatar">
+                  <img src="${
+                    item.photo || "assets/icons/user-solid.svg"
+                  }" alt="${item.name}'s photo">
+                </div>
+                <div class="details">
+                  <div class="name">${item.name || "Unknown"}</div>
+                  <div class="comment">${item.comment || "No comment"}</div>
+                </div>
+              `;
+            }
+            messageList.appendChild(div);
+          });
+
+          const items = document.querySelectorAll(".message-item");
+          items.forEach((item) => {
+            item.addEventListener("click", (event) => {
+              if (event.target.classList.contains("remove-btn")) return;
+              if (type === "messages") {
+                const matchId = item.dataset.matchId;
+                const name = item.querySelector(".name").textContent;
+                const score = parseFloat(item.dataset.score);
+                currentMatchId = matchId;
+                loadMessages(matchId, name, score);
+              } else {
+                const effortId = item.dataset.effortId;
+                const effort = effortsData.find((e) => e.id === effortId);
+                showEffortActions(effort);
+              }
+            });
           });
         }
 
@@ -1031,49 +1131,7 @@
 
               const result = await response.json();
               messagesData = result.profiles || [];
-
-              messageList.innerHTML = "";
-              if (messagesData.length === 0) {
-                messageList.innerHTML = `
-                  <div class="message-item simplified">
-                    <div class="name">No matches yet.</div>
-                  </div>
-                `;
-                return;
-              }
-
-              messagesData.forEach((item) => {
-                const messageDiv = document.createElement("div");
-                messageDiv.classList.add("message-item");
-                messageDiv.dataset.matchId = item.matchId;
-                messageDiv.dataset.score = item.score;
-                messageDiv.innerHTML = `
-                  <div class="avatar">
-                    <img src="${item.photo}" alt="${item.name}'s photo">
-                  </div>
-                  <div class="details">
-                    <div class="name">${item.name}</div>
-                    <div class="snippet">${item.snippet}</div>
-                  </div>
-                  <div class="time">${new Date(item.time).toLocaleTimeString(
-                    [],
-                    { hour: "numeric", minute: "2-digit" }
-                  )}</div>
-                `;
-                messageList.appendChild(messageDiv);
-              });
-
-              const messageItems = document.querySelectorAll(".message-item");
-              messageItems.forEach((item) => {
-                item.addEventListener("click", (event) => {
-                  if (event.target.classList.contains("remove-btn")) return;
-                  const matchId = item.dataset.matchId;
-                  const name = item.querySelector(".name").textContent;
-                  const score = parseFloat(item.dataset.score);
-                  currentMatchId = matchId;
-                  loadMessages(matchId, name, score);
-                });
-              });
+              renderMessageList(messagesData, "messages");
             } catch (error) {
               console.error("Error fetching matches:", error);
               messageList.innerHTML = `
@@ -1117,44 +1175,7 @@
 
               const result = await response.json();
               effortsData = result.efforts || [];
-
-              messageList.innerHTML = "";
-              if (effortsData.length === 0) {
-                messageList.innerHTML = `
-                  <div class="message-item simplified">
-                    <div class="name">No pending efforts yet.</div>
-                  </div>
-                `;
-              } else {
-                effortsData.forEach((effort) => {
-                  const effortDiv = document.createElement("div");
-                  effortDiv.classList.add("message-item");
-                  effortDiv.dataset.effortId = effort.id;
-                  effortDiv.innerHTML = `
-                    <div class="avatar">
-                      <img src="${
-                        effort.photo || "assets/icons/user-solid.svg"
-                      }" alt="${effort.name}'s photo">
-                    </div>
-                    <div class="details">
-                      <div class="name">${effort.name || "Unknown"}</div>
-                      <div class="comment">${
-                        effort.comment || "No comment"
-                      }</div>
-                    </div>
-                  `;
-                  messageList.appendChild(effortDiv);
-                });
-
-                const effortItems = document.querySelectorAll(".message-item");
-                effortItems.forEach((item) => {
-                  item.addEventListener("click", () => {
-                    const effortId = item.dataset.effortId;
-                    const effort = effortsData.find((e) => e.id === effortId);
-                    showEffortActions(effort);
-                  });
-                });
-              }
+              renderMessageList(effortsData, "efforts");
             } catch (error) {
               console.error("Error fetching efforts:", error);
               messageList.innerHTML = `
@@ -1165,6 +1186,21 @@
             }
           }
         }
+
+        function filterMessageList(query) {
+          const selectedOption = dropdownSelected.textContent.toLowerCase();
+          const data =
+            selectedOption === "messages" ? messagesData : effortsData;
+          const filteredData = data.filter((item) =>
+            item.name.toLowerCase().includes(query.toLowerCase())
+          );
+          renderMessageList(filteredData, selectedOption);
+        }
+
+        searchBar.addEventListener("input", (e) => {
+          const query = e.target.value.trim();
+          filterMessageList(query);
+        });
 
         function showEffortActions(effort) {
           const effortsContent = document.querySelector(".efforts-content");
@@ -1290,6 +1326,8 @@
           dropdownArrow.classList.remove("active");
           updateDropdownOptions(selectedText);
           updateMessageList(selectedValue);
+          searchBar.value = ""; // Reset search bar when switching
+          filterMessageList(""); // Reset list to full data
         }
 
         if (dropdownHeader && dropdownMenu) {
@@ -1367,7 +1405,6 @@
               return;
             }
 
-            // Remove from UI
             const messageItem = document.querySelector(
               `.message-item[data-match-id="${matchId}"]`
             );
@@ -1380,7 +1417,6 @@
               if (effortItem) effortItem.remove();
             }
 
-            // Clear chat or efforts display if the blocked user is currently selected
             if (currentMatchId === matchId) {
               const chatBody = document.querySelector(".chat-body");
               chatBody.innerHTML = "<p>User blocked and removed.</p>";
@@ -1390,7 +1426,6 @@
               }
             }
 
-            // Send request to server
             const response = await fetch(
               `http://localhost:3000/api/block/${matchId}`,
               {
@@ -1420,123 +1455,79 @@
         }
 
         async function loadMessages(matchId, name, score) {
-          try {
-            const token = localStorage.getItem("jwtToken");
-            const response = await fetch(
-              `http://localhost:3000/api/messages/${matchId}`,
-              {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                credentials: "include",
-              }
-            );
+          const chatBody = document.querySelector(".chat-body");
+          const chatHeaderName = document.querySelector(".chat-header .name");
+          const chatHeaderAvatar = document.querySelector(
+            ".chat-header .user-info .avatar"
+          );
 
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
+          chatBody.innerHTML = "<p>Loading messages...</p>";
+          chatHeaderName.textContent = name;
 
-            const messages = await response.json();
-            const chatBody = document.querySelector(".chat-body");
-            const chatHeaderName = document.querySelector(".chat-header .name");
-            const chatHeaderAvatar = document.querySelector(
-              ".chat-header .user-info .avatar"
-            );
-
-            // Find the match data to get the photo
-            const match = messagesData.find((m) => m.matchId === matchId);
-            if (match && match.photo) {
-              chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
-            } else {
-              chatHeaderAvatar.innerHTML = ""; // Clear it if no photo
-              chatHeaderAvatar.style.background = "rgba(255, 255, 255, 0.2)"; // Reset to placeholder
-            }
-
-            chatBody.innerHTML = "";
-            // Add messages and score logic as before...
-            const halfMessages = Math.ceil(messages.length / 2);
-            messages.slice(0, halfMessages).forEach((msg) => {
-              appendMessage(msg);
-            });
-
-            if (score >= 6.6) {
-              let funLine, kinkLine;
-              if (score >= 6.6 && score <= 7.5) {
-                funLine = "Sparks are starting to fly!";
-                kinkLine = "A little twist makes it interesting!";
-              } else if (score > 7.5 && score <= 8.5) {
-                funLine = "You’re vibing like a perfect playlist!";
-                kinkLine = "There’s a spicy edge to this connection!";
-              } else if (score > 8.5) {
-                funLine = "Match made in cosmic harmony!";
-                kinkLine = "This bond’s got some wild chemistry!";
-              }
-
-              const scoreDiv = document.createElement("div");
-              scoreDiv.classList.add("score-info");
-              scoreDiv.innerHTML = `
-        <p>Your match score: ${score.toFixed(1)}</p>
-        <p class="fun-line">${funLine}</p>
-        <p class="kink-line">${kinkLine}</p>
-      `;
-              chatBody.appendChild(scoreDiv);
-            }
-
-            messages.slice(halfMessages).forEach((msg) => {
-              appendMessage(msg);
-            });
-
-            chatHeaderName.textContent = name;
-          } catch (error) {
-            console.error("Error loading messages:", error);
-            chatBody.innerHTML = "<p>Error loading messages</p>";
+          const match = messagesData.find((m) => m.matchId === matchId);
+          if (match && match.photo) {
+            chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
+          } else {
+            chatHeaderAvatar.innerHTML = "";
+            chatHeaderAvatar.style.background = "rgba(255, 255, 255, 0.2)";
           }
+
+          socket.emit("loadMessages", matchId, (response) => {
+            if (response.success) {
+              chatBody.innerHTML = "";
+              const messages = response.messages;
+
+              if (messages.length === 0 && score >= 6.6) {
+                let funLine, kinkLine;
+                if (score >= 6.6 && score <= 7.5) {
+                  funLine = "Sparks are starting to fly!";
+                  kinkLine = "A little twist makes it interesting!";
+                } else if (score > 7.5 && score <= 8.5) {
+                  funLine = "You’re vibing like a perfect playlist!";
+                  kinkLine = "There’s a spicy edge to this connection!";
+                } else if (score > 8.5) {
+                  funLine = "Match made in cosmic harmony!";
+                  kinkLine = "This bond’s got some wild chemistry!";
+                }
+
+                const scoreDiv = document.createElement("div");
+                scoreDiv.classList.add("score-info");
+                scoreDiv.id = "match-score";
+                scoreDiv.innerHTML = `
+                  <p>Your match score: ${score.toFixed(1)}</p>
+                  <p class="fun-line">${funLine}</p>
+                  <p class="kink-line">${kinkLine}</p>
+                `;
+                chatBody.appendChild(scoreDiv);
+              }
+
+              messages.forEach((msg) => {
+                appendMessage(msg);
+              });
+            } else {
+              console.error("Error loading messages:", response.error);
+              chatBody.innerHTML = "<p>Error loading messages</p>";
+            }
+          });
         }
 
-        async function sendMessage() {
+        function sendMessage() {
           const content = messageInput.value.trim();
           if (!content || !currentMatchId) return;
 
-          try {
-            const token = localStorage.getItem("jwtToken");
-            const response = await fetch(
-              `http://localhost:3000/api/messages/${currentMatchId}`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                credentials: "include",
-                body: JSON.stringify({ content }),
+          socket.emit(
+            "sendMessage",
+            { matchId: currentMatchId, content },
+            (response) => {
+              if (response.success) {
+                messageInput.value = "";
+                console.log("Message sent successfully:", response.message);
+              } else {
+                console.error("Error sending message:", response.error);
+                alert("Failed to send message: " + response.error);
               }
-            );
-
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
             }
-
-            const newMessage = await response.json();
-            appendMessage(newMessage);
-            messageInput.value = "";
-
-            const messageItem = document.querySelector(
-              `.message-item[data-match-id="${currentMatchId}"]`
-            );
-            if (messageItem) {
-              messageItem.querySelector(".snippet").textContent = content;
-              messageItem.querySelector(".time").textContent =
-                new Date().toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                });
-            }
-          } catch (error) {
-            console.error("Error sending message:", error);
-            alert("Failed to send message");
-          }
+          );
         }
 
         sendBtn.addEventListener("click", sendMessage);
@@ -1544,15 +1535,32 @@
           if (e.key === "Enter") sendMessage();
         });
 
+        const token = localStorage.getItem("jwtToken");
         const socket = io("http://127.0.0.1:3000", {
           withCredentials: true,
           auth: {
+            token: token,
             userId: JSON.parse(localStorage.getItem("user"))?._id,
           },
         });
 
+        socket.on("connect", () => {
+          console.log("Connected to Socket.IO server!");
+          socket.emit("joinMatches", (response) => {
+            if (response.success) {
+              console.log("Joined match rooms:", response.matchIds);
+            } else {
+              console.error("Failed to join matches:", response.error);
+            }
+          });
+        });
+
         socket.on("new-message", (message) => {
           if (message.matchId === currentMatchId) {
+            const scoreDiv = document.getElementById("match-score");
+            if (scoreDiv) {
+              scoreDiv.remove();
+            }
             appendMessage(message);
           }
           const messageItem = document.querySelector(
@@ -1564,10 +1572,6 @@
               message.createdAt
             ).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
           }
-        });
-
-        socket.on("connect", () => {
-          console.log("Connected to Socket.IO server!");
         });
 
         socket.on("disconnect", () => {
@@ -1582,14 +1586,17 @@
         });
 
         function appendMessage(message) {
-          const messageDiv = document.createElement("div");
-          messageDiv.classList.add("message");
-          messageDiv.classList.add(
-            message.senderId._id ===
-              JSON.parse(localStorage.getItem("user"))?._id
-              ? "sent"
-              : "received"
+          console.log("Message received:", message);
+          console.log(
+            "Local user ID:",
+            JSON.parse(localStorage.getItem("user"))?._id
           );
+          const messageDiv = document.createElement("div");
+          const userId = JSON.parse(localStorage.getItem("user"))?._id;
+          const isSender = message.senderId._id === userId;
+          console.log("Is sender?", isSender);
+          messageDiv.classList.add("message");
+          messageDiv.classList.add(isSender ? "sent" : "received");
           messageDiv.innerHTML = `
             <p>${message.content}</p>
             <span class="timestamp">${new Date(

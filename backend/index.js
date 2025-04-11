@@ -139,6 +139,8 @@ io.on("connection", (socket) => {
   const userId = socket.request.user.id.toString(); // Change _id to id
   console.log(`User ${userId} connected`);
 
+  socket.join(userId);
+
   socket.on("joinMatches", async (callback) => {
     try {
       const matchesResponse = await fetch("http://localhost:3000/api/matches", {
@@ -155,6 +157,11 @@ io.on("connection", (socket) => {
       console.error("Error fetching matches:", error);
       callback({ error: "Failed to join matches" });
     }
+  });
+
+  socket.on("joinMatchRoom", ({ matchId }) => {
+    socket.join(matchId);
+    console.log(`User ${userId} joined new match room ${matchId}`);
   });
 
   socket.on("loadMessages", async (matchId, callback) => {

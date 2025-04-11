@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -982,20 +984,20 @@
         z-index: 1;
       }
 
-            .chat-body.blur > *:not(.active-message) {
-                filter: blur(3px);
-                transition: filter 0.3s ease;
-            }
-            
-            .active-message {
-                position: relative;
-                z-index: 2;
-            }
-            
-            .deleted-message {
-                font-style: italic;
-                color: rgba(255, 255, 255, 0.5);
-            }
+      .chat-body.blur > *:not(.active-message) {
+        filter: blur(3px);
+        transition: filter 0.3s ease;
+      }
+
+      .active-message {
+        position: relative;
+        z-index: 2;
+      }
+
+      .deleted-message {
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.5);
+      }
 
       /* Add these styles to your existing CSS */
       .action-item {
@@ -1040,7 +1042,7 @@
       }
 
       .tooltip::before {
-        content: '';
+        content: "";
         position: absolute;
         top: -5px;
         left: 50%;
@@ -1124,7 +1126,10 @@
                   <div class="action-item" data-action="mute">
                     <span class="action-text">Mute</span>
                     <i class="fas fa-info-circle info-icon"></i>
-                    <div class="tooltip">If you mute, only you can message until you unmute your connection</div>
+                    <div class="tooltip">
+                      If you mute, only you can message until you unmute your
+                      connection
+                    </div>
                   </div>
                   <div class="action-item" data-action="block">Block</div>
                   <a href="report-account.html">
@@ -1161,12 +1166,17 @@
       let messagesData = [];
       let effortsData = [];
       let currentMatchId = null;
+      let currentUserId = null; // Store current user's ID
+      const socket = io("http://127.0.0.1:3000", {
+        auth: {
+          token: localStorage.getItem("jwtToken"),
+        },
+      });
 
       document.addEventListener("DOMContentLoaded", () => {
         const heartBtn = document.getElementById("heart-btn");
-
         if (heartBtn) {
-          heartBtn.addEventListener("click", function () {
+          heartBtn.addEventListener("click", () => {
             window.location.href = "explore.html";
           });
         }
@@ -1174,23 +1184,22 @@
         const plusBtn = document.querySelector(".plus-btn");
         const optionsMenu = document.querySelector(".options-menu");
         const blurContainer = document.querySelector(".blur-container");
-
         if (plusBtn && optionsMenu && blurContainer) {
           plusBtn.addEventListener("click", () => {
-            console.log("Plus button clicked!");
             plusBtn.classList.toggle("active");
             optionsMenu.classList.toggle("active");
-
-            if (optionsMenu.classList.contains("active")) {
-              optionsMenu.style.pointerEvents = "auto";
-              blurContainer.classList.add("blur");
-            } else {
-              optionsMenu.style.pointerEvents = "none";
-              blurContainer.classList.remove("blur");
-            }
+            optionsMenu.style.pointerEvents = optionsMenu.classList.contains(
+              "active"
+            )
+              ? "auto"
+              : "none";
+            blurContainer.classList.toggle(
+              "blur",
+              optionsMenu.classList.contains("active")
+            );
           });
 
-          window.selectOption = function selectOption(option) {
+          window.selectOption = function (option) {
             alert(`Selected: ${option}`);
             plusBtn.classList.remove("active");
             optionsMenu.classList.remove("active");
@@ -1200,9 +1209,7 @@
 
         const profileIcon = document.querySelector(".profile-icon img");
         const storedImage = localStorage.getItem("profileImage");
-        if (storedImage) {
-          profileIcon.src = storedImage;
-        }
+        if (storedImage) profileIcon.src = storedImage;
 
         const dropdownHeader = document.getElementById("dropdownHeader");
         const dropdownMenu = document.getElementById("dropdownMenu");
@@ -1210,7 +1217,6 @@
         const dropdownArrow = document.querySelector(".dropdown-header .arrow");
         const messageList = document.getElementById("messageList");
         const chatBody = document.querySelector(".chat-body");
-        const chatHeaderName = document.querySelector(".chat-header .name");
         const messageInput = document.querySelector(".message-input");
         const sendBtn = document.querySelector(".send-btn");
         const effortsContainer = document.querySelector(".efforts-container");
@@ -1238,7 +1244,9 @@
           if (data.length === 0) {
             messageList.innerHTML = `
               <div class="message-item simplified">
-                <div class="name">No ${type === "messages" ? "matches" : "pending efforts"} yet.</div>
+                <div class="name">No ${
+                  type === "messages" ? "matches" : "pending efforts"
+                } yet.</div>
               </div>
             `;
             return;
@@ -1265,7 +1273,9 @@
               div.dataset.effortId = item.id;
               div.innerHTML = `
                 <div class="avatar">
-                  <img src="${item.photo || "assets/icons/user-solid.svg"}" alt="${item.name}'s photo">
+                  <img src="${
+                    item.photo || "assets/icons/user-solid.svg"
+                  }" alt="${item.name}'s photo">
                 </div>
                 <div class="details">
                   <div class="name">${item.name || "Unknown"}</div>
@@ -1276,8 +1286,7 @@
             messageList.appendChild(div);
           });
 
-          const items = document.querySelectorAll(".message-item");
-          items.forEach((item) => {
+          document.querySelectorAll(".message-item").forEach((item) => {
             item.addEventListener("click", (event) => {
               if (event.target.classList.contains("remove-btn")) return;
               if (type === "messages") {
@@ -1296,103 +1305,91 @@
         }
 
         async function updateMessageList(selectedOption) {
-        messageList.innerHTML = "";
-        blurContainer.style.display = "none";
-        effortsContainer.style.display = "none";
-        plusBtn.style.display = "none";
-        optionsMenu.style.display = "none";
-        const actions = document.querySelector(".chat-header .actions"); // Select actions div
-        actions.classList.remove("visible"); // Hide three-dot icon by default
+          messageList.innerHTML = "";
+          blurContainer.style.display = "none";
+          effortsContainer.style.display = "none";
+          plusBtn.style.display = "none";
+          optionsMenu.style.display = "none";
+          const actions = document.querySelector(".chat-header .actions");
+          actions.classList.remove("visible");
 
-        const token = localStorage.getItem("jwtToken");
-        if (!token) {
-          messageList.innerHTML = `
-            <div class="message-item simplified">
-              <div class="name">Please log in to view ${selectedOption}.</div>
-            </div>
-          `;
-          window.location.href = "login.html";
-          return;
-        }
-
-        if (selectedOption.toLowerCase() === "messages") {
-          blurContainer.style.display = "flex";
-          plusBtn.style.display = "block";
-          optionsMenu.style.display = "block";
-
-          messageList.innerHTML = `
-            <div class="message-item simplified">
-              <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
-            </div>
-          `;
-
-          try {
-            const response = await fetch("http://localhost:3000/api/matches", {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              credentials: "include",
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-            }
-
-            const result = await response.json();
-            messagesData = result.profiles || [];
-            renderMessageList(messagesData, "messages");
-          } catch (error) {
-            console.error("Error fetching matches:", error);
+          const token = localStorage.getItem("jwtToken");
+          if (!token) {
             messageList.innerHTML = `
               <div class="message-item simplified">
-                <div class="name">Error loading matches: ${error.message}</div>
+                <div class="name">Please log in to view ${selectedOption}.</div>
               </div>
             `;
+            window.location.href = "login.html";
+            return;
           }
-        } else if (selectedOption.toLowerCase() === "efforts") {
-          effortsContainer.style.display = "flex";
-          const effortsContent = document.querySelector(".efforts-content");
-          effortsContent.innerHTML = `
-            <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
-          `;
 
-          messageList.innerHTML = `
-            <div class="message-item simplified">
-              <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
-            </div>
-          `;
-
-          try {
-            const response = await fetch("http://localhost:3000/api/efforts", {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              credentials: "include",
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-            }
-
-            const result = await response.json();
-            effortsData = result.efforts || [];
-            renderMessageList(effortsData, "efforts");
-          } catch (error) {
-            console.error("Error fetching efforts:", error);
+          if (selectedOption.toLowerCase() === "messages") {
+            blurContainer.style.display = "flex";
+            plusBtn.style.display = "block";
+            optionsMenu.style.display = "block";
             messageList.innerHTML = `
               <div class="message-item simplified">
-                <div class="name">Error loading efforts: ${error.message}</div>
+                <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
               </div>
             `;
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/matches",
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                  credentials: "include",
+                }
+              );
+              if (!response.ok)
+                throw new Error(`HTTP error! status: ${response.status}`);
+              const result = await response.json();
+              messagesData = result.profiles || [];
+              renderMessageList(messagesData, "messages");
+            } catch (error) {
+              console.error("Error fetching matches:", error);
+              messageList.innerHTML = `
+                <div class="message-item simplified">
+                  <div class="name">Error loading matches: ${error.message}</div>
+                </div>
+              `;
+            }
+          } else if (selectedOption.toLowerCase() === "efforts") {
+            effortsContainer.style.display = "flex";
+            const effortsContent = document.querySelector(".efforts-content");
+            effortsContent.innerHTML = `
+              <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
+            `;
+            messageList.innerHTML = `
+              <div class="message-item simplified">
+                <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
+              </div>
+            `;
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/efforts",
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                  credentials: "include",
+                }
+              );
+              if (!response.ok)
+                throw new Error(`HTTP error! status: ${response.status}`);
+              const result = await response.json();
+              effortsData = result.efforts || [];
+              renderMessageList(effortsData, "efforts");
+            } catch (error) {
+              console.error("Error fetching efforts:", error);
+              messageList.innerHTML = `
+                <div class="message-item simplified">
+                  <div class="name">Error loading efforts: ${error.message}</div>
+                </div>
+              `;
+            }
           }
         }
-      }
 
         function filterMessageList(query) {
           const selectedOption = dropdownSelected.textContent.toLowerCase();
@@ -1404,10 +1401,9 @@
           renderMessageList(filteredData, selectedOption);
         }
 
-        searchBar.addEventListener("input", (e) => {
-          const query = e.target.value.trim();
-          filterMessageList(query);
-        });
+        searchBar.addEventListener("input", (e) =>
+          filterMessageList(e.target.value.trim())
+        );
 
         function showEffortActions(effort) {
           const effortsContent = document.querySelector(".efforts-content");
@@ -1426,22 +1422,23 @@
             </div>
           `;
 
-          const acceptBtn = effortsContent.querySelector(".accept-btn");
-          const declineBtn = effortsContent.querySelector(".reject-btn");
-
-          acceptBtn.addEventListener("click", () => handleAccept(effort));
-          declineBtn.addEventListener("click", () => handleDecline(effort.id));
+          effortsContent
+            .querySelector(".accept-btn")
+            .addEventListener("click", () => handleAccept(effort));
+          effortsContent
+            .querySelector(".reject-btn")
+            .addEventListener("click", () => handleDecline(effort.id));
         }
 
         async function handleAccept(effort) {
-          try {
-            const token = localStorage.getItem("jwtToken");
-            if (!token) {
-              alert("Please log in to accept efforts.");
-              window.location.href = "login.html";
-              return;
-            }
+          const token = localStorage.getItem("jwtToken");
+          if (!token) {
+            alert("Please log in to accept efforts.");
+            window.location.href = "login.html";
+            return;
+          }
 
+          try {
             const response = await fetch(
               `http://localhost:3000/api/efforts/${effort.id}/accept`,
               {
@@ -1452,30 +1449,20 @@
                 },
               }
             );
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(
-                `Failed to accept effort: ${response.status} - ${errorText}`
-              );
-            }
-
+            if (!response.ok)
+              throw new Error(`Failed to accept effort: ${response.status}`);
             const result = await response.json();
             effortsData = effortsData.filter((e) => e.id !== effort.id);
             messagesData.push(result.match);
-
             dropdownSelected.textContent = "Messages";
             dropdownMenu.classList.remove("active");
             dropdownArrow.classList.remove("active");
             updateDropdownOptions("Messages");
             await updateMessageList("messages");
-
             const newMatchItem = document.querySelector(
               `.message-item[data-match-id="${result.match.matchId}"]`
             );
-            if (newMatchItem) {
-              newMatchItem.click();
-            }
+            if (newMatchItem) newMatchItem.click();
           } catch (error) {
             console.error("Error accepting effort:", error);
             alert("Something went wrong: " + error.message);
@@ -1483,58 +1470,32 @@
         }
 
         async function handleDecline(effortId) {
-          try {
-            const token = localStorage.getItem("jwtToken");
-            if (!token) {
-              alert("Please log in to decline efforts.");
-              window.location.href = "login.html";
-              return;
-            }
+          const token = localStorage.getItem("jwtToken");
+          if (!token) {
+            alert("Please log in to decline efforts.");
+            window.location.href = "login.html";
+            return;
+          }
 
+          try {
             const response = await fetch(
               `http://localhost:3000/api/efforts/${effortId}`,
               {
                 method: "DELETE",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
               }
             );
-
-            if (!response.ok) {
+            if (!response.ok)
               throw new Error(`Failed to decline effort: ${response.status}`);
-            }
-
-            const effortElement = document.querySelector(
-              `.message-item[data-effort-id="${effortId}"]`
-            );
-            if (effortElement) {
-              effortElement.remove();
-            }
-
-            const effortsContent = document.querySelector(".efforts-content");
-            effortsContent.innerHTML = `
+            effortsData = effortsData.filter((e) => e.id !== effortId);
+            updateMessageList("efforts");
+            document.querySelector(".efforts-content").innerHTML = `
               <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
             `;
-
-            updateMessageList("efforts");
           } catch (error) {
             console.error("Error declining effort:", error);
             alert("Something went wrong while declining the effort.");
           }
-        }
-
-        function handleDropdownSelection(event) {
-          const selectedValue = event.target.getAttribute("data-value");
-          const selectedText = event.target.textContent;
-          dropdownSelected.textContent = selectedText;
-          dropdownMenu.classList.remove("active");
-          dropdownArrow.classList.remove("active");
-          updateDropdownOptions(selectedText);
-          updateMessageList(selectedValue);
-          searchBar.value = ""; // Reset search bar when switching
-          filterMessageList(""); // Reset list to full data
         }
 
         if (dropdownHeader && dropdownMenu) {
@@ -1543,7 +1504,17 @@
             dropdownArrow.classList.toggle("active");
           });
 
-          dropdownMenu.addEventListener("click", handleDropdownSelection);
+          dropdownMenu.addEventListener("click", (event) => {
+            const selectedValue = event.target.getAttribute("data-value");
+            const selectedText = event.target.textContent;
+            dropdownSelected.textContent = selectedText;
+            dropdownMenu.classList.remove("active");
+            dropdownArrow.classList.remove("active");
+            updateDropdownOptions(selectedText);
+            updateMessageList(selectedValue);
+            searchBar.value = "";
+            filterMessageList("");
+          });
 
           document.addEventListener("click", (event) => {
             if (
@@ -1563,15 +1534,13 @@
         const chatActionsDropdown = document.getElementById(
           "chatActionsDropdown"
         );
-
         if (actionsIcon && chatActionsDropdown) {
           actionsIcon.addEventListener("click", (event) => {
             event.stopPropagation();
             chatActionsDropdown.classList.toggle("active");
           });
 
-          const actionItems = document.querySelectorAll(".action-item");
-          actionItems.forEach((item) => {
+          document.querySelectorAll(".action-item").forEach((item) => {
             item.addEventListener("click", (event) => {
               event.stopPropagation();
               const action = item.getAttribute("data-action");
@@ -1591,53 +1560,32 @@
         }
 
         function handleChatAction(action) {
+          const actionItem = document.querySelector('[data-action="mute"]');
+          const actionText = actionItem.querySelector(".action-text");
+          const headerUserInfo = document.getElementById("headerUserInfo");
+          const otherUserId = headerUserInfo.dataset.otherUserId;
+
           switch (action) {
             case "mute":
-              const actionItem = document.querySelector('[data-action="mute"]');
-              const actionText = actionItem.querySelector(".action-text");
-              const headerUserInfo = document.getElementById("headerUserInfo");
-              const otherUserId = headerUserInfo.dataset.otherUserId;
-
               if (actionText.textContent === "Mute") {
-                // Muting the user
-                socket.emit("muteUser", {
-                  matchId: currentMatchId,
-                  mutedId: otherUserId
-                }, (response) => {
-                  if (response.success) {
-                    actionText.textContent = "Unmute";
-                  } else {
-                    console.error("Failed to mute user:", response.error);
+                socket.emit(
+                  "muteUser",
+                  { matchId: currentMatchId, mutedId: otherUserId },
+                  (response) => {
+                    if (!response.success)
+                      console.error("Failed to mute user:", response.error);
                   }
-                });
+                );
               } else {
-                // Unmuting the user
-                socket.emit("unmuteUser", {
-                  matchId: currentMatchId,
-                  mutedId: otherUserId
-                }, (response) => {
-                  if (response.success) {
-                    actionText.textContent = "Mute";
-                    // Restore the chat input for the unmuted user
-                    const chatFooter = document.querySelector(".chat-footer");
-                    chatFooter.innerHTML = `
-                        <input type="text" class="message-input" placeholder="Message" />
-                        <div class="send-btn">➤</div>
-                    `;
-                    
-                    // Reattach event listeners
-                    const newMessageInput = chatFooter.querySelector(".message-input");
-                    const newSendBtn = chatFooter.querySelector(".send-btn");
-                    newSendBtn.addEventListener("click", sendMessage);
-                    newMessageInput.addEventListener("keypress", (e) => {
-                        if (e.key === "Enter") sendMessage();
-                    });
-                  } else {
-                    console.error("Failed to unmute user:", response.error);
+                socket.emit(
+                  "unmuteUser",
+                  { matchId: currentMatchId, mutedId: otherUserId },
+                  (response) => {
+                    if (!response.success)
+                      console.error("Failed to unmute user:", response.error);
                   }
-                });
+                );
               }
-              chatActionsDropdown.classList.remove("active");
               break;
             case "block":
               blockUser(currentMatchId);
@@ -1648,90 +1596,70 @@
         }
 
         async function blockUser(matchId) {
+          const token = localStorage.getItem("jwtToken");
+          if (!token) {
+            alert("Please log in to block users.");
+            window.location.href = "login.html";
+            return;
+          }
+
           try {
-            const token = localStorage.getItem("jwtToken");
-            if (!token) {
-              alert("Please log in to block users.");
-              window.location.href = "login.html";
-              return;
-            }
-
-            const messageItem = document.querySelector(`.message-item[data-match-id="${matchId}"]`);
-            if (messageItem) {
-              messageItem.remove();
-            } else {
-              const effortItem = document.querySelector(`.message-item[data-effort-id="${matchId}"]`);
-              if (effortItem) effortItem.remove();
-            }
-
-            if (currentMatchId === matchId) {
-              const chatBody = document.querySelector(".chat-body");
-              const actions = document.querySelector(".chat-header .actions"); // Select actions div
-              chatBody.innerHTML = "<p>User blocked and removed.</p>";
-              actions.classList.remove("visible"); // Hide three-dot icon
-              const effortsContent = document.querySelector(".efforts-content");
-              if (effortsContent) {
-                effortsContent.innerHTML = "<p>User blocked and removed.</p>";
+            const response = await fetch(
+              `http://localhost:3000/api/block/${matchId}`,
+              {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include",
               }
-            }
-
-            const response = await fetch(`http://localhost:3000/api/block/${matchId}`, {
-              method: "DELETE",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              credentials: "include",
-            });
-
+            );
+            const result = await response.json();
             if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`Failed to block user: ${response.status} - ${errorText}`);
+              throw new Error(
+                result.message || `Failed to block user: ${response.status}`
+              );
             }
+            console.log("Block response:", result);
 
-            console.log(`User with matchId ${matchId} blocked and removed from interactions`);
+            // Remove the user from messagesData and update the UI immediately
+            messagesData = messagesData.filter((m) => m.matchId !== matchId);
+            renderMessageList(messagesData, "messages");
+
+            // Clear the chat if the blocked match is currently selected
+            if (currentMatchId === matchId) {
+              chatBody.innerHTML = "<p>User blocked and chat cleared.</p>";
+              document
+                .querySelector(".chat-header .actions")
+                .classList.remove("visible");
+            }
           } catch (error) {
             console.error("Error blocking user:", error);
             alert("Failed to block user: " + error.message);
           }
         }
 
-        // Add this function after the loadMessages function
-        async function checkMuteStatus(matchId, otherUserId) {
-            socket.emit('checkMuteStatus', { 
-                matchId: matchId,
-                otherUserId: otherUserId 
-            }, (response) => {
-                if (response.success) {
-                    updateChatUIForMuteStatus(response);
-                }
-            });
-        }
-
-        // Update the loadMessages function to check mute status
         async function loadMessages(matchId, name, score) {
-          const chatBody = document.querySelector(".chat-body");
           const chatHeaderName = document.querySelector(".chat-header .name");
-          const chatHeaderAvatar = document.querySelector(".chat-header .user-info .avatar");
+          const chatHeaderAvatar = document.querySelector(
+            ".chat-header .user-info .avatar"
+          );
           const headerUserInfo = document.getElementById("headerUserInfo");
-          const actions = document.querySelector(".chat-header .actions"); // Select actions div
+          const actions = document.querySelector(".chat-header .actions");
 
-          // Show the three-dot icon when a user is selected
           actions.classList.add("visible");
-
           chatBody.innerHTML = "<p>Loading messages...</p>";
           chatHeaderName.textContent = name;
 
           const match = messagesData.find((m) => m.matchId === matchId);
           if (match) {
-            if (match.photo) {
-              chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
-            } else {
-              chatHeaderAvatar.innerHTML = "";
-              chatHeaderAvatar.style.background = "rgba(255, 255, 255, 0.2)";
-            }
+            chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
             headerUserInfo.dataset.otherUserId = match.otherUserId;
-            checkMuteStatus(matchId, match.otherUserId);
+            socket.emit(
+              "checkMuteStatus",
+              { matchId, otherUserId: match.otherUserId },
+              (response) => {
+                if (response.success) updateChatUIForMuteStatus(response);
+              }
+            );
           }
 
           socket.emit("loadMessages", matchId, (response) => {
@@ -1751,21 +1679,16 @@
                   funLine = "Match made in cosmic harmony!";
                   kinkLine = "This bond's got some wild chemistry!";
                 }
-
-                const scoreDiv = document.createElement("div");
-                scoreDiv.classList.add("score-info");
-                scoreDiv.id = "match-score";
-                scoreDiv.innerHTML = `
-                  <p>Your match score: ${score.toFixed(1)}</p>
-                  <p class="fun-line">${funLine}</p>
-                  <p class="kink-line">${kinkLine}</p>
+                chatBody.innerHTML = `
+                  <div class="score-info" id="match-score">
+                    <p>Your match score: ${score.toFixed(1)}</p>
+                    <p class="fun-line">${funLine}</p>
+                    <p class="kink-line">${kinkLine}</p>
+                  </div>
                 `;
-                chatBody.appendChild(scoreDiv);
               }
 
-              messages.forEach((msg) => {
-                appendMessage(msg);
-              });
+              messages.forEach(appendMessage);
             } else {
               console.error("Error loading messages:", response.error);
               chatBody.innerHTML = "<p>Error loading messages</p>";
@@ -1783,7 +1706,6 @@
             (response) => {
               if (response.success) {
                 messageInput.value = "";
-                console.log("Message sent successfully:", response.message);
               } else {
                 console.error("Error sending message:", response.error);
                 alert("Failed to send message: " + response.error);
@@ -1797,17 +1719,9 @@
           if (e.key === "Enter") sendMessage();
         });
 
-        const token = localStorage.getItem("jwtToken");
-        const socket = io("http://127.0.0.1:3000", {
-          withCredentials: true,
-          auth: {
-            token: token,
-            userId: JSON.parse(localStorage.getItem("user"))?._id,
-          },
-        });
-
         socket.on("connect", () => {
           console.log("Connected to Socket.IO server!");
+          currentUserId = JSON.parse(localStorage.getItem("user"))?._id;
           socket.emit("joinMatches", (response) => {
             if (response.success) {
               console.log("Joined match rooms:", response.matchIds);
@@ -1817,12 +1731,24 @@
           });
         });
 
+        socket.on("newMatch", (matchData) => {
+          console.log("New match received:", matchData);
+          if (!messagesData.some((m) => m.matchId === matchData.matchId)) {
+            messagesData.push(matchData);
+            renderMessageList(messagesData, "messages");
+            if (dropdownSelected.textContent.toLowerCase() === "messages") {
+              const newMatchItem = document.querySelector(
+                `.message-item[data-match-id="${matchData.matchId}"]`
+              );
+              if (newMatchItem) newMatchItem.click();
+            }
+          }
+        });
+
         socket.on("new-message", (message) => {
           if (message.matchId === currentMatchId) {
             const scoreDiv = document.getElementById("match-score");
-            if (scoreDiv) {
-              scoreDiv.remove();
-            }
+            if (scoreDiv) scoreDiv.remove();
             appendMessage(message);
           }
           const messageItem = document.querySelector(
@@ -1832,232 +1758,13 @@
             messageItem.querySelector(".snippet").textContent = message.content;
             messageItem.querySelector(".time").textContent = new Date(
               message.createdAt
-            ).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+            ).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            });
           }
         });
 
-        socket.on("disconnect", () => {
-          console.log("Disconnected from Socket.IO server!");
-        });
-
-        socket.on("connect_error", (error) => {
-          console.log("Connection error:", error.message);
-          if (error.message === "Unauthorized") {
-            console.log("You need to log in to use the chat!");
-          }
-        });
-
-        // Create context menu and emoji panel elements
-        const contextMenu = document.createElement("div");
-        contextMenu.className = "message-context-menu";
-        contextMenu.innerHTML = `
-            <div class="context-menu-option" data-action="copy">
-                <i class="fas fa-copy"></i>Copy
-            </div>
-            <div class="context-menu-option" data-action="react">
-                <i class="fas fa-smile"></i>React
-            </div>
-            <div class="context-menu-option" data-action="delete">
-                <i class="fas fa-trash"></i>Delete
-            </div>
-        `;
-        document.body.appendChild(contextMenu);
-
-        const emojiPanel = document.createElement("div");
-        emojiPanel.className = "emoji-reaction-panel";
-        emojiPanel.innerHTML = `
-            <div class="emoji-option">❤️</div>
-            <div class="emoji-option">😂</div>
-            <div class="emoji-option">👍</div>
-            <div class="emoji-option">😮</div>
-            <div class="emoji-option">😢</div>
-            <div class="emoji-option">🙏</div>
-        `;
-        document.body.appendChild(emojiPanel);
-
-        let activeMessage = null;
-        let longPressTimer;
-        const longPressDuration = 500; // milliseconds
-
-        function showContextMenu(message, x, y) {
-          const chatBody = document.querySelector(".chat-body");
-          const allMessages = chatBody.querySelectorAll(".message");
-
-          // Remove active-message class from all messages
-          allMessages.forEach((msg) => msg.classList.remove("active-message"));
-
-          // Add active-message class to clicked message and blur effect to chat body
-          message.classList.add("active-message");
-          chatBody.classList.add("blur");
-
-          const rect = message.getBoundingClientRect();
-          const viewportWidth = window.innerWidth;
-          const viewportHeight = window.innerHeight;
-          const menuWidth = contextMenu.offsetWidth || 150; // Fallback width if not yet rendered
-          const menuHeight = contextMenu.offsetHeight || 100; // Fallback height if not yet rendered
-          const gap = 10; // Space between menu and message
-
-          let posX, posY;
-
-          // Determine if the message is sent by the current user
-          const isSender = message.classList.contains("sent");
-
-          // Update context menu options based on message type
-          contextMenu.innerHTML = isSender
-            ? `
-              <div class="context-menu-option" data-action="copy">
-                  <i class="fas fa-copy"></i>Copy
-              </div>
-              <div class="context-menu-option" data-action="delete">
-                  <i class="fas fa-trash"></i>Delete
-              </div>
-          `
-            : `
-              <div class="context-menu-option" data-action="copy">
-                  <i class="fas fa-copy"></i>Copy
-              </div>
-              <div class="context-menu-option" data-action="react">
-                  <i class="fas fa-smile"></i>React
-              </div>
-          `;
-
-          // Horizontal positioning
-          if (isSender) {
-            // For sent messages, prefer left of the message
-            posX = rect.left - menuWidth - gap;
-            // If not enough space on the left, position to the right
-            if (posX < gap) {
-              posX = rect.right + gap;
-            }
-          } else {
-            // For received messages, prefer right of the message
-            posX = rect.right + gap;
-            // If not enough space on the right, position to the left
-            if (posX + menuWidth > viewportWidth - gap) {
-              posX = rect.left - menuWidth - gap;
-            }
-          }
-
-          // Vertical positioning: center vertically relative to the message
-          posY = rect.top + rect.height / 2 - menuHeight / 2;
-
-          // Clamp positions to stay within viewport
-          posX = Math.max(gap, Math.min(posX, viewportWidth - menuWidth - gap));
-          posY = Math.max(
-            gap,
-            Math.min(posY, viewportHeight - menuHeight - gap)
-          );
-
-          // Apply position
-          contextMenu.style.display = "block";
-          contextMenu.style.left = `${posX}px`;
-          contextMenu.style.top = `${posY}px`;
-
-          // Force reflow
-          contextMenu.offsetHeight;
-
-          // Show menu
-          contextMenu.classList.add("visible");
-          activeMessage = message;
-        }
-
-        function hideContextMenu() {
-          const chatBody = document.querySelector(".chat-body");
-          const activeMessage = document.querySelector(".active-message");
-
-          if (activeMessage) {
-            activeMessage.classList.remove("active-message");
-          }
-          chatBody.classList.remove("blur");
-
-          contextMenu.classList.remove("visible");
-          emojiPanel.classList.remove("visible");
-
-          setTimeout(() => {
-            contextMenu.style.display = "none";
-            emojiPanel.style.display = "none";
-          }, 200);
-
-          activeMessage = null;
-        }
-
-        function showEmojiPanel(message) {
-          const contextMenuRect = contextMenu.getBoundingClientRect();
-          const viewportWidth = window.innerWidth;
-          const viewportHeight = window.innerHeight;
-
-          // Always position panel below the context menu
-          let posX = contextMenuRect.left;
-          let posY = contextMenuRect.bottom + 5;
-
-          // Ensure panel stays within viewport bounds
-          if (posX < 10) {
-            posX = 10;
-          }
-          if (posX + emojiPanel.offsetWidth > viewportWidth - 10) {
-            posX = viewportWidth - emojiPanel.offsetWidth - 10;
-          }
-
-          // If not enough space below, show above the context menu
-          if (posY + emojiPanel.offsetHeight > viewportHeight - 10) {
-            posY = contextMenuRect.top - emojiPanel.offsetHeight - 5;
-          }
-
-          emojiPanel.style.display = "grid";
-          emojiPanel.style.left = `${posX}px`;
-          emojiPanel.style.top = `${posY}px`;
-
-          // Force reflow
-          emojiPanel.offsetHeight;
-
-          emojiPanel.classList.add("visible");
-        }
-
-        // Update the context menu click handler
-        contextMenu.addEventListener("click", (e) => {
-          const action = e.target.closest(".context-menu-option")?.dataset
-            .action;
-          if (!action || !activeMessage) return;
-
-          const messageId = activeMessage.dataset.messageId;
-          const messageText = activeMessage.querySelector("p").textContent;
-          const userId = JSON.parse(localStorage.getItem("user"))?._id;
-
-          // Check if the message is from the current user
-          const isSender = activeMessage.classList.contains("sent");
-
-          switch (action) {
-            case "copy":
-              navigator.clipboard.writeText(messageText);
-              hideContextMenu();
-              break;
-            case "react":
-              e.stopPropagation();
-              showEmojiPanel(activeMessage);
-              break;
-            case "delete":
-              // Only allow deletion if user is the sender
-              if (!isSender) {
-                alert("You can only delete messages you've sent");
-                hideContextMenu();
-                return;
-              }
-
-              socket.emit("deleteMessage", { messageId }, (response) => {
-                if (response.success) {
-                  const messageP = activeMessage.querySelector("p");
-                  messageP.textContent = "This message was deleted";
-                  messageP.classList.add("deleted-message");
-                } else {
-                  alert(response.error || "Failed to delete message");
-                }
-              });
-              hideContextMenu();
-              break;
-          }
-        });
-
-        // Add socket listener for message deletions
         socket.on("messageDeleted", ({ messageId, content }) => {
           const message = document.querySelector(
             `.message[data-message-id="${messageId}"]`
@@ -2069,90 +1776,6 @@
           }
         });
 
-        // Update the appendMessage function to handle deleted messages
-        function appendMessage(message) {
-          const messageDiv = document.createElement("div");
-          const userId = JSON.parse(localStorage.getItem("user"))?._id;
-          const isSender = message.senderId._id === userId;
-
-          messageDiv.classList.add("message");
-          messageDiv.classList.add(isSender ? "sent" : "received");
-          messageDiv.dataset.messageId = message._id;
-
-          // Check if message is deleted
-          const messageContent = message.isDeleted
-            ? `<p class="deleted-message">This message was deleted</p>`
-            : `<p>${message.content}</p>`;
-
-          messageDiv.innerHTML = `
-              <div class="message-reaction"></div>
-              ${messageContent}
-              <span class="timestamp">${new Date(
-                message.createdAt
-              ).toLocaleTimeString([], {
-                hour: "numeric",
-                minute: "2-digit",
-              })}</span>
-          `;
-
-          // Add reaction if it exists
-          if (message.reaction) {
-            const reactionDiv = messageDiv.querySelector(".message-reaction");
-            reactionDiv.textContent = message.reaction;
-          }
-
-          // Add context menu listeners for all non-deleted messages
-          if (!message.isDeleted) {
-            messageDiv.addEventListener("dblclick", (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (contextMenu.style.display === "block") {
-                hideContextMenu();
-              } else {
-                showContextMenu(messageDiv, e.pageX, e.pageY);
-              }
-            });
-
-            // Add touch listeners for mobile
-            let touchStartTime;
-            let touchStartX;
-            let touchStartY;
-
-            messageDiv.addEventListener("touchstart", (e) => {
-              touchStartTime = Date.now();
-              touchStartX = e.touches[0].pageX;
-              touchStartY = e.touches[0].pageY;
-
-              longPressTimer = setTimeout(() => {
-                showContextMenu(messageDiv, touchStartX, touchStartY);
-              }, longPressDuration);
-            });
-
-            messageDiv.addEventListener("touchend", (e) => {
-              clearTimeout(longPressTimer);
-            });
-
-            messageDiv.addEventListener("touchmove", (e) => {
-              clearTimeout(longPressTimer);
-            });
-          }
-
-          chatBody.appendChild(messageDiv);
-          chatBody.scrollTop = chatBody.scrollHeight;
-        }
-
-        // Update document click handler to be more specific
-        document.addEventListener("click", (e) => {
-          if (
-            !e.target.closest(".message-context-menu") &&
-            !e.target.closest(".emoji-reaction-panel") &&
-            !e.target.closest(".message")
-          ) {
-            hideContextMenu();
-          }
-        });
-
-        // Update the socket event listener for message reactions
         socket.on("messageReaction", ({ messageId, emoji }) => {
           const message = document.querySelector(
             `.message[data-message-id="${messageId}"]`
@@ -2163,39 +1786,253 @@
           }
         });
 
-        // Update the emoji panel click handler
+        socket.on("userMuted", (data) => {
+          if (data.matchId === currentMatchId) {
+            updateChatUIForMuteStatus({
+              isMuted: true,
+              isMuter: data.muterId === currentUserId,
+              mutedId: data.mutedId,
+              muterId: data.muterId,
+            });
+          }
+        });
+
+        socket.on("userUnmuted", (data) => {
+          if (data.matchId === currentMatchId) {
+            updateChatUIForMuteStatus({
+              isMuted: false,
+              isMuter: false,
+              mutedId: data.mutedId,
+              muterId: data.muterId,
+            });
+          }
+        });
+
+        const contextMenu = document.createElement("div");
+        contextMenu.className = "message-context-menu";
+        document.body.appendChild(contextMenu);
+
+        const emojiPanel = document.createElement("div");
+        emojiPanel.className = "emoji-reaction-panel";
+        emojiPanel.innerHTML = `
+          <div class="emoji-option">❤️</div>
+          <div class="emoji-option">😂</div>
+          <div class="emoji-option">👍</div>
+          <div class="emoji-option">😮</div>
+          <div class="emoji-option">😢</div>
+          <div class="emoji-option">🙏</div>
+        `;
+        document.body.appendChild(emojiPanel);
+
+        let activeMessage = null;
+        const longPressDuration = 500;
+
+        function showContextMenu(message, x, y) {
+          const chatBody = document.querySelector(".chat-body");
+          const allMessages = chatBody.querySelectorAll(".message");
+          allMessages.forEach((msg) => msg.classList.remove("active-message"));
+          message.classList.add("active-message");
+          chatBody.classList.add("blur");
+
+          const rect = message.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+          const menuWidth = contextMenu.offsetWidth || 150;
+          const menuHeight = contextMenu.offsetHeight || 100;
+          const gap = 10;
+
+          const isSender = message.classList.contains("sent");
+          contextMenu.innerHTML = isSender
+            ? `
+              <div class="context-menu-option" data-action="copy"><i class="fas fa-copy"></i>Copy</div>
+              <div class="context-menu-option" data-action="delete"><i class="fas fa-trash"></i>Delete</div>
+            `
+            : `
+              <div class="context-menu-option" data-action="copy"><i class="fas fa-copy"></i>Copy</div>
+              <div class="context-menu-option" data-action="react"><i class="fas fa-smile"></i>React</div>
+            `;
+
+          let posX = isSender ? rect.left - menuWidth - gap : rect.right + gap;
+          if (posX < gap) posX = rect.right + gap;
+          if (posX + menuWidth > viewportWidth - gap)
+            posX = rect.left - menuWidth - gap;
+          let posY = rect.top + rect.height / 2 - menuHeight / 2;
+          posX = Math.max(gap, Math.min(posX, viewportWidth - menuWidth - gap));
+          posY = Math.max(
+            gap,
+            Math.min(posY, viewportHeight - menuHeight - gap)
+          );
+
+          contextMenu.style.display = "block";
+          contextMenu.style.left = `${posX}px`;
+          contextMenu.style.top = `${posY}px`;
+          contextMenu.classList.add("visible");
+          activeMessage = message;
+        }
+
+        function hideContextMenu() {
+          const chatBody = document.querySelector(".chat-body");
+          chatBody.classList.remove("blur");
+          contextMenu.classList.remove("visible");
+          emojiPanel.classList.remove("visible");
+          setTimeout(() => {
+            contextMenu.style.display = "none";
+            emojiPanel.style.display = "none";
+          }, 200);
+          activeMessage = null;
+        }
+
+        function showEmojiPanel() {
+          const contextMenuRect = contextMenu.getBoundingClientRect();
+          let posX = contextMenuRect.left;
+          let posY = contextMenuRect.bottom + 5;
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+
+          if (posX + emojiPanel.offsetWidth > viewportWidth - 10)
+            posX = viewportWidth - emojiPanel.offsetWidth - 10;
+          if (posY + emojiPanel.offsetHeight > viewportHeight - 10)
+            posY = contextMenuRect.top - emojiPanel.offsetHeight - 5;
+
+          emojiPanel.style.display = "grid";
+          emojiPanel.style.left = `${posX}px`;
+          emojiPanel.style.top = `${posY}px`;
+          emojiPanel.classList.add("visible");
+        }
+
+        contextMenu.addEventListener("click", (e) => {
+          const action = e.target.closest(".context-menu-option")?.dataset
+            .action;
+          if (!action || !activeMessage) return;
+
+          const messageId = activeMessage.dataset.messageId;
+          const messageText = activeMessage.querySelector("p").textContent;
+
+          switch (action) {
+            case "copy":
+              navigator.clipboard.writeText(messageText);
+              hideContextMenu();
+              break;
+            case "react":
+              showEmojiPanel();
+              break;
+            case "delete":
+              socket.emit("deleteMessage", { messageId }, (response) => {
+                if (!response.success)
+                  alert(response.error || "Failed to delete message");
+              });
+              hideContextMenu();
+              break;
+          }
+        });
+
         emojiPanel.addEventListener("click", (e) => {
           const emoji = e.target.textContent;
           if (!emoji || !activeMessage) return;
 
-          // Only allow reactions to received messages
-          if (activeMessage.classList.contains("sent")) {
-            alert("You can't react to your own messages");
-            return;
-          }
-
           const messageId = activeMessage.dataset.messageId;
-
           socket.emit(
             "addReaction",
             { messageId, emoji, matchId: currentMatchId },
             (response) => {
-              if (response.success) {
-                const reactionDiv =
-                  activeMessage.querySelector(".message-reaction");
-                reactionDiv.textContent = emoji;
-                hideContextMenu();
-              } else {
+              if (!response.success)
                 alert(response.error || "Failed to add reaction");
-              }
             }
           );
+          hideContextMenu();
         });
+
+        function appendMessage(message) {
+          const messageDiv = document.createElement("div");
+          const isSender = message.senderId._id === currentUserId;
+          messageDiv.classList.add("message", isSender ? "sent" : "received");
+          messageDiv.dataset.messageId = message._id;
+
+          const content = message.isDeleted
+            ? `<p class="deleted-message">This message was deleted</p>`
+            : `<p>${message.content}</p>`;
+          messageDiv.innerHTML = `
+            <div class="message-reaction">${message.reaction || ""}</div>
+            ${content}
+            <span class="timestamp">${new Date(
+              message.createdAt
+            ).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            })}</span>
+          `;
+
+          if (!message.isDeleted) {
+            messageDiv.addEventListener("dblclick", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              contextMenu.style.display === "block"
+                ? hideContextMenu()
+                : showContextMenu(messageDiv, e.pageX, e.pageY);
+            });
+
+            let touchStartTime, touchStartX, touchStartY;
+            messageDiv.addEventListener("touchstart", (e) => {
+              touchStartTime = Date.now();
+              touchStartX = e.touches[0].pageX;
+              touchStartY = e.touches[0].pageY;
+              setTimeout(
+                () => showContextMenu(messageDiv, touchStartX, touchStartY),
+                longPressDuration
+              );
+            });
+            messageDiv.addEventListener("touchend", () => clearTimeout());
+            messageDiv.addEventListener("touchmove", () => clearTimeout());
+          }
+
+          chatBody.appendChild(messageDiv);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        document.addEventListener("click", (e) => {
+          if (
+            !e.target.closest(".message-context-menu") &&
+            !e.target.closest(".emoji-reaction-panel") &&
+            !e.target.closest(".message")
+          ) {
+            hideContextMenu();
+          }
+        });
+
+        function updateChatUIForMuteStatus(muteStatus) {
+          const chatFooter = document.querySelector(".chat-footer");
+          const actionItem = document.querySelector('[data-action="mute"]');
+          const actionText = actionItem.querySelector(".action-text");
+
+          if (muteStatus.isMuted && !muteStatus.isMuter) {
+            chatFooter.innerHTML =
+              '<p class="muted-message">You were muted, so you\'re not allowed to message anymore to this connection</p>';
+            chatFooter.style.justifyContent = "center";
+            chatFooter.style.color = "rgba(255, 255, 255, 0.6)";
+          } else if (chatFooter.querySelector(".muted-message")) {
+            chatFooter.innerHTML = `
+              <input type="text" class="message-input" placeholder="Message" />
+              <div class="send-btn">➤</div>
+            `;
+            const newMessageInput = chatFooter.querySelector(".message-input");
+            const newSendBtn = chatFooter.querySelector(".send-btn");
+            newSendBtn.addEventListener("click", sendMessage);
+            newMessageInput.addEventListener("keypress", (e) => {
+              if (e.key === "Enter") sendMessage();
+            });
+          }
+
+          actionText.textContent =
+            muteStatus.isMuted && muteStatus.isMuter ? "Unmute" : "Mute";
+          actionItem.style.opacity =
+            muteStatus.isMuted && !muteStatus.isMuter ? "0.5" : "1";
+          actionItem.style.pointerEvents =
+            muteStatus.isMuted && !muteStatus.isMuter ? "none" : "auto";
+        }
 
         async function fetchAndUpdateProfilePhoto() {
           const profileIcon = document.querySelector(".profile-icon img");
           const token = localStorage.getItem("jwtToken");
-
           if (!token) {
             profileIcon.src = "http://localhost:3000/default-profile.jpg";
             return;
@@ -2203,24 +2040,14 @@
 
           try {
             const response = await fetch("http://localhost:3000/api/profile", {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Authorization: `Bearer ${token}` },
               credentials: "include",
             });
-
-            if (!response.ok) {
-              throw new Error("Failed to fetch profile");
-            }
-
+            if (!response.ok) throw new Error("Failed to fetch profile");
             const userData = await response.json();
             const photoUrl =
-              userData.photos && userData.photos.length > 0
-                ? userData.photos[0]
-                : "http://localhost:3000/default-profile.jpg";
-
+              userData.photos?.[0] ||
+              "http://localhost:3000/default-profile.jpg";
             profileIcon.src = photoUrl;
             localStorage.setItem("profileImage", photoUrl);
           } catch (error) {
@@ -2235,140 +2062,19 @@
           .getElementById("headerUserInfo")
           .addEventListener("click", function () {
             const otherUserId = this.dataset.otherUserId;
-            if (otherUserId) {
+            if (otherUserId)
               window.location.href = `profile.html?id=${otherUserId}`;
-            }
           });
 
         addStyleToHead();
-
-        // When loading the chat
-        socket.emit('checkMuteStatus', { 
-            matchId: currentMatchId,
-            otherUserId: otherUserIdInChat 
-        }, (response) => {
-            if (response.success) {
-                updateMuteUI(response);
-            }
-        });
-
-        // Listen for mute/unmute events
-        socket.on('userMuted', (data) => {
-            if (data.matchId === currentMatchId) {
-                updateMuteUI({
-                    isMuted: true,
-                    isMuter: data.muterId === currentUserId,
-                    mutedId: data.mutedId,
-                    muterId: data.muterId
-                });
-            }
-        });
-
-        socket.on('userUnmuted', (data) => {
-            if (data.matchId === currentMatchId) {
-                const currentUserId = JSON.parse(localStorage.getItem("user"))._id;
-                if (data.mutedId === currentUserId) {
-                    // This user was unmuted, restore their chat input
-                    const chatFooter = document.querySelector(".chat-footer");
-                    chatFooter.innerHTML = `
-                        <input type="text" class="message-input" placeholder="Message" />
-                        <div class="send-btn">➤</div>
-                    `;
-                    
-                    // Reattach event listeners
-                    const newMessageInput = chatFooter.querySelector(".message-input");
-                    const newSendBtn = chatFooter.querySelector(".send-btn");
-                    newSendBtn.addEventListener("click", sendMessage);
-                    newMessageInput.addEventListener("keypress", (e) => {
-                        if (e.key === "Enter") sendMessage();
-                    });
-                }
-                
-                // Update the mute button text
-                const actionItem = document.querySelector('[data-action="mute"]');
-                const actionText = actionItem.querySelector(".action-text");
-                actionText.textContent = "Mute";
-                actionItem.style.opacity = "1";
-                actionItem.style.pointerEvents = "auto";
-            }
-        });
-
-        // Function to update the UI
-        function updateMuteUI(muteStatus) {
-            const muteButton = document.querySelector('.mute-button');
-            if (muteStatus.isMuted) {
-                if (muteStatus.isMuter) {
-                    muteButton.textContent = 'Unmute';
-                } else {
-                    muteButton.textContent = 'Muted';
-                    muteButton.disabled = true;
-                }
-            } else {
-                muteButton.textContent = 'Mute';
-                muteButton.disabled = false;
-            }
-        }
-
-        // Add this function to update the chat UI based on mute status
-        function updateChatUIForMuteStatus(muteStatus) {
-            const chatFooter = document.querySelector(".chat-footer");
-            const messageInput = document.querySelector(".message-input");
-            const sendBtn = document.querySelector(".send-btn");
-            const actionItem = document.querySelector('[data-action="mute"]');
-            const actionText = actionItem.querySelector(".action-text");
-
-            if (muteStatus.isMuted && !muteStatus.isMuter) {
-                // User is muted by someone else
-                chatFooter.innerHTML = '<p class="muted-message">You were muted, so you\'re not allowed to message anymore to this connection</p>';
-                chatFooter.style.justifyContent = 'center';
-                chatFooter.style.color = 'rgba(255, 255, 255, 0.6)';
-            } else {
-                // User is not muted or is the muter
-                if (chatFooter.querySelector('.muted-message')) {
-                    chatFooter.innerHTML = `
-                        <input type="text" class="message-input" placeholder="Message" />
-                        <div class="send-btn">➤</div>
-                    `;
-                    // Reattach event listeners
-                    const newMessageInput = chatFooter.querySelector(".message-input");
-                    const newSendBtn = chatFooter.querySelector(".send-btn");
-                    newSendBtn.addEventListener("click", sendMessage);
-                    newMessageInput.addEventListener("keypress", (e) => {
-                        if (e.key === "Enter") sendMessage();
-                    });
-                }
-            }
-
-            // Update mute button text
-            if (muteStatus.isMuted) {
-                actionText.textContent = muteStatus.isMuter ? "Unmute" : "Muted";
-                actionItem.style.opacity = muteStatus.isMuter ? "1" : "0.5";
-                actionItem.style.pointerEvents = muteStatus.isMuter ? "auto" : "none";
-            } else {
-                actionText.textContent = "Mute";
-                actionItem.style.opacity = "1";
-                actionItem.style.pointerEvents = "auto";
-            }
-        }
       });
 
       function addStyleToHead() {
         const style = document.createElement("style");
         style.textContent = `
-            .chat-body.blur > *:not(.active-message) {
-                filter: blur(3px);
-                transition: filter 0.3s ease;
-            }
-            
-            .active-message {
-                position: relative;
-                z-index: 2;
-            }
-            
-            .deleted-message {
-                font-style: italic;
-                color: rgba(255, 255, 255, 0.5);
-            }
+          .chat-body.blur > *:not(.active-message) { filter: blur(3px); transition: filter 0.3s ease; }
+          .active-message { position: relative; z-index: 2; }
+          .deleted-message { font-style: italic; color: rgba(255, 255, 255, 0.5); }
         `;
         document.head.appendChild(style);
       }

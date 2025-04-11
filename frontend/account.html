@@ -1487,6 +1487,22 @@
         text-decoration: none;
       }
 
+      .notification-badge {
+        position: absolute;
+        top: -8px; /* Adjust based on your layout */
+        right: -8px; /* Adjust based on your layout */
+        background-color: #ff0000; /* Red badge */
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        visibility: hidden; /* Hidden when count is 0 */
+      }
+
 
 
       /* Add this to your existing <style> section */
@@ -1643,6 +1659,7 @@
       </div>
       <div class="bell-container">
         <i class="fa fa-bell" id="bellIcon"></i>
+        <span id="notificationCount" class="notification-badge">0</span>
         <div class="bell-dropdown" id="bellDropdown" style="display: none">
           <ul id="notificationList"></ul>
           <div class="dropdown-footer">
@@ -2386,12 +2403,27 @@
             throw new Error(result.message || "Failed to fetch notifications");
           }
     
-          console.log("Fetched notifications:", result.notifications);
+          console.log("Notifications:", result.notifications); // Debug: Check notification data
           displayNotifications(result.notifications);
+    
+          // Calculate unread count and update badge
+          const unreadCount = result.notifications.filter(notif => !notif.read).length;
+          console.log("Unread count:", unreadCount); // Debug: Verify count
+          updateNotificationBadge(unreadCount);
         } catch (error) {
           console.error("Error fetching notifications:", error);
           notificationList.innerHTML = '<li class="empty-message">Error loading notifications</li>';
         }
+      }
+    
+      // Update the notification badge (keep visible even at 0)
+      function updateNotificationBadge(count) {
+        const badge = document.getElementById("notificationCount");
+        console.log("Updating badge with count:", count); // Debug
+        badge.textContent = count;
+        badge.style.visibility = "visible"; // Keep badge visible regardless of count
+        // Optional: Change background color for 0 count
+        badge.style.backgroundColor = count > 0 ? "#ff0000" : "#666"; // Red for unread, gray for 0
       }
     
       // Display notifications with heart/cross for "like" type only
@@ -2448,24 +2480,21 @@
             heartIcon.addEventListener("click", async (e) => {
               e.preventDefault();
               e.stopPropagation();
-
-              // Add transition for smooth color change
-              heartIcon.style.transition = "color 0.3s ease"; // 0.3s smooth transition
+    
+              heartIcon.style.transition = "color 0.3s ease";
               heartIcon.classList.remove("far");
               heartIcon.classList.add("fas");
-              heartIcon.style.color = "#ff0000"; // Or your preferred color, e.g., "#ff69b4"
-
-              // Wait for color transition to complete, then show small hearts
+              heartIcon.style.color = "#ff0000";
+    
               setTimeout(async () => {
                 createFloatingHearts(heartIcon);
-                await toggleLike(notif.senderId, true); // Call toggleLike after animation starts
-              }, 300); // Delay matches transition duration (0.3s)
-
-              // Remove the item after both color change and hearts animation
+                await toggleLike(notif.senderId, true);
+              }, 300);
+    
               setTimeout(() => {
                 li.remove();
                 checkEmptyNotifications();
-              }, 1800); // 300ms (color) + 1500ms (hearts animation) = 1800ms
+              }, 1800);
             });
             iconContainer.appendChild(heartIcon);
     
@@ -2487,7 +2516,7 @@
     
           // Mark as read on click (optional)
           a.addEventListener("click", async (e) => {
-            if (!notif.read && notif.type !== "like") { // Skip for "like" to preserve buttons
+            if (!notif.read && notif.type !== "like") {
               try {
                 await fetch(`http://localhost:3000/api/notifications/${notif.id}/read`, {
                   method: "POST",
@@ -2527,10 +2556,18 @@
           if (!response.ok) {
             throw new Error(result.message || "Failed to toggle like");
           }
-          console.log("Toggle like response:", result); // Debug
+
+          if (result.match) {
+            console.log("Match created:", result.match);
+            alert("You’ve matched! Check your messages.");
+            // Optionally redirect to messages.html with matchId
+            window.location.href = `messages.html?matchId=${result.match.matchId}`;
+          } else {
+            console.log("Like toggled, no match yet.");
+          }
         } catch (error) {
           console.error("Error toggling like:", error);
-          alert("Failed to match: " + error.message);
+          // Removed alert("Failed to match: " + error.message);
         }
       }
     
@@ -2552,13 +2589,13 @@
             body: JSON.stringify({ profileId }),
           });
     
+          const result = await response.json();
           if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to remove liked profile");
+            throw new Error(result.message || "Failed to remove liked profile");
           }
     
+          console.log("Remove liked profile response:", result);
           listItem.remove();
-          console.log(`Profile ${profileId} removed from liked profiles`);
           checkEmptyNotifications();
         } catch (error) {
           console.error("Error removing liked profile:", error);
@@ -2597,11 +2634,26 @@
       }
     
       // Bell icon click handler
-      document.getElementById("bellIcon").addEventListener("click", function (e) {
+      document.getElementById("bellIcon").addEventListener("click", async function (e) {
         e.stopPropagation();
         const dropdown = document.getElementById("bellDropdown");
         if (dropdown.style.display === "none" || dropdown.style.display === "") {
-          fetchNotifications();
+          await fetchNotifications(); // Fetch and display notifications
+          const token = localStorage.getItem("jwtToken");
+          if (token) {
+            try {
+              await fetch("http://localhost:3000/api/notifications/mark-all-read", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              updateNotificationBadge(0); // Reset badge to 0 after marking read
+            } catch (error) {
+              console.error("Error marking notifications as read:", error);
+            }
+          }
           dropdown.style.display = "block";
         } else {
           dropdown.style.display = "none";
@@ -2844,6 +2896,7 @@
       document.addEventListener("DOMContentLoaded", function () {
         storeToken();
         fetchUserProfile();
+        fetchNotifications(); // Fetch notifications on page load to update badge
     
         const icons = document.querySelectorAll(".sidebar-icon");
         icons.forEach((icon) => {

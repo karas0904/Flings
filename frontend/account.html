@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Amourette - Account</title>
-    <link rel="icon" type="image/svg" href="assets/icons/Frame 1.svg" />
+    <link rel="icon" type="image/svg" href="assets/icons/Logo.svg" />
     <!-- Font Awesome CSS -->
     <link
       rel="stylesheet"
@@ -1415,35 +1415,61 @@
         cursor: pointer;
       }
 
+      /* Update the bell-dropdown styles */
       .bell-dropdown {
         position: absolute;
-        top: 35px; /* Adjust based on bell size */
+        top: 35px;
         right: 0;
         background: rgba(0, 0, 0, 0.95);
         border-radius: 10px;
         border: 1px solid rgba(145, 145, 145, 0.388);
-        width: 200px;
-        z-index: 101; /* Above other elements */
+        width: 300px;
+        z-index: 101;
         color: white;
+        display: flex;
+        flex-direction: column;
+        max-height: 400px;
       }
 
       .bell-dropdown ul {
         list-style: none;
         padding: 10px;
         margin: 0;
+        overflow-y: auto;
+        flex-grow: 1;
       }
 
-      .bell-dropdown li {
-        padding: 8px 10px;
+      /* Sticky note at the bottom of dropdown */
+      .dropdown-footer {
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.8);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ff6b6b;
+        font-size: 12px;
+        text-align: center;
+        position: sticky;
+        bottom: 0;
+      }
+
+      /* Heart animation styles */
+      .floating-heart {
+        position: absolute;
+        color: #ff4444;
         font-size: 14px;
-        font-family: "Raleway", sans-serif;
-        display: flex;
-        align-items: center; /* Ensure vertical alignment */
+        pointer-events: none;
+        animation: floatUp 1.5s ease-out forwards;
+        opacity: 0;
       }
 
-      .bell-dropdown li:hover {
-        background: rgba(139, 139, 139, 0.1);
-        border-radius: 5px;
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100px) scale(0);
+          opacity: 0;
+        }
       }
 
       /* Optional: Style the heart icon specifically */
@@ -1541,6 +1567,67 @@
       .bell-dropdown li:hover .fa-times {
         color: #ff0000; /* Darker red on hover */
       }
+
+      /* Add or modify these CSS styles */
+      .notification-dropdown {
+        max-height: 400px; /* Set maximum height */
+        display: flex;
+        flex-direction: column;
+      }
+
+      .notification-list {
+        overflow-y: auto; /* Make it scrollable */
+        flex-grow: 1;
+        padding: 10px;
+      }
+
+      .notification-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .notification-list::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+      }
+
+      .notification-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+      }
+
+      .notification-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .notification-footer {
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.8);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ff6b6b;
+        font-size: 12px;
+        text-align: center;
+        position: sticky;
+        bottom: 0;
+        margin-top: auto;
+      }
+
+      .notification-footer i {
+        margin-right: 5px;
+        color: #ff6b6b;
+      }
+
+      /* Add these styles to your existing CSS */
+      .bell-dropdown .empty-message {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        color: rgba(255, 255, 255, 0.5); /* Greyish color */
+        font-size: 12px; /* Smaller text */
+        font-style: italic;
+        text-align: center;
+        width: 100%;
+      }
     </style>
   </head>
   <body>
@@ -1558,7 +1645,10 @@
         <i class="fa fa-bell" id="bellIcon"></i>
         <div class="bell-dropdown" id="bellDropdown" style="display: none">
           <ul id="likedProfilesList"></ul>
-          <!--populate dynamically -->
+          <div class="dropdown-footer">
+            <i class="fas fa-info-circle"></i>
+            NOTE: Your interests will only appear for 3 days, so be fast to meet the ONE
+          </div>
         </div>
       </div>
     </div>
@@ -1973,6 +2063,12 @@
           <div class="modal-footer">
             <button class="save-photos" id="savePhotos">Save</button>
           </div>
+        </div>
+      </div>
+
+      <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-list" id="notificationList">
+          <!-- Notifications will be dynamically added here -->
         </div>
       </div>
     </div>
@@ -2769,78 +2865,77 @@
 
       // Display profiles that liked you in the bell dropdown
       function displayLikedProfiles(profiles) {
-        const dropdownList = document.querySelector(".bell-dropdown ul");
-        dropdownList.innerHTML = "";
-
-        console.log("Profiles received:", profiles); // Debug
+        const dropdownList = document.querySelector('.bell-dropdown ul');
+        dropdownList.innerHTML = '';
 
         if (!profiles || profiles.length === 0) {
-          const li = document.createElement("li");
-          li.textContent = "No likes yet";
+          const li = document.createElement('li');
+          li.className = 'empty-message';
+          li.textContent = 'No likes yet';
           dropdownList.appendChild(li);
           return;
         }
 
-        profiles.forEach((profile) => {
-          const li = document.createElement("li");
-          const a = document.createElement("a");
+        profiles.forEach(profile => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
           a.href = `profile.html?id=${profile.id}`;
-          a.style.display = "flex";
-          a.style.alignItems = "center";
-          a.style.textDecoration = "none";
+          a.style.display = 'flex';
+          a.style.alignItems = 'center';
+          a.style.textDecoration = 'none';
 
           // Profile photo
           if (profile.photo) {
-            const img = document.createElement("img");
+            const img = document.createElement('img');
             img.src = profile.photo;
             img.alt = `${profile.name || "Unknown"}'s photo`;
-            img.style.width = "30px";
-            img.style.height = "30px";
-            img.style.borderRadius = "50%";
-            img.style.marginRight = "10px";
+            img.style.width = '30px';
+            img.style.height = '30px';
+            img.style.borderRadius = '50%';
+            img.style.marginRight = '10px';
             a.appendChild(img);
           }
 
-          // Text based on direction
-          const text =
-            profile.direction === "matched"
-              ? `${profile.name || "Unknown"} (Match!)`
-              : `${profile.name || "Unknown"} liked you`;
-          const textNode = document.createTextNode(text);
-          a.appendChild(textNode);
+          // Text content with remaining days
+          const textContainer = document.createElement('div');
+          textContainer.style.flex = '1';
+          
+          const nameText = document.createTextNode(profile.name || "Unknown");
+          textContainer.appendChild(nameText);
+          
+          if (profile.direction === "incoming" && profile.remainingDays !== undefined) {
+            const daysSpan = document.createElement('span');
+            daysSpan.style.fontSize = '11px';
+            daysSpan.style.color = '#ff6b6b';
+            daysSpan.style.marginLeft = '8px';
+            daysSpan.textContent = `${profile.remainingDays} days left`;
+            textContainer.appendChild(daysSpan);
+          }
+          
+          a.appendChild(textContainer);
 
-          // Heart icon based on status
-          const heartIcon = document.createElement("i");
-          const isMatched = profile.status === "matched";
-          heartIcon.classList.add("fa-heart", isMatched ? "fas" : "far");
-          heartIcon.style.marginLeft = "8px";
-          heartIcon.style.color = isMatched ? "#ff0000" : "#ff4444";
-          heartIcon.style.cursor = isMatched ? "default" : "pointer";
-
-          if (!isMatched) {
-            heartIcon.addEventListener("click", async (e) => {
+          // Add icons (heart, cross)
+          if (profile.direction === "incoming" && profile.status === "pending") {
+            const heartIcon = document.createElement('i');
+            heartIcon.classList.add('far', 'fa-heart');
+            heartIcon.style.marginLeft = '8px';
+            heartIcon.style.cursor = 'pointer';
+            heartIcon.addEventListener('click', async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              heartIcon.classList.remove("far");
-              heartIcon.classList.add("fas");
-              heartIcon.style.color = "#ff0000";
-              heartIcon.style.cursor = "default";
+              createFloatingHearts(heartIcon);
               await toggleLike(profile.id, true);
-              // Update text to indicate match
-              a.childNodes[1].textContent = `${profile.name || "Unknown"} (Match!)`;
-              heartIcon.removeEventListener("click", arguments.callee); // Remove listener after match
+              heartIcon.classList.remove('far');
+              heartIcon.classList.add('fas');
+              heartIcon.style.color = '#ff0000';
             });
-          }
-          a.appendChild(heartIcon);
+            a.appendChild(heartIcon);
 
-          // Cross icon (only for incoming pending likes)
-          if (profile.status === "pending" && profile.direction === "incoming") {
-            const crossIcon = document.createElement("i");
-            crossIcon.classList.add("fa-solid", "fa-times");
-            crossIcon.style.marginLeft = "8px";
-            crossIcon.style.color = "#ff4444";
-            crossIcon.style.cursor = "pointer";
-            crossIcon.addEventListener("click", (e) => {
+            const crossIcon = document.createElement('i');
+            crossIcon.classList.add('fa-solid', 'fa-times');
+            crossIcon.style.marginLeft = '8px';
+            crossIcon.style.cursor = 'pointer';
+            crossIcon.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
               removeLikedProfile(profile.id, li);
@@ -2915,6 +3010,7 @@
           const dropdownList = document.querySelector(".bell-dropdown ul");
           if (dropdownList.children.length === 0) {
             const li = document.createElement("li");
+            li.className = "empty-message";
             li.textContent = "No likes yet";
             dropdownList.appendChild(li);
           }
@@ -2956,6 +3052,52 @@
         fetchUserProfile();
         // fetchLikedProfiles(); // Uncomment if you want it on load
       });
+
+      function displayNotifications(profiles) {
+        const notificationList = document.getElementById('notificationList');
+        notificationList.innerHTML = ''; // Clear existing notifications
+
+        if (!profiles || profiles.length === 0) {
+          notificationList.innerHTML = `
+            <div class="notification-item">
+              <div class="notification-content">
+                <p>No new interests yet</p>
+              </div>
+            </div>`;
+          return;
+        }
+
+        profiles.forEach(profile => {
+          // Your existing notification item creation code...
+        });
+      }
+
+      function createFloatingHearts(element) {
+        const dropdown = document.querySelector('.bell-dropdown');
+        const rect = element.getBoundingClientRect();
+        const heartCount = 5;
+
+        for (let i = 0; i < heartCount; i++) {
+          setTimeout(() => {
+            const heart = document.createElement('i');
+            heart.classList.add('fas', 'fa-heart', 'floating-heart');
+            
+            // Position the heart near the clicked element
+            heart.style.left = `${Math.random() * 40 + rect.left - dropdown.getBoundingClientRect().left}px`;
+            heart.style.bottom = '40px'; // Start above the footer
+            
+            // Add some random rotation
+            heart.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+            
+            dropdown.appendChild(heart);
+
+            // Remove the heart element after animation completes
+            setTimeout(() => {
+              heart.remove();
+            }, 1500);
+          }, i * 100); // Stagger the hearts
+        }
+      }
     </script>
   </body>
 </html>

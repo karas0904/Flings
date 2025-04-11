@@ -17,6 +17,7 @@ import { createServer } from "http"; // Import HTTP server module
 import { Server } from "socket.io"; // Import Socket.IO
 import wrap from "./utils/wrap.js"; // Import a utility to wrap middleware for Socket.IO
 import Message from "./models/Message.js";
+import MuteStatus from "./models/MuteStatus.js";
 
 import "./config/passport.js";
 
@@ -171,24 +172,210 @@ io.on("connection", (socket) => {
   socket.on("sendMessage", async (data, callback) => {
     try {
       const { matchId, content } = data;
+      const senderId = socket.request.user.id;
+
       if (!matchId || !content) {
-        return callback({ error: "Match ID and content are required" });
+        return callback?.({ error: "Match ID and content are required" });
       }
+
+      // Enhanced mute check - check if the sender is muted
+      const muteStatus = await MuteStatus.findOne({
+        matchId,
+        mutedId: senderId,
+      });
+
+      if (muteStatus) {
+        return callback?.({
+          success: false,
+          error: "You cannot send messages while muted",
+          isMuted: true,
+          muterId: muteStatus.muterId,
+        });
+      }
+
       const message = new Message({
-        senderId: userId,
+        senderId,
         matchId,
         content,
       });
       await message.save();
+
       const populatedMessage = await Message.findById(message._id).populate(
         "senderId",
         "name email"
       );
+
       io.to(matchId).emit("new-message", populatedMessage);
-      callback({ success: true, message: populatedMessage });
+      callback?.({ success: true, message: populatedMessage });
     } catch (error) {
       console.error("Error sending message:", error);
-      callback({ error: "Failed to send message" });
+      callback?.({ success: false, error: "Failed to send message" });
+    }
+  });
+
+  socket.on("deleteMessage", async ({ messageId }, callback = () => {}) => {
+    try {
+      // Find the message first to check ownership
+      const message = await Message.findById(messageId);
+
+      if (!message) {
+        return callback?.({ success: false, error: "Message not found" });
+      }
+
+      // Check if the user trying to delete is the sender
+      if (message.senderId.toString() !== socket.request.user.id) {
+        return callback?.({
+          success: false,
+          error: "Unauthorized to delete this message",
+        });
+      }
+
+      // Update the message instead of deleting it
+      await Message.findByIdAndUpdate(messageId, {
+        content: "This message was deleted",
+        isDeleted: true,
+      });
+
+      // Broadcast the deletion to all users in the match
+      io.to(message.matchId).emit("messageDeleted", {
+        messageId,
+        content: "This message was deleted",
+      });
+
+      callback?.({ success: true });
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      callback?.({ success: false, error: "Failed to delete message" });
+    }
+  });
+
+  socket.on("addReaction", async ({ messageId, emoji, matchId }, callback) => {
+    try {
+      // Update the message in the database
+      const message = await Message.findByIdAndUpdate(
+        messageId,
+        { reaction: emoji },
+        { new: true }
+      );
+
+      if (!message) {
+        callback({ success: false, error: "Message not found" });
+        return;
+      }
+
+      // Broadcast the reaction to all users in the match room
+      socket.to(matchId).emit("messageReaction", {
+        messageId: message._id,
+        emoji: emoji,
+      });
+
+      callback({ success: true });
+    } catch (error) {
+      console.error("Error adding reaction:", error);
+      callback({ success: false, error: "Failed to add reaction" });
+    }
+  });
+
+  socket.on("muteUser", async ({ matchId, mutedId }, callback) => {
+    try {
+      const muterId = socket.request.user.id;
+
+      // Check if mute status already exists
+      const existingMute = await MuteStatus.findOne({
+        matchId,
+        muterId,
+        mutedId,
+      });
+
+      if (existingMute) {
+        return callback?.({ success: false, error: "User is already muted" });
+      }
+
+      // Create new mute status
+      const muteStatus = new MuteStatus({
+        matchId,
+        muterId,
+        mutedId,
+      });
+      await muteStatus.save();
+
+      // Notify both users about the mute
+      io.to(matchId).emit("userMuted", {
+        matchId,
+        muterId,
+        mutedId,
+      });
+
+      callback?.({ success: true });
+    } catch (error) {
+      console.error("Error muting user:", error);
+      callback?.({ success: false, error: "Failed to mute user" });
+    }
+  });
+
+  socket.on("unmuteUser", async ({ matchId, mutedId }, callback) => {
+    try {
+      const muterId = socket.request.user.id;
+
+      // Remove mute status
+      const result = await MuteStatus.findOneAndDelete({
+        matchId,
+        muterId,
+        mutedId,
+      });
+
+      if (!result) {
+        return callback?.({ success: false, error: "User is not muted" });
+      }
+
+      // Notify both users about the unmute
+      io.to(matchId).emit("userUnmuted", {
+        matchId,
+        muterId,
+        mutedId,
+      });
+
+      callback?.({ success: true });
+    } catch (error) {
+      console.error("Error unmuting user:", error);
+      callback?.({ success: false, error: "Failed to unmute user" });
+    }
+  });
+
+  socket.on("checkMuteStatus", async ({ matchId, otherUserId }, callback) => {
+    try {
+      const userId = socket.request.user.id;
+
+      // Check both directions of muting
+      const muteStatus = await MuteStatus.findOne({
+        matchId,
+        $or: [
+          { muterId: userId, mutedId: otherUserId },
+          { muterId: otherUserId, mutedId: userId },
+        ],
+      });
+
+      if (!muteStatus) {
+        return callback?.({
+          success: true,
+          isMuted: false,
+          isMuter: false,
+          mutedId: null,
+          muterId: null,
+        });
+      }
+
+      callback?.({
+        success: true,
+        isMuted: true,
+        isMuter: muteStatus.muterId.toString() === userId,
+        mutedId: muteStatus.mutedId,
+        muterId: muteStatus.muterId,
+        matchId: muteStatus.matchId,
+      });
+    } catch (error) {
+      console.error("Error checking mute status:", error);
+      callback?.({ success: false, error: "Failed to check mute status" });
     }
   });
 

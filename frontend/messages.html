@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Messages - Amourette</title>
-    <link rel="icon" type="image/svg" href="assets/icons/Frame 1.svg" />
+    <link rel="icon" type="image/svg" href="assets/icons/Logo.svg" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -407,6 +405,12 @@
       .chat-header .user-info {
         display: flex;
         align-items: center;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+      }
+
+      .chat-header .user-info:hover {
+        opacity: 0.8;
       }
 
       .chat-header .user-info .avatar {
@@ -419,7 +423,6 @@
       }
 
       .chat-header .user-info .avatar img {
-        /* Add this block */
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -617,12 +620,12 @@
       }
 
       .message {
+        position: relative; /* Add this to make it a positioning context */
         display: table; /* Shrinks to content width, stacks vertically */
         max-width: 70%; /* Limits long messages */
         margin: 5px 10px; /* Reduced vertical margin, keep horizontal */
         padding: 8px 12px; /* Tight padding */
         border-radius: 20px;
-        position: relative;
         word-wrap: break-word;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -698,6 +701,7 @@
         color: rgba(255, 255, 255, 0.8);
         cursor: pointer;
         transition: background 0.3s, color 0.3s;
+        overflow: visible;
       }
 
       .chat-actions-dropdown .action-item:hover {
@@ -855,6 +859,205 @@
         color: #800080; /* Purple */
         font-weight: bold;
       }
+
+      /* Message Context Menu Styles */
+      .message-context-menu {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 8px;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        min-width: 150px;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      .message-context-menu.visible {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .context-menu-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        color: #fff;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+      }
+
+      .context-menu-option:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .context-menu-option i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+      }
+
+      /* Emoji Reaction Panel */
+      .emoji-reaction-panel {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 8px;
+        display: none;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        z-index: 999;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      .emoji-reaction-panel.visible {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .emoji-option {
+        font-size: 20px;
+        padding: 8px;
+        cursor: pointer;
+        text-align: center;
+        border-radius: 50%;
+        transition: transform 0.2s, background-color 0.2s;
+      }
+
+      .emoji-option:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: scale(1.2);
+      }
+
+      /* Message Reaction Styles */
+      .message-reactions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 4px;
+      }
+
+      .reaction {
+        font-size: 14px;
+        padding: 2px 6px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .reaction-count {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      /* Add styles for message reactions */
+      .message-reaction {
+        position: absolute;
+        top: -15px;
+        right: -5px;
+        font-size: 14px;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 12px;
+        padding: 2px 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        z-index: 1;
+      }
+
+            .chat-body.blur > *:not(.active-message) {
+                filter: blur(3px);
+                transition: filter 0.3s ease;
+            }
+            
+            .active-message {
+                position: relative;
+                z-index: 2;
+            }
+            
+            .deleted-message {
+                font-style: italic;
+                color: rgba(255, 255, 255, 0.5);
+            }
+
+      /* Add these styles to your existing CSS */
+      .action-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        overflow: visible; /* Allow child elements to overflow */
+      }
+
+      .info-icon {
+        margin-left: 8px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        position: relative;
+      }
+
+      .tooltip {
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        width: max-content; /* Allow content to determine width */
+        max-width: 200px; /* Maximum width limit */
+        color: #fff;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s, visibility 0.2s;
+        pointer-events: none;
+        z-index: 1001;
+        text-align: center;
+        white-space: normal; /* Allow text to wrap */
+      }
+
+      .chat-actions-dropdown {
+        overflow: visible !important; /* Override any existing overflow settings */
+      }
+
+      .tooltip::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid rgba(0, 0, 0, 0.9);
+      }
+
+      .info-icon:hover + .tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .muted-message {
+        text-align: center;
+        padding: 10px;
+        background: rgba(255, 0, 0, 0.1);
+        border-radius: 5px;
+        margin: 10px 0;
+      }
     </style>
   </head>
   <body>
@@ -897,10 +1100,16 @@
       <div class="chat-section">
         <div class="blur-container">
           <div class="chat-header">
-            <div class="user-info">
-              <div class="avatar"></div>
+            <div class="user-info" style="cursor: pointer" id="headerUserInfo">
+              <div class="avatar">
+                <img
+                  src="/assets/icons/users_default.png"
+                  alt="Profile photo"
+                  id="headerUserPhoto"
+                />
+              </div>
               <div>
-                <div class="name">Name</div>
+                <div class="name" id="headerUserName">Name</div>
                 <div class="status">Active</div>
               </div>
             </div>
@@ -908,7 +1117,11 @@
               <div class="icon actions-icon" id="actionsIcon">
                 <i class="fas fa-ellipsis-vertical"></i>
                 <div class="chat-actions-dropdown" id="chatActionsDropdown">
-                  <div class="action-item" data-action="mute">Mute</div>
+                  <div class="action-item" data-action="mute">
+                    <span class="action-text">Mute</span>
+                    <i class="fas fa-info-circle info-icon"></i>
+                    <div class="tooltip">If you mute, only you can message until you unmute your connection</div>
+                  </div>
                   <div class="action-item" data-action="block">Block</div>
                   <a href="report-account.html">
                     <div class="action-item">Report</div>
@@ -947,6 +1160,7 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         const heartBtn = document.getElementById("heart-btn");
+
         if (heartBtn) {
           heartBtn.addEventListener("click", function () {
             window.location.href = "explore.html";
@@ -1033,6 +1247,7 @@
             div.classList.add("message-item");
             if (type === "messages") {
               div.dataset.matchId = item.matchId;
+              div.dataset.otherUserId = item.otherUserId;
               div.dataset.score = item.score;
               div.innerHTML = `
                 <div class="avatar">
@@ -1386,7 +1601,51 @@
         function handleChatAction(action) {
           switch (action) {
             case "mute":
-              alert("User muted");
+              const actionItem = document.querySelector('[data-action="mute"]');
+              const actionText = actionItem.querySelector(".action-text");
+              const headerUserInfo = document.getElementById("headerUserInfo");
+              const otherUserId = headerUserInfo.dataset.otherUserId;
+
+              if (actionText.textContent === "Mute") {
+                // Muting the user
+                socket.emit("muteUser", {
+                  matchId: currentMatchId,
+                  mutedId: otherUserId
+                }, (response) => {
+                  if (response.success) {
+                    actionText.textContent = "Unmute";
+                  } else {
+                    console.error("Failed to mute user:", response.error);
+                  }
+                });
+              } else {
+                // Unmuting the user
+                socket.emit("unmuteUser", {
+                  matchId: currentMatchId,
+                  mutedId: otherUserId
+                }, (response) => {
+                  if (response.success) {
+                    actionText.textContent = "Mute";
+                    // Restore the chat input for the unmuted user
+                    const chatFooter = document.querySelector(".chat-footer");
+                    chatFooter.innerHTML = `
+                        <input type="text" class="message-input" placeholder="Message" />
+                        <div class="send-btn">➤</div>
+                    `;
+                    
+                    // Reattach event listeners
+                    const newMessageInput = chatFooter.querySelector(".message-input");
+                    const newSendBtn = chatFooter.querySelector(".send-btn");
+                    newSendBtn.addEventListener("click", sendMessage);
+                    newMessageInput.addEventListener("keypress", (e) => {
+                        if (e.key === "Enter") sendMessage();
+                    });
+                  } else {
+                    console.error("Failed to unmute user:", response.error);
+                  }
+                });
+              }
+              chatActionsDropdown.classList.remove("active");
               break;
             case "block":
               blockUser(currentMatchId);
@@ -1454,61 +1713,80 @@
           }
         }
 
+        // Add this function after the loadMessages function
+        async function checkMuteStatus(matchId, otherUserId) {
+            socket.emit('checkMuteStatus', { 
+                matchId: matchId,
+                otherUserId: otherUserId 
+            }, (response) => {
+                if (response.success) {
+                    updateChatUIForMuteStatus(response);
+                }
+            });
+        }
+
+        // Update the loadMessages function to check mute status
         async function loadMessages(matchId, name, score) {
-          const chatBody = document.querySelector(".chat-body");
-          const chatHeaderName = document.querySelector(".chat-header .name");
-          const chatHeaderAvatar = document.querySelector(
-            ".chat-header .user-info .avatar"
-          );
+            const chatBody = document.querySelector(".chat-body");
+            const chatHeaderName = document.querySelector(".chat-header .name");
+            const chatHeaderAvatar = document.querySelector(".chat-header .user-info .avatar");
+            const headerUserInfo = document.getElementById("headerUserInfo");
 
-          chatBody.innerHTML = "<p>Loading messages...</p>";
-          chatHeaderName.textContent = name;
+            chatBody.innerHTML = "<p>Loading messages...</p>";
+            chatHeaderName.textContent = name;
 
-          const match = messagesData.find((m) => m.matchId === matchId);
-          if (match && match.photo) {
-            chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
-          } else {
-            chatHeaderAvatar.innerHTML = "";
-            chatHeaderAvatar.style.background = "rgba(255, 255, 255, 0.2)";
-          }
-
-          socket.emit("loadMessages", matchId, (response) => {
-            if (response.success) {
-              chatBody.innerHTML = "";
-              const messages = response.messages;
-
-              if (messages.length === 0 && score >= 6.6) {
-                let funLine, kinkLine;
-                if (score >= 6.6 && score <= 7.5) {
-                  funLine = "Sparks are starting to fly!";
-                  kinkLine = "A little twist makes it interesting!";
-                } else if (score > 7.5 && score <= 8.5) {
-                  funLine = "You’re vibing like a perfect playlist!";
-                  kinkLine = "There’s a spicy edge to this connection!";
-                } else if (score > 8.5) {
-                  funLine = "Match made in cosmic harmony!";
-                  kinkLine = "This bond’s got some wild chemistry!";
+            const match = messagesData.find((m) => m.matchId === matchId);
+            if (match) {
+                if (match.photo) {
+                    chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
+                } else {
+                    chatHeaderAvatar.innerHTML = "";
+                    chatHeaderAvatar.style.background = "rgba(255, 255, 255, 0.2)";
                 }
 
-                const scoreDiv = document.createElement("div");
-                scoreDiv.classList.add("score-info");
-                scoreDiv.id = "match-score";
-                scoreDiv.innerHTML = `
-                  <p>Your match score: ${score.toFixed(1)}</p>
-                  <p class="fun-line">${funLine}</p>
-                  <p class="kink-line">${kinkLine}</p>
-                `;
-                chatBody.appendChild(scoreDiv);
-              }
-
-              messages.forEach((msg) => {
-                appendMessage(msg);
-              });
-            } else {
-              console.error("Error loading messages:", response.error);
-              chatBody.innerHTML = "<p>Error loading messages</p>";
+                headerUserInfo.dataset.otherUserId = match.otherUserId;
+                
+                // Add this line to check mute status when loading messages
+                checkMuteStatus(matchId, match.otherUserId);
             }
-          });
+
+            socket.emit("loadMessages", matchId, (response) => {
+                if (response.success) {
+                    chatBody.innerHTML = "";
+                    const messages = response.messages;
+
+                    if (messages.length === 0 && score >= 6.6) {
+                        let funLine, kinkLine;
+                        if (score >= 6.6 && score <= 7.5) {
+                            funLine = "Sparks are starting to fly!";
+                            kinkLine = "A little twist makes it interesting!";
+                        } else if (score > 7.5 && score <= 8.5) {
+                            funLine = "You're vibing like a perfect playlist!";
+                            kinkLine = "There's a spicy edge to this connection!";
+                        } else if (score > 8.5) {
+                            funLine = "Match made in cosmic harmony!";
+                            kinkLine = "This bond's got some wild chemistry!";
+                        }
+
+                        const scoreDiv = document.createElement("div");
+                        scoreDiv.classList.add("score-info");
+                        scoreDiv.id = "match-score";
+                        scoreDiv.innerHTML = `
+                            <p>Your match score: ${score.toFixed(1)}</p>
+                            <p class="fun-line">${funLine}</p>
+                            <p class="kink-line">${kinkLine}</p>
+                        `;
+                        chatBody.appendChild(scoreDiv);
+                    }
+
+                    messages.forEach((msg) => {
+                        appendMessage(msg);
+                    });
+                } else {
+                    console.error("Error loading messages:", response.error);
+                    chatBody.innerHTML = "<p>Error loading messages</p>";
+                }
+            });
         }
 
         function sendMessage() {
@@ -1585,30 +1863,350 @@
           }
         });
 
-        function appendMessage(message) {
-          console.log("Message received:", message);
-          console.log(
-            "Local user ID:",
-            JSON.parse(localStorage.getItem("user"))?._id
+        // Create context menu and emoji panel elements
+        const contextMenu = document.createElement("div");
+        contextMenu.className = "message-context-menu";
+        contextMenu.innerHTML = `
+            <div class="context-menu-option" data-action="copy">
+                <i class="fas fa-copy"></i>Copy
+            </div>
+            <div class="context-menu-option" data-action="react">
+                <i class="fas fa-smile"></i>React
+            </div>
+            <div class="context-menu-option" data-action="delete">
+                <i class="fas fa-trash"></i>Delete
+            </div>
+        `;
+        document.body.appendChild(contextMenu);
+
+        const emojiPanel = document.createElement("div");
+        emojiPanel.className = "emoji-reaction-panel";
+        emojiPanel.innerHTML = `
+            <div class="emoji-option">❤️</div>
+            <div class="emoji-option">😂</div>
+            <div class="emoji-option">👍</div>
+            <div class="emoji-option">😮</div>
+            <div class="emoji-option">😢</div>
+            <div class="emoji-option">🙏</div>
+        `;
+        document.body.appendChild(emojiPanel);
+
+        let activeMessage = null;
+        let longPressTimer;
+        const longPressDuration = 500; // milliseconds
+
+        function showContextMenu(message, x, y) {
+          const chatBody = document.querySelector(".chat-body");
+          const allMessages = chatBody.querySelectorAll(".message");
+
+          // Remove active-message class from all messages
+          allMessages.forEach((msg) => msg.classList.remove("active-message"));
+
+          // Add active-message class to clicked message and blur effect to chat body
+          message.classList.add("active-message");
+          chatBody.classList.add("blur");
+
+          const rect = message.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+          const menuWidth = contextMenu.offsetWidth || 150; // Fallback width if not yet rendered
+          const menuHeight = contextMenu.offsetHeight || 100; // Fallback height if not yet rendered
+          const gap = 10; // Space between menu and message
+
+          let posX, posY;
+
+          // Determine if the message is sent by the current user
+          const isSender = message.classList.contains("sent");
+
+          // Update context menu options based on message type
+          contextMenu.innerHTML = isSender
+            ? `
+              <div class="context-menu-option" data-action="copy">
+                  <i class="fas fa-copy"></i>Copy
+              </div>
+              <div class="context-menu-option" data-action="delete">
+                  <i class="fas fa-trash"></i>Delete
+              </div>
+          `
+            : `
+              <div class="context-menu-option" data-action="copy">
+                  <i class="fas fa-copy"></i>Copy
+              </div>
+              <div class="context-menu-option" data-action="react">
+                  <i class="fas fa-smile"></i>React
+              </div>
+          `;
+
+          // Horizontal positioning
+          if (isSender) {
+            // For sent messages, prefer left of the message
+            posX = rect.left - menuWidth - gap;
+            // If not enough space on the left, position to the right
+            if (posX < gap) {
+              posX = rect.right + gap;
+            }
+          } else {
+            // For received messages, prefer right of the message
+            posX = rect.right + gap;
+            // If not enough space on the right, position to the left
+            if (posX + menuWidth > viewportWidth - gap) {
+              posX = rect.left - menuWidth - gap;
+            }
+          }
+
+          // Vertical positioning: center vertically relative to the message
+          posY = rect.top + rect.height / 2 - menuHeight / 2;
+
+          // Clamp positions to stay within viewport
+          posX = Math.max(gap, Math.min(posX, viewportWidth - menuWidth - gap));
+          posY = Math.max(
+            gap,
+            Math.min(posY, viewportHeight - menuHeight - gap)
           );
+
+          // Apply position
+          contextMenu.style.display = "block";
+          contextMenu.style.left = `${posX}px`;
+          contextMenu.style.top = `${posY}px`;
+
+          // Force reflow
+          contextMenu.offsetHeight;
+
+          // Show menu
+          contextMenu.classList.add("visible");
+          activeMessage = message;
+        }
+
+        function hideContextMenu() {
+          const chatBody = document.querySelector(".chat-body");
+          const activeMessage = document.querySelector(".active-message");
+
+          if (activeMessage) {
+            activeMessage.classList.remove("active-message");
+          }
+          chatBody.classList.remove("blur");
+
+          contextMenu.classList.remove("visible");
+          emojiPanel.classList.remove("visible");
+
+          setTimeout(() => {
+            contextMenu.style.display = "none";
+            emojiPanel.style.display = "none";
+          }, 200);
+
+          activeMessage = null;
+        }
+
+        function showEmojiPanel(message) {
+          const contextMenuRect = contextMenu.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
+
+          // Always position panel below the context menu
+          let posX = contextMenuRect.left;
+          let posY = contextMenuRect.bottom + 5;
+
+          // Ensure panel stays within viewport bounds
+          if (posX < 10) {
+            posX = 10;
+          }
+          if (posX + emojiPanel.offsetWidth > viewportWidth - 10) {
+            posX = viewportWidth - emojiPanel.offsetWidth - 10;
+          }
+
+          // If not enough space below, show above the context menu
+          if (posY + emojiPanel.offsetHeight > viewportHeight - 10) {
+            posY = contextMenuRect.top - emojiPanel.offsetHeight - 5;
+          }
+
+          emojiPanel.style.display = "grid";
+          emojiPanel.style.left = `${posX}px`;
+          emojiPanel.style.top = `${posY}px`;
+
+          // Force reflow
+          emojiPanel.offsetHeight;
+
+          emojiPanel.classList.add("visible");
+        }
+
+        // Update the context menu click handler
+        contextMenu.addEventListener("click", (e) => {
+          const action = e.target.closest(".context-menu-option")?.dataset
+            .action;
+          if (!action || !activeMessage) return;
+
+          const messageId = activeMessage.dataset.messageId;
+          const messageText = activeMessage.querySelector("p").textContent;
+          const userId = JSON.parse(localStorage.getItem("user"))?._id;
+
+          // Check if the message is from the current user
+          const isSender = activeMessage.classList.contains("sent");
+
+          switch (action) {
+            case "copy":
+              navigator.clipboard.writeText(messageText);
+              hideContextMenu();
+              break;
+            case "react":
+              e.stopPropagation();
+              showEmojiPanel(activeMessage);
+              break;
+            case "delete":
+              // Only allow deletion if user is the sender
+              if (!isSender) {
+                alert("You can only delete messages you've sent");
+                hideContextMenu();
+                return;
+              }
+
+              socket.emit("deleteMessage", { messageId }, (response) => {
+                if (response.success) {
+                  const messageP = activeMessage.querySelector("p");
+                  messageP.textContent = "This message was deleted";
+                  messageP.classList.add("deleted-message");
+                } else {
+                  alert(response.error || "Failed to delete message");
+                }
+              });
+              hideContextMenu();
+              break;
+          }
+        });
+
+        // Add socket listener for message deletions
+        socket.on("messageDeleted", ({ messageId, content }) => {
+          const message = document.querySelector(
+            `.message[data-message-id="${messageId}"]`
+          );
+          if (message) {
+            const messageP = message.querySelector("p");
+            messageP.textContent = content;
+            messageP.classList.add("deleted-message");
+          }
+        });
+
+        // Update the appendMessage function to handle deleted messages
+        function appendMessage(message) {
           const messageDiv = document.createElement("div");
           const userId = JSON.parse(localStorage.getItem("user"))?._id;
           const isSender = message.senderId._id === userId;
-          console.log("Is sender?", isSender);
+
           messageDiv.classList.add("message");
           messageDiv.classList.add(isSender ? "sent" : "received");
+          messageDiv.dataset.messageId = message._id;
+
+          // Check if message is deleted
+          const messageContent = message.isDeleted
+            ? `<p class="deleted-message">This message was deleted</p>`
+            : `<p>${message.content}</p>`;
+
           messageDiv.innerHTML = `
-            <p>${message.content}</p>
-            <span class="timestamp">${new Date(
-              message.createdAt
-            ).toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            })}</span>
+              <div class="message-reaction"></div>
+              ${messageContent}
+              <span class="timestamp">${new Date(
+                message.createdAt
+              ).toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit",
+              })}</span>
           `;
+
+          // Add reaction if it exists
+          if (message.reaction) {
+            const reactionDiv = messageDiv.querySelector(".message-reaction");
+            reactionDiv.textContent = message.reaction;
+          }
+
+          // Add context menu listeners for all non-deleted messages
+          if (!message.isDeleted) {
+            messageDiv.addEventListener("dblclick", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (contextMenu.style.display === "block") {
+                hideContextMenu();
+              } else {
+                showContextMenu(messageDiv, e.pageX, e.pageY);
+              }
+            });
+
+            // Add touch listeners for mobile
+            let touchStartTime;
+            let touchStartX;
+            let touchStartY;
+
+            messageDiv.addEventListener("touchstart", (e) => {
+              touchStartTime = Date.now();
+              touchStartX = e.touches[0].pageX;
+              touchStartY = e.touches[0].pageY;
+
+              longPressTimer = setTimeout(() => {
+                showContextMenu(messageDiv, touchStartX, touchStartY);
+              }, longPressDuration);
+            });
+
+            messageDiv.addEventListener("touchend", (e) => {
+              clearTimeout(longPressTimer);
+            });
+
+            messageDiv.addEventListener("touchmove", (e) => {
+              clearTimeout(longPressTimer);
+            });
+          }
+
           chatBody.appendChild(messageDiv);
           chatBody.scrollTop = chatBody.scrollHeight;
         }
+
+        // Update document click handler to be more specific
+        document.addEventListener("click", (e) => {
+          if (
+            !e.target.closest(".message-context-menu") &&
+            !e.target.closest(".emoji-reaction-panel") &&
+            !e.target.closest(".message")
+          ) {
+            hideContextMenu();
+          }
+        });
+
+        // Update the socket event listener for message reactions
+        socket.on("messageReaction", ({ messageId, emoji }) => {
+          const message = document.querySelector(
+            `.message[data-message-id="${messageId}"]`
+          );
+          if (message) {
+            const reactionDiv = message.querySelector(".message-reaction");
+            reactionDiv.textContent = emoji;
+          }
+        });
+
+        // Update the emoji panel click handler
+        emojiPanel.addEventListener("click", (e) => {
+          const emoji = e.target.textContent;
+          if (!emoji || !activeMessage) return;
+
+          // Only allow reactions to received messages
+          if (activeMessage.classList.contains("sent")) {
+            alert("You can't react to your own messages");
+            return;
+          }
+
+          const messageId = activeMessage.dataset.messageId;
+
+          socket.emit(
+            "addReaction",
+            { messageId, emoji, matchId: currentMatchId },
+            (response) => {
+              if (response.success) {
+                const reactionDiv =
+                  activeMessage.querySelector(".message-reaction");
+                reactionDiv.textContent = emoji;
+                hideContextMenu();
+              } else {
+                alert(response.error || "Failed to add reaction");
+              }
+            }
+          );
+        });
 
         async function fetchAndUpdateProfilePhoto() {
           const profileIcon = document.querySelector(".profile-icon img");
@@ -1648,7 +2246,148 @@
         }
 
         fetchAndUpdateProfilePhoto();
+
+        document
+          .getElementById("headerUserInfo")
+          .addEventListener("click", function () {
+            const otherUserId = this.dataset.otherUserId;
+            if (otherUserId) {
+              window.location.href = `profile.html?id=${otherUserId}`;
+            }
+          });
+
+        addStyleToHead();
+
+        // When loading the chat
+        socket.emit('checkMuteStatus', { 
+            matchId: currentMatchId,
+            otherUserId: otherUserIdInChat 
+        }, (response) => {
+            if (response.success) {
+                updateMuteUI(response);
+            }
+        });
+
+        // Listen for mute/unmute events
+        socket.on('userMuted', (data) => {
+            if (data.matchId === currentMatchId) {
+                updateMuteUI({
+                    isMuted: true,
+                    isMuter: data.muterId === currentUserId,
+                    mutedId: data.mutedId,
+                    muterId: data.muterId
+                });
+            }
+        });
+
+        socket.on('userUnmuted', (data) => {
+            if (data.matchId === currentMatchId) {
+                const currentUserId = JSON.parse(localStorage.getItem("user"))._id;
+                if (data.mutedId === currentUserId) {
+                    // This user was unmuted, restore their chat input
+                    const chatFooter = document.querySelector(".chat-footer");
+                    chatFooter.innerHTML = `
+                        <input type="text" class="message-input" placeholder="Message" />
+                        <div class="send-btn">➤</div>
+                    `;
+                    
+                    // Reattach event listeners
+                    const newMessageInput = chatFooter.querySelector(".message-input");
+                    const newSendBtn = chatFooter.querySelector(".send-btn");
+                    newSendBtn.addEventListener("click", sendMessage);
+                    newMessageInput.addEventListener("keypress", (e) => {
+                        if (e.key === "Enter") sendMessage();
+                    });
+                }
+                
+                // Update the mute button text
+                const actionItem = document.querySelector('[data-action="mute"]');
+                const actionText = actionItem.querySelector(".action-text");
+                actionText.textContent = "Mute";
+                actionItem.style.opacity = "1";
+                actionItem.style.pointerEvents = "auto";
+            }
+        });
+
+        // Function to update the UI
+        function updateMuteUI(muteStatus) {
+            const muteButton = document.querySelector('.mute-button');
+            if (muteStatus.isMuted) {
+                if (muteStatus.isMuter) {
+                    muteButton.textContent = 'Unmute';
+                } else {
+                    muteButton.textContent = 'Muted';
+                    muteButton.disabled = true;
+                }
+            } else {
+                muteButton.textContent = 'Mute';
+                muteButton.disabled = false;
+            }
+        }
+
+        // Add this function to update the chat UI based on mute status
+        function updateChatUIForMuteStatus(muteStatus) {
+            const chatFooter = document.querySelector(".chat-footer");
+            const messageInput = document.querySelector(".message-input");
+            const sendBtn = document.querySelector(".send-btn");
+            const actionItem = document.querySelector('[data-action="mute"]');
+            const actionText = actionItem.querySelector(".action-text");
+
+            if (muteStatus.isMuted && !muteStatus.isMuter) {
+                // User is muted by someone else
+                chatFooter.innerHTML = '<p class="muted-message">You were muted, so you\'re not allowed to message anymore to this connection</p>';
+                chatFooter.style.justifyContent = 'center';
+                chatFooter.style.color = 'rgba(255, 255, 255, 0.6)';
+            } else {
+                // User is not muted or is the muter
+                if (chatFooter.querySelector('.muted-message')) {
+                    chatFooter.innerHTML = `
+                        <input type="text" class="message-input" placeholder="Message" />
+                        <div class="send-btn">➤</div>
+                    `;
+                    // Reattach event listeners
+                    const newMessageInput = chatFooter.querySelector(".message-input");
+                    const newSendBtn = chatFooter.querySelector(".send-btn");
+                    newSendBtn.addEventListener("click", sendMessage);
+                    newMessageInput.addEventListener("keypress", (e) => {
+                        if (e.key === "Enter") sendMessage();
+                    });
+                }
+            }
+
+            // Update mute button text
+            if (muteStatus.isMuted) {
+                actionText.textContent = muteStatus.isMuter ? "Unmute" : "Muted";
+                actionItem.style.opacity = muteStatus.isMuter ? "1" : "0.5";
+                actionItem.style.pointerEvents = muteStatus.isMuter ? "auto" : "none";
+            } else {
+                actionText.textContent = "Mute";
+                actionItem.style.opacity = "1";
+                actionItem.style.pointerEvents = "auto";
+            }
+        }
       });
+
+      function addStyleToHead() {
+        const style = document.createElement("style");
+        style.textContent = `
+            .chat-body.blur > *:not(.active-message) {
+                filter: blur(3px);
+                transition: filter 0.3s ease;
+            }
+            
+            .active-message {
+                position: relative;
+                z-index: 2;
+            }
+            
+            .deleted-message {
+                font-style: italic;
+                color: rgba(255, 255, 255, 0.5);
+            }
+        `;
+        document.head.appendChild(style);
+      }
     </script>
   </body>
 </html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Amourette</title>
-    <link rel="icon" type="image/svg" href="assets/icons/Frame 1.svg" />
+    <link rel="icon" type="image/svg" href="assets/icons/Logo.svg" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -631,8 +631,8 @@
         />
       </div>
       <div class="note">
-        Note: You can save 2-3 profiles per day. Only days with at least 2 saves
-        will appear here.
+        Note: You can save 2-3 profiles per day. Saves will appear for 2 days
+        only.
       </div>
 
       <div class="content" id="savesContent"></div>
@@ -716,9 +716,35 @@
           }
 
           const profiles = await response.json();
-          console.log("Saved profiles from backend:", profiles);
-          const grouped = groupProfilesByDate(profiles);
-          console.log("Grouped profiles by date:", grouped);
+
+          // Group profiles by date and apply thresholds
+          const grouped = {};
+          const today = new Date();
+
+          profiles.forEach((profile) => {
+            const saveDate = new Date(profile.saveDate);
+            const daysDiff = Math.floor(
+              (today - saveDate) / (1000 * 60 * 60 * 24)
+            );
+
+            // Only show profiles saved within the last 2 days
+            if (daysDiff <= 2) {
+              const dateName = saveDate.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+              });
+
+              if (!grouped[dateName]) {
+                grouped[dateName] = [];
+              }
+              grouped[dateName].push({
+                name: profile.name,
+                picture: profile.image,
+                _id: profile._id,
+              });
+            }
+          });
+
           return grouped;
         } catch (error) {
           console.error("Error fetching saved profiles:", error);
@@ -751,11 +777,19 @@
 
       function createBox(date, saves) {
         console.log(`Creating box for date: ${date}, saves:`, saves);
-        const [month, day] = date.split(" ");
         const box = document.createElement("div");
         box.className = "rectangular-box";
-        box.setAttribute("data-date", date);
 
+        // For testing: minimum threshold is 1
+        // To change to 2 in the future, update this number
+        const MIN_SAVES_THRESHOLD = 1;
+
+        if (saves.length < MIN_SAVES_THRESHOLD) {
+          box.classList.add("hidden");
+          return box;
+        }
+
+        const [month, day] = date.split(" ");
         const cardImages = saves.slice(0, 3).map((save) => save.picture);
         const cardLeftImg = cardImages[0]
           ? `<img src="${cardImages[0]}" alt="Profile">`

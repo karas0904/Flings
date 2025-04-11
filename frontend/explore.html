@@ -1,10 +1,9 @@
-<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Explore</title>
-    <link rel="icon" type="image/svg" href="assets/icons/Frame 1.svg" />
+    <link rel="icon" type="image/svg" href="assets/icons/Logo.svg" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -436,7 +435,7 @@
         line-height: 30px; /* Increased line height for better spacing */
       }
 
-      /* Ensure the image section doesn’t interfere */
+      /* Ensure the image section doesn't interfere */
       #imageSection {
         position: relative;
         margin-bottom: 0; /* Remove bottom margin to connect with details */
@@ -461,14 +460,14 @@
       .heart-button {
         width: 50px;
         height: 50px;
-        background: #fd9999; /* Light pink */
+        background: #fd9999; /* Light pink background stays constant */
         border: none;
         border-radius: 50%;
         cursor: pointer;
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: transform 0.3s ease, background 0.3s ease; /* Added background transition */
+        box-shadow: 0px 7px 20px #000000a4;
       }
 
       .heart-button:hover {
@@ -477,25 +476,40 @@
         transition: 0.3s;
       }
 
-      .heart-button.active {
-        background: rgba(
-          255,
-          58,
-          94,
-          0.8
-        ); /* Change background to red when active */
-      }
-
       .heart-icon {
         width: 24px;
         height: 24px;
-        filter: brightness(0) invert(1); /* Make SVG white by default */
-        transition: filter 0.3s ease; /* Smooth color transition */
+        filter: brightness(0) invert(1); /* White by default */
+        transition: filter 0.3s ease, transform 0.3s ease;
       }
 
+      /* Remove .heart-button.active styling and update heart icon active state */
       .heart-button.active .heart-icon {
-        filter: brightness(100%) saturate(100%) invert(100%) sepia(100%)
-          hue-rotate(0deg); /* Red when active */
+        filter: brightness(100%) saturate(100%) invert(23%) sepia(91%)
+          saturate(6645%) hue-rotate(355deg) brightness(106%) contrast(119%); /* Red when active */
+        animation: heartIconBeat 1s ease;
+      }
+
+      /* New animation specifically for the heart icon */
+      @keyframes heartIconBeat {
+        0% {
+          transform: scale(1);
+        }
+        20% {
+          transform: scale(1.2);
+        }
+        40% {
+          transform: scale(1);
+        }
+        60% {
+          transform: scale(1.2);
+        }
+        80% {
+          transform: scale(1);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
 
       .no-named-button {
@@ -523,13 +537,6 @@
         margin: 0 10px;
         background: #f5f5f5;
         border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        color: #666;
-        font-style: italic;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
 
       .comment-inbox:hover {
@@ -1295,7 +1302,7 @@
             <img id="profileImage" alt="Profile Image" />
             <button class="heart-button detail-heart-button">
               <img
-                src="assets/icons/heart-icon.svg"
+                src="/assets/icons/heart-icon.png"
                 alt="Heart Icon"
                 class="heart-icon"
               />
@@ -1781,7 +1788,7 @@
 
             const noNamedButton = document.createElement("button");
             noNamedButton.classList.add("no-named-button");
-            noNamedButton.innerHTML = '<i class="fa-solid fa-ban"></i>';
+            noNamedButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
 
             const commentInbox = document.createElement("div");
             commentInbox.classList.add("comment-inbox");
@@ -1820,11 +1827,11 @@
               heartButton.classList.add("active");
             }
             const heartIcon = document.createElement("img");
-            heartIcon.src = "assets/icons/heart-icon.svg";
+            heartIcon.src = "assets/icons/heart-icon.png";
             heartIcon.alt = "Heart Icon";
             heartIcon.classList.add("heart-icon");
             heartIcon.onerror = () => {
-              console.error("Failed to load heart-icon.svg, using fallback");
+              console.error("Failed to load heart-icon.png, using fallback");
               heartButton.innerHTML = '<i class="fa-solid fa-heart"></i>';
             };
             heartButton.appendChild(heartIcon);
@@ -1843,16 +1850,6 @@
             heartButton.addEventListener("click", async function () {
               const wasLiked = this.classList.contains("active");
               this.classList.toggle("active");
-              setTimeout(() => {
-                this.style.animation = "heartbeat 1s ease";
-                this.addEventListener(
-                  "animationend",
-                  () => {
-                    this.style.animation = "";
-                  },
-                  { once: true }
-                );
-              }, 100);
 
               const token = localStorage.getItem("jwtToken");
               if (!token) {
@@ -1879,7 +1876,6 @@
                 if (response.ok) {
                   console.log("Like saved:", result);
                   profile.isLiked = !wasLiked;
-                  await showCustomAlert("Profile liked successfully!");
                 } else {
                   console.error("Like failed:", result);
                   this.classList.toggle("active", wasLiked);
@@ -2002,7 +1998,7 @@
 
               if (currentProfile.hasRose) {
                 await showCustomAlert(
-                  "You’ve already sent a Rose to this profile!"
+                  "You've already sent a Rose to this profile!"
                 );
                 return;
               }
@@ -2313,16 +2309,6 @@
           );
           detailHeartButton.addEventListener("click", async function () {
             this.classList.toggle("active");
-            setTimeout(() => {
-              this.style.animation = "heartbeat 1s ease";
-              this.addEventListener(
-                "animationend",
-                () => {
-                  this.style.animation = "";
-                },
-                { once: true }
-              );
-            }, 100);
 
             const token = localStorage.getItem("jwtToken");
             if (!token) {

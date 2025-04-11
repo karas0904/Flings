@@ -52,7 +52,18 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const incomingLikes = await Like.find({ profileId: userId })
+    // First, clean up expired likes
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    await Like.deleteMany({
+      status: "pending",
+      timestamp: { $lt: threeDaysAgo },
+    });
+
+    const incomingLikes = await Like.find({
+      profileId: userId,
+      status: "pending",
+      expiresAt: { $gt: new Date() }, // Only get non-expired likes
+    })
       .populate("userId", "firstName photos")
       .lean();
 
@@ -66,6 +77,14 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
     const profilesMap = new Map();
 
     incomingLikes.forEach((like) => {
+      // Calculate remaining time
+      const remainingTime = Math.max(
+        0,
+        Math.floor(
+          (new Date(like.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)
+        )
+      );
+
       profilesMap.set(like.userId._id.toString(), {
         id: like.userId._id,
         name: like.userId.firstName,
@@ -73,6 +92,7 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
         status: like.status,
         timestamp: like.timestamp,
         direction: "incoming",
+        remainingDays: remainingTime, // Add remaining days
       });
     });
 
@@ -90,9 +110,10 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
     const profiles = Array.from(profilesMap.values());
 
     if (!profiles.length) {
-      return res
-        .status(200)
-        .json({ message: "No one has liked your profile yet", profiles: [] });
+      return res.status(200).json({
+        message: "No one has liked your profile yet",
+        profiles: [],
+      });
     }
 
     res.status(200).json({ message: "Profiles related to you", profiles });
@@ -175,7 +196,7 @@ router.get("/matches", authenticateToken, async (req, res) => {
 
     // Process matches and fetch latest messages
     for (const match of allMatches) {
-      let matchId, otherUser, snippet, timestamp, score;
+      let matchId, otherUser, otherUserId, snippet, timestamp, score;
 
       if (match.userId) {
         // Like match
@@ -191,39 +212,44 @@ router.get("/matches", authenticateToken, async (req, res) => {
         score = 0;
       }
 
-      // Fetch the latest message for this matchId
-      const latestMessage = await Message.findOne({ matchId })
-        .sort({ createdAt: -1 }) // Sort by most recent
-        .lean();
+      otherUserId = otherUser._id.toString();
 
-      if (latestMessage) {
-        snippet = latestMessage.content;
-        timestamp = latestMessage.createdAt;
-      } else if (match.comment) {
-        // Fallback to rose comment if no messages exist
-        snippet = match.comment;
-        timestamp = match.updatedAt || match.createdAt;
-      } else {
-        snippet = "Say hi!";
-        timestamp = match.timestamp || match.createdAt;
+      // Only process if we haven't already added this user to matches
+      if (!uniqueMatches.has(otherUserId)) {
+        // Fetch the latest message for this matchId
+        const latestMessage = await Message.findOne({ matchId })
+          .sort({ createdAt: -1 })
+          .lean();
+
+        if (latestMessage) {
+          snippet = latestMessage.content;
+          timestamp = latestMessage.createdAt;
+        } else if (match.comment) {
+          snippet = match.comment;
+          timestamp = match.updatedAt || match.createdAt;
+        } else {
+          snippet = "Say hi!";
+          timestamp = match.timestamp || match.createdAt;
+        }
+
+        uniqueMatches.set(otherUserId, {
+          matchId,
+          otherUserId,
+          name: otherUser.firstName || "Unknown",
+          photo:
+            otherUser.photos && otherUser.photos.length > 0
+              ? otherUser.photos[0]
+              : "default-profile.jpg",
+          snippet,
+          time: timestamp
+            ? new Date(timestamp).toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "Just now",
+          score,
+        });
       }
-
-      uniqueMatches.set(matchId, {
-        matchId,
-        name: otherUser.firstName || "Unknown",
-        photo:
-          otherUser.photos && otherUser.photos.length > 0
-            ? otherUser.photos[0]
-            : "default-profile.jpg",
-        snippet,
-        time: timestamp
-          ? new Date(timestamp).toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            })
-          : "Just now",
-        score,
-      });
     }
 
     const profiles = Array.from(uniqueMatches.values());
@@ -960,6 +986,37 @@ router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
     res.status(200).json({ message: "Liked profile removed successfully" });
   } catch (error) {
     console.error("Error removing liked profile:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Check save limit
+router.post("/check-save-limit", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  try {
+    const savedToday = await User.findOne(
+      {
+        _id: userId,
+        "savedProfiles.saveDate": {
+          $gte: today,
+        },
+      },
+      { "savedProfiles.$": 1 }
+    );
+
+    const saveCount = savedToday ? savedToday.savedProfiles.length : 0;
+    const canSave = saveCount < 3; // Maximum 3 saves per day
+
+    res.json({
+      canSave,
+      remainingSaves: 3 - saveCount,
+      savedToday: saveCount,
+    });
+  } catch (error) {
+    console.error("Error checking save limit:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Amourette</title>
-    <link rel="icon" type="image/svg" href="assets/icons/Frame 1.svg" />
+    <link rel="icon" type="image/svg" href="assets/icons/Logo.svg" />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
@@ -408,24 +408,60 @@
         z-index: 1000;
         background: rgba(255, 255, 255, 1);
         border-radius: 20px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        box-shadow: -20px 20px 80px rgba(255, 255, 255, 0.27);
         opacity: 1;
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
+        overflow: hidden;
+        border: 5px solid rgba(128, 128, 128, 0.307);
       }
 
       .carousel-card.expanded .card-image {
         width: 100%;
-        height: 100%;
+        height: 85%;
+        position: relative;
+        border-bottom-left-radius: 0; /* Remove bottom radius */
+        border-bottom-right-radius: 0; /* Remove bottom radius */
+        border-radius: 0px 0 20px 20px;
+        box-shadow: 0 30px 50px rgba(0, 0, 0, 0.575); /* Keep shadow for elevation */
         overflow: hidden;
+        z-index: 2; /* Add z-index to place above footer */
       }
 
       .carousel-card.expanded .card-image img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 20px 0 0 20px;
-        transition: opacity 0.5s ease; /* Fade transition only when expanded */
+        border-radius: 20px 20px 0 0; /* Only round top corners */
+        transition: opacity 0.5s ease;
+      }
+
+      .carousel-card.expanded .overlay-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        bottom: 0;
+        left: 0;
+        transform: none;
+        width: 100%;
+        height: 15%;
+        background: rgb(255, 255, 255);
+        padding: 15px;
+        border-radius: 0 0 20px 20px;
+        border: none; /* Remove border */
+        z-index: 1; /* Place below the image */
+      }
+
+      .carousel-card.expanded .bio-text {
+        font-size: 14px;
+        color: #333;
+        margin: auto 0; /* Center text vertically */
+        overflow-y: auto;
+        max-height: 100%;
+        padding: 10px;
+        text-align: center;
+        font-style: italic;
       }
 
       .carousel-card.expanded .card-image img.fade-out {
@@ -438,12 +474,6 @@
 
       .carousel-card.expanded .card-text {
         display: none;
-      }
-
-      .carousel-card.expanded .overlay-box {
-        display: flex; /* Add Flexbox */
-        justify-content: center; /* Center horizontally */
-        align-items: center; /* Center vertically */
       }
 
       /* Navigation Buttons */
@@ -505,7 +535,10 @@
         .carousel-card.expanded {
           width: 90%;
           height: 70%;
-          transform: scale(1.3);
+        }
+
+        .carousel-card.expanded .bio-text {
+          font-size: 12px;
         }
       }
 
@@ -535,7 +568,10 @@
         .carousel-card.expanded {
           width: 95%;
           height: 60%;
-          transform: scale(1.2);
+        }
+
+        .carousel-card.expanded .bio-text {
+          font-size: 11px;
         }
 
         .carousel-nav {

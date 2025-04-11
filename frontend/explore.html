@@ -1300,7 +1300,10 @@
         <div class="profile-details-content" id="profileDetailsContent">
           <div class="detail-section" id="imageSection">
             <img id="profileImage" alt="Profile Image" />
-            <button class="heart-button detail-heart-button">
+            <button
+              class="heart-button detail-heart-button"
+              id="detailHeartButton"
+            >
               <img
                 src="/assets/icons/heart-icon.png"
                 alt="Heart Icon"
@@ -1546,7 +1549,7 @@
           );
           console.log("Filtered profiles:", profiles);
 
-          // Fetch the current user's likes
+          // Fetch the current user's likes (incoming and outgoing)
           const likesResponse = await fetch(
             "http://localhost:3000/api/liked-profiles",
             {
@@ -1565,6 +1568,11 @@
           const likedProfileIds = new Set(
             Array.isArray(myLikes.profiles)
               ? myLikes.profiles
+                  .filter(
+                    (like) =>
+                      like.direction === "outgoing" ||
+                      like.direction === "matched"
+                  )
                   .map((like) => like.id?.toString())
                   .filter(Boolean)
               : []
@@ -1635,7 +1643,7 @@
             };
             return {
               ...profile,
-              isLiked: likedProfileIds.has(profileIdStr),
+              isLiked: likedProfileIds.has(profileIdStr), // True if user liked this profile (outgoing or matched)
               isSaved: savedProfileIds.has(profileIdStr),
               hasRose: roseInfo.hasRose,
               comment: roseInfo.comment,
@@ -1754,7 +1762,9 @@
 
           for (let i = start; i < end; i++) {
             const profile = profiles[i];
-            console.log("Appending profile:", profile.name, profile._id);
+            console.log(
+              `Appending profile: ${profile.name}, ID: ${profile._id}, isLiked: ${profile.isLiked}`
+            );
             const profileCard = document.createElement("div");
             profileCard.classList.add("profile-card");
 
@@ -1823,8 +1833,17 @@
 
             const heartButton = document.createElement("button");
             heartButton.classList.add("heart-button");
+            // Explicitly set the active class based on profile.isLiked
             if (profile.isLiked) {
               heartButton.classList.add("active");
+              console.log(
+                `Profile ${profile._id} heart button initialized as active`
+              );
+            } else {
+              heartButton.classList.remove("active");
+              console.log(
+                `Profile ${profile._id} heart button initialized as inactive`
+              );
             }
             const heartIcon = document.createElement("img");
             heartIcon.src = "assets/icons/heart-icon.png";
@@ -1849,12 +1868,12 @@
             // Heart button event listener
             heartButton.addEventListener("click", async function () {
               const wasLiked = this.classList.contains("active");
-              this.classList.toggle("active");
+              this.classList.toggle("active"); // Toggle immediately for UI responsiveness
 
               const token = localStorage.getItem("jwtToken");
               if (!token) {
                 await showCustomAlert("Please log in to like profiles!");
-                this.classList.toggle("active", wasLiked);
+                this.classList.toggle("active", wasLiked); // Revert if not logged in
                 return;
               }
 
@@ -1874,20 +1893,29 @@
 
                 const result = await response.json();
                 if (response.ok) {
-                  console.log("Like saved:", result);
-                  profile.isLiked = !wasLiked;
+                  console.log("Like action successful:", result);
+                  profile.isLiked = !wasLiked; // Update local profile state
+                  console.log(
+                    `Profile ${profile._id} isLiked updated to: ${profile.isLiked}`
+                  );
+                  // Ensure button state matches profile.isLiked
+                  if (profile.isLiked) {
+                    this.classList.add("active");
+                  } else {
+                    this.classList.remove("active");
+                  }
                 } else {
-                  console.error("Like failed:", result);
-                  this.classList.toggle("active", wasLiked);
+                  console.error("Like action failed:", result);
+                  this.classList.toggle("active", wasLiked); // Revert on failure
                   await showCustomAlert(
-                    "Failed to like profile: " + result.message
+                    "Failed to like/unlike profile: " + result.message
                   );
                 }
               } catch (error) {
-                console.error("Error liking profile:", error);
-                this.classList.toggle("active", wasLiked);
+                console.error("Error performing like action:", error);
+                this.classList.toggle("active", wasLiked); // Revert on error
                 await showCustomAlert(
-                  "An error occurred while liking the profile."
+                  "An error occurred while liking/unliking the profile."
                 );
               }
             });
@@ -2042,7 +2070,7 @@
                     "Rose sent successfully! You can now add a comment."
                   );
                 } else {
-                  console.error("Rose failed:", result);
+                  console.error("Failed to send Rose:", result);
                   await showCustomAlert(
                     result.message || "Failed to send Rose"
                   );
@@ -2109,6 +2137,21 @@
               profilesElements[index].querySelector(".comment-input");
             const currentCommentInbox =
               profilesElements[index].querySelector(".comment-inbox");
+            const currentHeartButton =
+              profilesElements[index].querySelector(".heart-button");
+
+            // Sync heart button state
+            if (currentProfile.isLiked) {
+              currentHeartButton.classList.add("active");
+              console.log(
+                `Profile ${currentProfile._id} heart button set to active in scrollToProfile`
+              );
+            } else {
+              currentHeartButton.classList.remove("active");
+              console.log(
+                `Profile ${currentProfile._id} heart button set to inactive in scrollToProfile`
+              );
+            }
 
             if (currentProfile.hasRose) {
               roseButton.classList.add("active");
@@ -2307,44 +2350,74 @@
           const detailHeartButton = document.querySelector(
             ".detail-heart-button"
           );
-          detailHeartButton.addEventListener("click", async function () {
-            this.classList.toggle("active");
+          // Initialize based on a new property, e.g., profile.isPhotoLiked (set this elsewhere if needed)
+          if (profile.isPhotoLiked) {
+            detailHeartButton.classList.add("active");
+            console.log(
+              `Profile ${profile._id} detail heart button initialized as active`
+            );
+          } else {
+            detailHeartButton.classList.remove("active");
+            console.log(
+              `Profile ${profile._id} detail heart button initialized as inactive`
+            );
+          }
+
+          // Remove any previous event listeners
+          detailHeartButton.replaceWith(detailHeartButton.cloneNode(true));
+          const newDetailHeartButton = document.querySelector(
+            ".detail-heart-button"
+          );
+
+          // Add event listener with new endpoint
+          newDetailHeartButton.addEventListener("click", async function (e) {
+            e.preventDefault();
 
             const token = localStorage.getItem("jwtToken");
             if (!token) {
-              await showCustomAlert("Please log in to like profiles!");
+              showCustomAlert("Please log in to like photos.");
               return;
             }
 
-            const profileId = profile._id;
+            const isCurrentlyLiked = this.classList.contains("active");
+            this.classList.toggle("active"); // Immediate UI feedback
+
             try {
               const response = await fetch(
-                "http://localhost:3000/api/like-profile",
+                "http://localhost:3000/api/like-photo",
                 {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                   },
-                  body: JSON.stringify({ profileId }),
+                  body: JSON.stringify({
+                    profileId: profile._id,
+                    isLiked: !isCurrentlyLiked, // Explicitly send the new state
+                  }),
                 }
               );
 
-              const result = await response.json();
-              if (response.ok) {
-                console.log("Like saved:", result);
-                await showCustomAlert("Profile liked successfully!");
-              } else {
-                console.error("Like failed:", result);
-                await showCustomAlert(
-                  "Failed to like profile: " + result.message
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                  errorData.message || "Failed to like/unlike photo"
                 );
               }
-            } catch (error) {
-              console.error("Error liking profile:", error);
-              await showCustomAlert(
-                "An error occurred while liking the profile."
+
+              const result = await response.json();
+              profile.isPhotoLiked = result.isLiked; // Track photo-specific like state
+              console.log(
+                `Photo for profile ${profile._id} ${
+                  profile.isPhotoLiked ? "liked" : "unliked"
+                } successfully`
               );
+
+              // No sync with heart-button since they’re separate
+            } catch (error) {
+              console.error("Error liking/unliking photo:", error);
+              this.classList.toggle("active"); // Revert UI on error
+              showCustomAlert(`Error: ${error.message}`);
             }
           });
         }

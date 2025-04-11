@@ -30,14 +30,111 @@
         padding: 20px;
       }
 
+      /* Sidebar */
+      .left-sidebar {
+        width: 60px;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        color: #fff;
+        position: fixed;
+        height: 100vh;
+        z-index: 100;
+        left: 0; /* Add this to stick it to the left */
+        top: 0; /* Ensure it starts from the top */
+      }
+
+      .left-sidebar .logo {
+        font-size: 14px;
+        font-weight: bold;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        margin-bottom: 40px;
+        text-decoration: none;
+        color: #fff;
+      }
+
+      .left-sidebar .icons-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        justify-content: center;
+      }
+
+      .left-sidebar .icon-btn {
+        font-size: 24px;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        width: 40px;
+        height: 40px;
+        text-decoration: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: color 0.3s, filter 0.3s, background-color 0.3s;
+        margin: 10px 0;
+      }
+
+      .left-sidebar .icon-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .left-sidebar .icons-container:hover .icon-btn:not(:hover) {
+        filter: blur(2px);
+      }
+
+      .heart-icon:hover {
+        color: rgb(255, 52, 52);
+        transition: 0.5s;
+      }
+
+      .left-sidebar .separator {
+        width: 20px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.5);
+        margin: 10px 0;
+      }
+
+      .left-sidebar .profile-icon {
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-top: auto;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        transition: outline 0.3s;
+      }
+
+      .left-sidebar .profile-icon:hover {
+        outline: 5px solid rgba(144, 136, 136, 0.432);
+      }
+
+      .left-sidebar .profile-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
       .profile-container {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+        padding: 20px;
         position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 10px;
-        width: 60%;
-        max-width: 1200px;
         height: 100vh;
         justify-content: center;
       }
@@ -72,76 +169,6 @@
         top: calc(50% + 210px);
         box-shadow: none;
         z-index: 0;
-      }
-
-      .sidebar {
-        width: 60px;
-        background: #222;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px 0;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 100;
-      }
-
-      .sidebar .brand {
-        font-size: 24px;
-        font-weight: bold;
-        color: #fff;
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        margin-top: 20px;
-      }
-
-      .icon-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        flex-grow: 1;
-        justify-content: center;
-      }
-
-      .sidebar-icon {
-        color: #ccc;
-        font-size: 24px;
-        margin: 15px 0;
-        cursor: pointer;
-        transition: color 0.3s ease-out, transform 0.3s ease-out;
-      }
-
-      .sidebar-icon.heart-icon:hover {
-        color: #ff4444;
-        transform: scale(1.2);
-      }
-
-      .sidebar-icon:not(.heart-icon):hover {
-        color: #fff;
-        transform: scale(1.2);
-      }
-
-      .profile-icon {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin-top: auto;
-        margin-bottom: 20px;
-        box-sizing: border-box;
-      }
-
-      .profile-icon img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .profile-icon:hover {
-        outline: 5px solid rgba(144, 136, 136, 0.432);
-        transition: 0.5s;
       }
 
       .profile-left {
@@ -397,8 +424,12 @@
       }
 
       @media (max-width: 768px) {
+        .left-sidebar {
+          width: 50px;
+        }
         .profile-container {
-          padding-left: 60px;
+          margin-left: 50px;
+          width: calc(100% - 50px);
         }
         .profile-card,
         .fade-card {
@@ -442,11 +473,12 @@
       }
 
       @media (max-width: 480px) {
-        .sidebar {
-          width: 50px;
+        .left-sidebar {
+          width: 40px;
         }
         .profile-container {
-          padding-left: 50px;
+          margin-left: 40px;
+          width: calc(100% - 40px);
         }
         .profile-card,
         .fade-card {
@@ -473,42 +505,47 @@
         .profile-detail {
           font-size: 10px;
         }
-        .sidebar .brand {
-          font-size: 20px;
+        .left-sidebar .logo {
+          font-size: 12px;
         }
-        .sidebar-icon {
+        .left-sidebar .icon-btn {
           font-size: 20px;
-          margin: 12px 0;
+          width: 30px;
+          height: 30px;
+          margin: 8px 0;
         }
       }
     </style>
   </head>
   <body>
-    <div class="sidebar">
-      <span class="brand">Amourette</span>
-      <div class="icon-container">
-        <a href="explore.html" class="sidebar-icon heart-icon"
-          ><i class="fa-solid fa-heart"></i
-        ></a>
-        <a href="saves.html" class="sidebar-icon"
-          ><i class="fa-solid fa-bookmark"></i
-        ></a>
-        <a href="messages.html" class="sidebar-icon"
-          ><i class="fa-solid fa-comment"></i
-        ></a>
-        <a href="trending.html" class="sidebar-icon"
-          ><i class="fa-solid fa-fire"></i
-        ></a>
+    <div class="left-sidebar">
+      <a href="#" class="logo">Amourette</a>
+      <div class="icons-container">
+        <a href="explore.html" class="icon-btn" aria-label="Explore">
+          <i class="fas fa-heart heart-icon"></i>
+        </a>
+        <div class="separator"></div>
+        <a href="saves.html" class="icon-btn" aria-label="Saves">
+          <i class="fas fa-bookmark"></i>
+        </a>
+        <div class="separator"></div>
+        <a href="messages.html" class="icon-btn" aria-label="Messages">
+          <i class="fas fa-comment"></i>
+        </a>
+        <div class="separator"></div>
+        <a href="trending.html" class="icon-btn" aria-label="Trending">
+          <i class="fas fa-fire"></i>
+        </a>
       </div>
-      <div class="profile-icon">
-        <a href="account.html">
+      <a href="account.html" aria-label="Profile">
+        <div class="profile-icon">
           <img
             src="default-profile.jpg"
             alt="Profile"
             id="sidebarProfileImage"
           />
-        </a>
-      </div>
+        </div>
+      </a>
     </div>
 
     <div class="loading-overlay" id="loadingOverlay">
@@ -599,13 +636,49 @@
     </div>
 
     <script>
+      // Fetch logged-in user's profile image
+      async function fetchLoggedInUserProfile() {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) return;
+
+        try {
+          const response = await fetch("http://localhost:3000/api/profile", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch logged-in user profile");
+          }
+
+          const userData = await response.json();
+          const sidebarProfileImage = document.getElementById(
+            "sidebarProfileImage"
+          );
+          const userPhoto =
+            userData.photos && userData.photos.length > 0
+              ? userData.photos[0]
+              : "default-profile.jpg";
+          sidebarProfileImage.src = userPhoto;
+          localStorage.setItem("profileImage", userPhoto); // Store for consistency
+        } catch (error) {
+          console.error("Error fetching logged-in user profile:", error);
+          document.getElementById("sidebarProfileImage").src =
+            "default-profile.jpg";
+        }
+      }
+
+      // Fetch viewed profile
       async function fetchProfile() {
         const urlParams = new URLSearchParams(window.location.search);
         const profileId = urlParams.get("id");
         const token = localStorage.getItem("jwtToken");
 
-        console.log("Fetching profile with ID:", profileId); // Debug: Log profile ID
-        console.log("Token:", token ? "Present" : "Missing"); // Debug: Check token presence
+        console.log("Fetching profile with ID:", profileId);
+        console.log("Token:", token ? "Present" : "Missing");
 
         if (!profileId || profileId === "undefined") {
           document.getElementById("profileName").textContent =
@@ -640,9 +713,9 @@
           }
 
           const profileData = await response.json();
-          console.log("Profile data received:", profileData); // Debug: Log response data
+          console.log("Profile data received:", profileData);
 
-          // Populate existing fields
+          // Populate viewed profile fields
           document.getElementById("profileName").textContent =
             profileData.firstName || "Unknown";
           document.getElementById("profileBio").textContent =
@@ -655,8 +728,6 @@
             profileData.courseStudy || "N/A";
           document.getElementById("profileEmail").textContent =
             profileData.email || "N/A";
-
-          // Populate new fields
           document.getElementById("profileQuotes").textContent =
             profileData.quotes && profileData.quotes.length > 0
               ? profileData.quotes.join(", ")
@@ -682,17 +753,7 @@
           document.getElementById("profileHeight").textContent =
             profileData.height || "None";
 
-          // Update sidebar profile image
-          const sidebarProfileImage = document.getElementById(
-            "sidebarProfileImage"
-          );
-          const userPhoto =
-            profileData.photos && profileData.photos.length > 0
-              ? profileData.photos[0]
-              : "default-profile.jpg";
-          sidebarProfileImage.src = userPhoto;
-
-          // Carousel setup
+          // Carousel setup for viewed profile photos
           const carousel = document.getElementById("carousel");
           const photos =
             profileData.photos && profileData.photos.length > 0
@@ -730,9 +791,10 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        fetchProfile();
+        fetchLoggedInUserProfile(); // Fetch logged-in user's profile image
+        fetchProfile(); // Fetch viewed profile
 
-        const icons = document.querySelectorAll(".sidebar-icon");
+        const icons = document.querySelectorAll(".icon-btn");
         icons.forEach((icon) => {
           icon.addEventListener("mouseenter", () => {
             icons.forEach((otherIcon) => {

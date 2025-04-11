@@ -441,9 +441,13 @@
       }
 
       .chat-header .actions {
-        display: flex;
+        display: none; /* Hide by default */
         gap: 10px;
         position: relative;
+      }
+
+      .chat-header .actions.visible {
+        display: flex; /* Show when active */
       }
 
       .chat-header .actions .icon {
@@ -1234,9 +1238,7 @@
           if (data.length === 0) {
             messageList.innerHTML = `
               <div class="message-item simplified">
-                <div class="name">No ${
-                  type === "messages" ? "matches" : "pending efforts"
-                } yet.</div>
+                <div class="name">No ${type === "messages" ? "matches" : "pending efforts"} yet.</div>
               </div>
             `;
             return;
@@ -1263,9 +1265,7 @@
               div.dataset.effortId = item.id;
               div.innerHTML = `
                 <div class="avatar">
-                  <img src="${
-                    item.photo || "assets/icons/user-solid.svg"
-                  }" alt="${item.name}'s photo">
+                  <img src="${item.photo || "assets/icons/user-solid.svg"}" alt="${item.name}'s photo">
                 </div>
                 <div class="details">
                   <div class="name">${item.name || "Unknown"}</div>
@@ -1296,111 +1296,103 @@
         }
 
         async function updateMessageList(selectedOption) {
-          messageList.innerHTML = "";
-          blurContainer.style.display = "none";
-          effortsContainer.style.display = "none";
-          plusBtn.style.display = "none";
-          optionsMenu.style.display = "none";
+        messageList.innerHTML = "";
+        blurContainer.style.display = "none";
+        effortsContainer.style.display = "none";
+        plusBtn.style.display = "none";
+        optionsMenu.style.display = "none";
+        const actions = document.querySelector(".chat-header .actions"); // Select actions div
+        actions.classList.remove("visible"); // Hide three-dot icon by default
 
-          const token = localStorage.getItem("jwtToken");
-          if (!token) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          messageList.innerHTML = `
+            <div class="message-item simplified">
+              <div class="name">Please log in to view ${selectedOption}.</div>
+            </div>
+          `;
+          window.location.href = "login.html";
+          return;
+        }
+
+        if (selectedOption.toLowerCase() === "messages") {
+          blurContainer.style.display = "flex";
+          plusBtn.style.display = "block";
+          optionsMenu.style.display = "block";
+
+          messageList.innerHTML = `
+            <div class="message-item simplified">
+              <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
+            </div>
+          `;
+
+          try {
+            const response = await fetch("http://localhost:3000/api/matches", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              credentials: "include",
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            messagesData = result.profiles || [];
+            renderMessageList(messagesData, "messages");
+          } catch (error) {
+            console.error("Error fetching matches:", error);
             messageList.innerHTML = `
               <div class="message-item simplified">
-                <div class="name">Please log in to view ${selectedOption}.</div>
+                <div class="name">Error loading matches: ${error.message}</div>
               </div>
             `;
-            window.location.href = "login.html";
-            return;
           }
+        } else if (selectedOption.toLowerCase() === "efforts") {
+          effortsContainer.style.display = "flex";
+          const effortsContent = document.querySelector(".efforts-content");
+          effortsContent.innerHTML = `
+            <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
+          `;
 
-          if (selectedOption.toLowerCase() === "messages") {
-            blurContainer.style.display = "flex";
-            plusBtn.style.display = "block";
-            optionsMenu.style.display = "block";
+          messageList.innerHTML = `
+            <div class="message-item simplified">
+              <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
+            </div>
+          `;
 
+          try {
+            const response = await fetch("http://localhost:3000/api/efforts", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              credentials: "include",
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            effortsData = result.efforts || [];
+            renderMessageList(effortsData, "efforts");
+          } catch (error) {
+            console.error("Error fetching efforts:", error);
             messageList.innerHTML = `
               <div class="message-item simplified">
-                <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
+                <div class="name">Error loading efforts: ${error.message}</div>
               </div>
             `;
-
-            try {
-              const response = await fetch(
-                "http://localhost:3000/api/matches",
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  credentials: "include",
-                }
-              );
-
-              if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(
-                  `HTTP error! status: ${response.status} - ${errorText}`
-                );
-              }
-
-              const result = await response.json();
-              messagesData = result.profiles || [];
-              renderMessageList(messagesData, "messages");
-            } catch (error) {
-              console.error("Error fetching matches:", error);
-              messageList.innerHTML = `
-                <div class="message-item simplified">
-                  <div class="name">Error loading matches: ${error.message}</div>
-                </div>
-              `;
-            }
-          } else if (selectedOption.toLowerCase() === "efforts") {
-            effortsContainer.style.display = "flex";
-            const effortsContent = document.querySelector(".efforts-content");
-            effortsContent.innerHTML = `
-              <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
-            `;
-
-            messageList.innerHTML = `
-              <div class="message-item simplified">
-                <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
-              </div>
-            `;
-
-            try {
-              const response = await fetch(
-                "http://localhost:3000/api/efforts",
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  credentials: "include",
-                }
-              );
-
-              if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(
-                  `HTTP error! status: ${response.status} - ${errorText}`
-                );
-              }
-
-              const result = await response.json();
-              effortsData = result.efforts || [];
-              renderMessageList(effortsData, "efforts");
-            } catch (error) {
-              console.error("Error fetching efforts:", error);
-              messageList.innerHTML = `
-                <div class="message-item simplified">
-                  <div class="name">Error loading efforts: ${error.message}</div>
-                </div>
-              `;
-            }
           }
         }
+      }
 
         function filterMessageList(query) {
           const selectedOption = dropdownSelected.textContent.toLowerCase();
@@ -1664,49 +1656,40 @@
               return;
             }
 
-            const messageItem = document.querySelector(
-              `.message-item[data-match-id="${matchId}"]`
-            );
+            const messageItem = document.querySelector(`.message-item[data-match-id="${matchId}"]`);
             if (messageItem) {
               messageItem.remove();
             } else {
-              const effortItem = document.querySelector(
-                `.message-item[data-effort-id="${matchId}"]`
-              );
+              const effortItem = document.querySelector(`.message-item[data-effort-id="${matchId}"]`);
               if (effortItem) effortItem.remove();
             }
 
             if (currentMatchId === matchId) {
               const chatBody = document.querySelector(".chat-body");
+              const actions = document.querySelector(".chat-header .actions"); // Select actions div
               chatBody.innerHTML = "<p>User blocked and removed.</p>";
+              actions.classList.remove("visible"); // Hide three-dot icon
               const effortsContent = document.querySelector(".efforts-content");
               if (effortsContent) {
                 effortsContent.innerHTML = "<p>User blocked and removed.</p>";
               }
             }
 
-            const response = await fetch(
-              `http://localhost:3000/api/block/${matchId}`,
-              {
-                method: "DELETE",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                credentials: "include",
-              }
-            );
+            const response = await fetch(`http://localhost:3000/api/block/${matchId}`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              credentials: "include",
+            });
 
             if (!response.ok) {
               const errorText = await response.text();
-              throw new Error(
-                `Failed to block user: ${response.status} - ${errorText}`
-              );
+              throw new Error(`Failed to block user: ${response.status} - ${errorText}`);
             }
 
-            console.log(
-              `User with matchId ${matchId} blocked and removed from interactions`
-            );
+            console.log(`User with matchId ${matchId} blocked and removed from interactions`);
           } catch (error) {
             console.error("Error blocking user:", error);
             alert("Failed to block user: " + error.message);
@@ -1727,66 +1710,67 @@
 
         // Update the loadMessages function to check mute status
         async function loadMessages(matchId, name, score) {
-            const chatBody = document.querySelector(".chat-body");
-            const chatHeaderName = document.querySelector(".chat-header .name");
-            const chatHeaderAvatar = document.querySelector(".chat-header .user-info .avatar");
-            const headerUserInfo = document.getElementById("headerUserInfo");
+          const chatBody = document.querySelector(".chat-body");
+          const chatHeaderName = document.querySelector(".chat-header .name");
+          const chatHeaderAvatar = document.querySelector(".chat-header .user-info .avatar");
+          const headerUserInfo = document.getElementById("headerUserInfo");
+          const actions = document.querySelector(".chat-header .actions"); // Select actions div
 
-            chatBody.innerHTML = "<p>Loading messages...</p>";
-            chatHeaderName.textContent = name;
+          // Show the three-dot icon when a user is selected
+          actions.classList.add("visible");
 
-            const match = messagesData.find((m) => m.matchId === matchId);
-            if (match) {
-                if (match.photo) {
-                    chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
-                } else {
-                    chatHeaderAvatar.innerHTML = "";
-                    chatHeaderAvatar.style.background = "rgba(255, 255, 255, 0.2)";
-                }
+          chatBody.innerHTML = "<p>Loading messages...</p>";
+          chatHeaderName.textContent = name;
 
-                headerUserInfo.dataset.otherUserId = match.otherUserId;
-                
-                // Add this line to check mute status when loading messages
-                checkMuteStatus(matchId, match.otherUserId);
+          const match = messagesData.find((m) => m.matchId === matchId);
+          if (match) {
+            if (match.photo) {
+              chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
+            } else {
+              chatHeaderAvatar.innerHTML = "";
+              chatHeaderAvatar.style.background = "rgba(255, 255, 255, 0.2)";
             }
+            headerUserInfo.dataset.otherUserId = match.otherUserId;
+            checkMuteStatus(matchId, match.otherUserId);
+          }
 
-            socket.emit("loadMessages", matchId, (response) => {
-                if (response.success) {
-                    chatBody.innerHTML = "";
-                    const messages = response.messages;
+          socket.emit("loadMessages", matchId, (response) => {
+            if (response.success) {
+              chatBody.innerHTML = "";
+              const messages = response.messages;
 
-                    if (messages.length === 0 && score >= 6.6) {
-                        let funLine, kinkLine;
-                        if (score >= 6.6 && score <= 7.5) {
-                            funLine = "Sparks are starting to fly!";
-                            kinkLine = "A little twist makes it interesting!";
-                        } else if (score > 7.5 && score <= 8.5) {
-                            funLine = "You're vibing like a perfect playlist!";
-                            kinkLine = "There's a spicy edge to this connection!";
-                        } else if (score > 8.5) {
-                            funLine = "Match made in cosmic harmony!";
-                            kinkLine = "This bond's got some wild chemistry!";
-                        }
-
-                        const scoreDiv = document.createElement("div");
-                        scoreDiv.classList.add("score-info");
-                        scoreDiv.id = "match-score";
-                        scoreDiv.innerHTML = `
-                            <p>Your match score: ${score.toFixed(1)}</p>
-                            <p class="fun-line">${funLine}</p>
-                            <p class="kink-line">${kinkLine}</p>
-                        `;
-                        chatBody.appendChild(scoreDiv);
-                    }
-
-                    messages.forEach((msg) => {
-                        appendMessage(msg);
-                    });
-                } else {
-                    console.error("Error loading messages:", response.error);
-                    chatBody.innerHTML = "<p>Error loading messages</p>";
+              if (messages.length === 0 && score >= 6.6) {
+                let funLine, kinkLine;
+                if (score >= 6.6 && score <= 7.5) {
+                  funLine = "Sparks are starting to fly!";
+                  kinkLine = "A little twist makes it interesting!";
+                } else if (score > 7.5 && score <= 8.5) {
+                  funLine = "You're vibing like a perfect playlist!";
+                  kinkLine = "There's a spicy edge to this connection!";
+                } else if (score > 8.5) {
+                  funLine = "Match made in cosmic harmony!";
+                  kinkLine = "This bond's got some wild chemistry!";
                 }
-            });
+
+                const scoreDiv = document.createElement("div");
+                scoreDiv.classList.add("score-info");
+                scoreDiv.id = "match-score";
+                scoreDiv.innerHTML = `
+                  <p>Your match score: ${score.toFixed(1)}</p>
+                  <p class="fun-line">${funLine}</p>
+                  <p class="kink-line">${kinkLine}</p>
+                `;
+                chatBody.appendChild(scoreDiv);
+              }
+
+              messages.forEach((msg) => {
+                appendMessage(msg);
+              });
+            } else {
+              console.error("Error loading messages:", response.error);
+              chatBody.innerHTML = "<p>Error loading messages</p>";
+            }
+          });
         }
 
         function sendMessage() {

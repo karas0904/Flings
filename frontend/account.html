@@ -1644,10 +1644,10 @@
       <div class="bell-container">
         <i class="fa fa-bell" id="bellIcon"></i>
         <div class="bell-dropdown" id="bellDropdown" style="display: none">
-          <ul id="likedProfilesList"></ul>
+          <ul id="notificationList"></ul>
           <div class="dropdown-footer">
             <i class="fas fa-info-circle"></i>
-            NOTE: Your interests will only appear for 3 days, so be fast to meet the ONE
+            NOTE: Notifications expire after 3 days
           </div>
         </div>
       </div>
@@ -2086,7 +2086,7 @@
           window.history.replaceState({}, document.title, url);
         }
       }
-
+    
       // Function to fetch user profile from MongoDB
       async function fetchUserProfile() {
         const token = localStorage.getItem("jwtToken");
@@ -2095,7 +2095,7 @@
           window.location.href = "login.html";
           return;
         }
-
+    
         try {
           const response = await fetch("http://localhost:3000/api/profile", {
             method: "GET",
@@ -2104,70 +2104,42 @@
               Authorization: `Bearer ${token}`,
             },
           });
-
+    
           const userData = await response.json();
           console.log("Fetched user profile:", userData);
-          console.log("Quotes specifically:", userData.quotes); // Add this
+          console.log("Quotes specifically:", userData.quotes);
           if (!response.ok) {
             throw new Error(userData.message || "Failed to fetch profile");
           }
-
+    
           updateProfileUI(userData);
         } catch (error) {
           console.error("Error fetching profile:", error);
           window.location.href = "login.html";
         }
       }
-
+    
       function updateProfileUI(userData) {
         const profileImage = document.getElementById("profileImage");
         const accountAvatar = document.getElementById("accountAvatar");
         const accountName = document.querySelector(".account-info h1");
         const accountEmail = document.querySelector(".account-info p");
         const pageTitleEmail = document.querySelector(".account-name");
-        const ageValue = document.querySelector(
-          ".info-value[data-field='age']"
-        );
-        const yearValue = document.querySelector(
-          ".info-value[data-field='year']"
-        );
-        const heightValue = document.querySelector(
-          ".info-value[data-field='height']"
-        );
-
-        // Profile info container fields
-        const jobValue = document.querySelector(
-          ".info-label[data-field='job']"
-        );
-        const planToValue = document.querySelector(
-          ".info-label[data-field='planTo']"
-        );
-        const hometownValue = document.querySelector(
-          ".info-label[data-field='hometown']"
-        );
-        const datingIntentionValue = document.querySelector(
-          ".info-label[data-field='datingIntention']"
-        );
-        const nameValue = document.querySelector(
-          ".info-label[data-field='name']"
-        );
-        const petsValue = document.querySelector(
-          ".info-label[data-field='pets']"
-        );
-        const languageValue = document.querySelector(
-          ".info-label[data-field='language']"
-        );
-        const drinkingValue = document.querySelector(
-          ".info-label[data-field='drinking']"
-        );
-        const smokingValue = document.querySelector(
-          ".info-label[data-field='smoking']"
-        );
-        const partyPersonValue = document.querySelector(
-          ".info-label[data-field='partyPerson']"
-        );
-
-        // Update profile image and avatar
+        const ageValue = document.querySelector(".info-value[data-field='age']");
+        const yearValue = document.querySelector(".info-value[data-field='year']");
+        const heightValue = document.querySelector(".info-value[data-field='height']");
+    
+        const jobValue = document.querySelector(".info-label[data-field='job']");
+        const planToValue = document.querySelector(".info-label[data-field='planTo']");
+        const hometownValue = document.querySelector(".info-label[data-field='hometown']");
+        const datingIntentionValue = document.querySelector(".info-label[data-field='datingIntention']");
+        const nameValue = document.querySelector(".info-label[data-field='name']");
+        const petsValue = document.querySelector(".info-label[data-field='pets']");
+        const languageValue = document.querySelector(".info-label[data-field='language']");
+        const drinkingValue = document.querySelector(".info-label[data-field='drinking']");
+        const smokingValue = document.querySelector(".info-label[data-field='smoking']");
+        const partyPersonValue = document.querySelector(".info-label[data-field='partyPerson']");
+    
         if (userData.photos && userData.photos.length > 0) {
           profileImage.src = userData.photos[0];
           accountAvatar.src = userData.photos[0];
@@ -2175,32 +2147,26 @@
           profileImage.src = "default-profile.jpg";
           accountAvatar.src = "default-profile.jpg";
         }
-
-        // Update name and email
+    
         accountName.textContent = userData.firstName || "Unknown";
         accountEmail.textContent = userData.email || "your.email@example.com";
-        pageTitleEmail.textContent = `(${
-          userData.email || "your.email@example.com"
-        })`;
-
-        // Update square box fields
+        pageTitleEmail.textContent = `(${userData.email || "your.email@example.com"})`;
+    
         ageValue.textContent = userData.age !== null ? userData.age : "N/A";
         yearValue.textContent = userData.year || "N/A";
         heightValue.textContent = userData.height || "None";
-
-        // Update profile info container fields
+    
         jobValue.textContent = userData.job || "None";
         planToValue.textContent = userData.planTo || "None";
         hometownValue.textContent = userData.hometown || "None";
         datingIntentionValue.textContent = userData.datingIntention || "None";
-        nameValue.textContent = userData.firstName || "None"; // Using firstName
+        nameValue.textContent = userData.firstName || "None";
         petsValue.textContent = userData.pets || "None";
         languageValue.textContent = userData.language || "None";
         drinkingValue.textContent = userData.drinking || "None";
         smokingValue.textContent = userData.smoking || "None";
         partyPersonValue.textContent = userData.partyPerson || "None";
-
-        // Update quotes
+    
         const quoteBoxes = document.querySelectorAll(".quote-box");
         userData.quotes.forEach((quote, index) => {
           if (quoteBoxes[index]) {
@@ -2208,18 +2174,16 @@
             quoteText.textContent = quote || "Quotes";
           }
         });
-
-        // Populate photos in modal and card stack
+    
         populatePhotos(userData.photos || []);
       }
-
+    
       function populatePhotos(photos) {
         const slots = document.querySelectorAll(".photo-slot");
         const cardLeft = document.querySelector(".card-left");
         const cardMiddle = document.querySelector(".card-middle");
         const cardRight = document.querySelector(".card-right");
-
-        // Reset all slots
+    
         slots.forEach((slot) => {
           const preview = slot.querySelector(".photo-preview");
           const removeButton = slot.querySelector(".remove-photo");
@@ -2228,15 +2192,14 @@
           removeButton.style.display = "none";
           setProfileButton.style.display = "none";
         });
-
-        // Populate slots with photos from MongoDB
+    
         photos.forEach((photoUrl, index) => {
           if (index < slots.length) {
             const slot = slots[index];
             const preview = slot.querySelector(".photo-preview");
             const removeButton = slot.querySelector(".remove-photo");
             const setProfileButton = slot.querySelector(".set-profile-btn");
-
+    
             const img = document.createElement("img");
             img.src = photoUrl;
             preview.innerHTML = "";
@@ -2247,38 +2210,30 @@
             removeButton.onclick = () => removePhoto(slot);
           }
         });
-
-        // Update card stack with first three photos
-        cardLeft.style.backgroundImage = photos[0]
-          ? `url(${photos[0]})`
-          : "none";
+    
+        cardLeft.style.backgroundImage = photos[0] ? `url(${photos[0]})` : "none";
         cardLeft.style.backgroundSize = photos[0] ? "cover" : "auto";
         cardLeft.style.backgroundPosition = photos[0] ? "center" : "auto";
         cardLeft.style.backgroundColor = photos[0] ? "transparent" : "#f8f8f8";
-
-        cardMiddle.style.backgroundImage = photos[1]
-          ? `url(${photos[1]})`
-          : "none";
+    
+        cardMiddle.style.backgroundImage = photos[1] ? `url(${photos[1]})` : "none";
         cardMiddle.style.backgroundSize = photos[1] ? "cover" : "auto";
         cardMiddle.style.backgroundPosition = photos[1] ? "center" : "auto";
         cardMiddle.style.backgroundColor = photos[1] ? "transparent" : "white";
-
-        cardRight.style.backgroundImage = photos[2]
-          ? `url(${photos[2]})`
-          : "none";
+    
+        cardRight.style.backgroundImage = photos[2] ? `url(${photos[2]})` : "none";
         cardRight.style.backgroundSize = photos[2] ? "cover" : "auto";
         cardRight.style.backgroundPosition = photos[2] ? "center" : "auto";
         cardRight.style.backgroundColor = photos[2] ? "transparent" : "#f8f8f8";
       }
-
-      // Function to save updated profile data to MongoDB
+    
       async function saveProfileData(field, value) {
         const token = localStorage.getItem("jwtToken");
         if (!token) {
           console.error("No JWT token found");
           return;
         }
-
+    
         try {
           const response = await fetch("http://localhost:3000/api/profile", {
             method: "POST",
@@ -2288,28 +2243,23 @@
             },
             body: JSON.stringify({ [field]: value }),
           });
-
+    
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || "Failed to save profile data");
           }
-
+    
           console.log(`Saved ${field}: ${value}`);
         } catch (error) {
           console.error("Error saving profile data:", error);
         }
       }
-
-      // Sign out functionality
-      document
-        .getElementById("signOutButton")
-        .addEventListener("click", signOut);
-
+    
       async function signOut() {
         const button = document.getElementById("signOutButton");
         button.textContent = "Logging Out...";
         button.disabled = true;
-
+    
         const token = localStorage.getItem("jwtToken");
         if (token) {
           try {
@@ -2320,7 +2270,7 @@
                 "Content-Type": "application/json",
               },
             });
-
+    
             if (!response.ok) {
               console.error("Logout failed on server:", response.status);
             } else {
@@ -2330,54 +2280,43 @@
             console.error("Error during logout:", error);
           }
         }
-
+    
         localStorage.removeItem("jwtToken");
         window.location.href = "login.html";
-
-        // Reset button (though redirect makes this unlikely to be seen)
+    
         button.textContent = "SIGN OUT";
         button.disabled = false;
       }
-
-      // Delete account functionality
-      document
-        .getElementById("deleteAccountButton")
-        .addEventListener("click", deleteAccount);
-
+    
       async function deleteAccount() {
         const button = document.getElementById("deleteAccountButton");
-        const confirmDelete = confirm(
-          "Are you sure you want to delete your account? This cannot be undone."
-        );
+        const confirmDelete = confirm("Are you sure you want to delete your account? This cannot be undone.");
         if (!confirmDelete) return;
-
+    
         button.textContent = "Deleting...";
         button.disabled = true;
-
+    
         const token = localStorage.getItem("jwtToken");
         if (!token) {
           alert("You are not logged in!");
           window.location.href = "login.html";
           return;
         }
-
+    
         try {
-          const response = await fetch(
-            "http://localhost:3000/api/delete-account",
-            {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
+          const response = await fetch("http://localhost:3000/api/delete-account", {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+    
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || "Failed to delete account");
           }
-
+    
           alert("Your account has been deleted successfully.");
           localStorage.removeItem("jwtToken");
           window.location.href = "login.html";
@@ -2389,15 +2328,13 @@
           button.disabled = false;
         }
       }
-
-      // Enable editing for profile info fields
+    
       function enableEdit(button) {
         const infoItem = button.closest(".info-item");
         const infoLabel = infoItem.querySelector(".info-label");
         const currentText = infoLabel.textContent;
         const field = infoLabel.dataset.field;
-
-        // Replace text with input
+    
         const input = document.createElement("input");
         input.type = "text";
         input.value = currentText === "None" ? "" : currentText;
@@ -2406,153 +2343,280 @@
         infoLabel.innerHTML = "";
         infoLabel.appendChild(input);
         input.focus();
-
-        // Change button to save icon
+    
         button.innerHTML = '<i class="fa-solid fa-check"></i>';
         button.onclick = () => saveEdit(infoItem, field);
       }
-
-      // Save edited profile info field
+    
       function saveEdit(infoItem, field) {
         const infoLabel = infoItem.querySelector(".info-label");
         const input = infoLabel.querySelector("input");
         const newValue = input.value.trim() || "None";
         infoLabel.textContent = newValue;
-
+    
         const button = infoItem.querySelector(".arrow-btn");
         button.innerHTML = '<i class="fas fa-chevron-right"></i>';
         button.onclick = () => enableEdit(button);
-
-        // Save to MongoDB
+    
         saveProfileData(field, newValue);
       }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        storeToken();
-        fetchUserProfile();
-
-        // Sidebar icon hover effects
-        const icons = document.querySelectorAll(".sidebar-icon");
-        icons.forEach((icon) => {
-          icon.addEventListener("mouseenter", () => {
-            icons.forEach((otherIcon) => {
-              if (otherIcon !== icon) {
-                otherIcon.style.filter = "blur(2px)";
-                otherIcon.style.opacity = "0.5";
-              } else {
-                otherIcon.style.transform = "scale(1.2)";
-              }
-            });
+    
+      // Fetch notifications (combines like and photo_like)
+      async function fetchNotifications() {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found");
+          return;
+        }
+    
+        const notificationList = document.getElementById("notificationList");
+        notificationList.innerHTML = '<li>Loading...</li>';
+    
+        try {
+          const response = await fetch("http://localhost:3000/api/notifications", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           });
-          icon.addEventListener("mouseleave", () => {
-            icons.forEach((otherIcon) => {
-              otherIcon.style.filter = "none";
-              otherIcon.style.opacity = "1";
-              otherIcon.style.transform = "scale(1)";
-            });
-          });
-        });
-
-        // Sign out button
-        document
-          .getElementById("signOutButton")
-          .addEventListener("click", signOut);
-
-        // Avatar upload
-        document
-          .getElementById("changeAvatarText")
-          .addEventListener("click", function () {
-            document.getElementById("avatarUpload").click();
-          });
-
-        document
-          .getElementById("avatarUpload")
-          .addEventListener("change", function (event) {
-            const file = event.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = function (e) {
-                document.getElementById("accountAvatar").src = e.target.result;
-                document.getElementById("profileImage").src = e.target.result;
-                // Optionally save to backend here (POST /api/profile with photo)
-              };
-              reader.readAsDataURL(file);
-            }
-          });
-
-        // Square box edit functionality
-        // Square box edit functionality
-        const editBtn = document.getElementById("squareBoxEdit");
-        const squareBox = document.querySelector(".square-box");
-        const infoValues = squareBox.querySelectorAll(".info-value");
-        let isEditing = false;
-
-        editBtn.addEventListener("click", function () {
-          isEditing = !isEditing;
-          editBtn.classList.toggle("active");
-
-          if (isEditing) {
-            editBtn.textContent = "SAVE";
-            infoValues.forEach((value) => {
-              const currentText = value.textContent;
-              const field = value.dataset.field;
-              const input = document.createElement("input");
-              input.type = field === "age" ? "number" : "text"; // Use number for age
-              input.value =
-                currentText === "N/A" || currentText === "None"
-                  ? ""
-                  : currentText;
-              input.className = "edit-input";
-              value.innerHTML = "";
-              value.appendChild(input);
-            });
-          } else {
-            editBtn.textContent = "EDIT";
-            infoValues.forEach((value) => {
-              const input = value.querySelector("input");
-              const field = value.dataset.field;
-              let newText = input.value.trim();
-              if (field === "age") {
-                newText = newText ? parseInt(newText) : null; // Convert to number or null
-              } else {
-                newText = newText || "None";
-              }
-              value.innerHTML = newText === null ? "N/A" : newText;
-              saveProfileData(field, newText);
-            });
+    
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.message || "Failed to fetch notifications");
           }
-        });
+    
+          console.log("Fetched notifications:", result.notifications);
+          displayNotifications(result.notifications);
+        } catch (error) {
+          console.error("Error fetching notifications:", error);
+          notificationList.innerHTML = '<li class="empty-message">Error loading notifications</li>';
+        }
+      }
+    
+      // Display notifications with heart/cross for "like" type only
+      function displayNotifications(notifications) {
+        const notificationList = document.getElementById("notificationList");
+        notificationList.innerHTML = "";
+    
+        if (!notifications || notifications.length === 0) {
+          notificationList.innerHTML = '<li class="empty-message">No notifications yet</li>';
+          return;
+        }
+    
+        notifications.forEach((notif) => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = `profile.html?id=${notif.senderId}`;
+          a.style.display = "flex";
+          a.style.alignItems = "center";
+          a.style.padding = "10px";
+          a.style.borderBottom = "1px solid rgba(255, 255, 255, 0.1)";
+          a.style.textDecoration = "none";
+          if (!notif.read) {
+            a.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+          }
+    
+          const img = document.createElement("img");
+          img.src = notif.senderPhoto || "default-profile.jpg";
+          img.alt = "Sender's photo";
+          img.style.width = "30px";
+          img.style.height = "30px";
+          img.style.borderRadius = "50%";
+          img.style.marginRight = "10px";
+    
+          const textContainer = document.createElement("div");
+          textContainer.style.flex = "1";
+          textContainer.innerHTML = `
+            ${notif.message}<br>
+            <small>${notif.remainingDays} day${notif.remainingDays !== 1 ? "s" : ""} left</small>
+          `;
+    
+          a.appendChild(img);
+          a.appendChild(textContainer);
+    
+          // Add heart/cross buttons only for "like" type
+          if (notif.type === "like") {
+            const iconContainer = document.createElement("div");
+            iconContainer.style.display = "flex";
+            iconContainer.style.alignItems = "center";
+            iconContainer.style.gap = "10px";
+    
+            const heartIcon = document.createElement("i");
+            heartIcon.classList.add("far", "fa-heart");
+            heartIcon.style.cursor = "pointer";
+            heartIcon.addEventListener("click", async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
 
-        // Photo stack modal
-        document
-          .querySelector(".add-button")
-          .addEventListener("click", function () {
-            document.getElementById("photoModal").style.display = "flex";
-          });
+              // Add transition for smooth color change
+              heartIcon.style.transition = "color 0.3s ease"; // 0.3s smooth transition
+              heartIcon.classList.remove("far");
+              heartIcon.classList.add("fas");
+              heartIcon.style.color = "#ff0000"; // Or your preferred color, e.g., "#ff69b4"
 
-        document
-          .getElementById("closeModal")
-          .addEventListener("click", function () {
-            document.getElementById("photoModal").style.display = "none";
-          });
+              // Wait for color transition to complete, then show small hearts
+              setTimeout(async () => {
+                createFloatingHearts(heartIcon);
+                await toggleLike(notif.senderId, true); // Call toggleLike after animation starts
+              }, 300); // Delay matches transition duration (0.3s)
 
-        document
-          .getElementById("savePhotos")
-          .addEventListener("click", function () {
-            document.getElementById("photoModal").style.display = "none";
-            savePhotosToStack();
-          });
-
-        document
-          .getElementById("photoModal")
-          .addEventListener("click", function (e) {
-            if (e.target === this) {
-              this.style.display = "none";
+              // Remove the item after both color change and hearts animation
+              setTimeout(() => {
+                li.remove();
+                checkEmptyNotifications();
+              }, 1800); // 300ms (color) + 1500ms (hearts animation) = 1800ms
+            });
+            iconContainer.appendChild(heartIcon);
+    
+            const crossIcon = document.createElement("i");
+            crossIcon.classList.add("fa-solid", "fa-times");
+            crossIcon.style.cursor = "pointer";
+            crossIcon.addEventListener("click", async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              await removeLikedProfile(notif.senderId, li);
+            });
+            iconContainer.appendChild(crossIcon);
+    
+            a.appendChild(iconContainer);
+          }
+    
+          li.appendChild(a);
+          notificationList.appendChild(li);
+    
+          // Mark as read on click (optional)
+          a.addEventListener("click", async (e) => {
+            if (!notif.read && notif.type !== "like") { // Skip for "like" to preserve buttons
+              try {
+                await fetch(`http://localhost:3000/api/notifications/${notif.id}/read`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                });
+                a.style.backgroundColor = "transparent";
+              } catch (error) {
+                console.error("Error marking notification as read:", error);
+              }
             }
           });
-      });
+        });
+      }
+    
+      // Toggle like (accept incoming like)
+      async function toggleLike(profileId, isLiked) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found");
+          return;
+        }
 
-      // Quote editing functionality
+        try {
+          const response = await fetch("http://localhost:3000/api/toggle-like", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ profileId }),
+          });
+
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.message || "Failed to toggle like");
+          }
+          console.log("Toggle like response:", result); // Debug
+        } catch (error) {
+          console.error("Error toggling like:", error);
+          alert("Failed to match: " + error.message);
+        }
+      }
+    
+      // Remove liked profile (reject incoming like)
+      async function removeLikedProfile(profileId, listItem) {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+          console.error("No JWT token found");
+          return;
+        }
+    
+        try {
+          const response = await fetch("http://localhost:3000/api/remove-liked-profile", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ profileId }),
+          });
+    
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to remove liked profile");
+          }
+    
+          listItem.remove();
+          console.log(`Profile ${profileId} removed from liked profiles`);
+          checkEmptyNotifications();
+        } catch (error) {
+          console.error("Error removing liked profile:", error);
+          alert("Failed to remove profile: " + error.message);
+        }
+      }
+    
+      // Check if notification list is empty
+      function checkEmptyNotifications() {
+        const notificationList = document.getElementById("notificationList");
+        if (notificationList.children.length === 0) {
+          notificationList.innerHTML = '<li class="empty-message">No notifications yet</li>';
+        }
+      }
+    
+      // Create floating hearts animation
+      function createFloatingHearts(element) {
+        const dropdown = document.querySelector(".bell-dropdown");
+        const rect = element.getBoundingClientRect();
+        const heartCount = 5;
+    
+        for (let i = 0; i < heartCount; i++) {
+          setTimeout(() => {
+            const heart = document.createElement("i");
+            heart.classList.add("fas", "fa-heart", "floating-heart");
+            heart.style.left = `${Math.random() * 40 + rect.left - dropdown.getBoundingClientRect().left}px`;
+            heart.style.bottom = "40px";
+            heart.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+            dropdown.appendChild(heart);
+    
+            setTimeout(() => {
+              heart.remove();
+            }, 1500);
+          }, i * 100);
+        }
+      }
+    
+      // Bell icon click handler
+      document.getElementById("bellIcon").addEventListener("click", function (e) {
+        e.stopPropagation();
+        const dropdown = document.getElementById("bellDropdown");
+        if (dropdown.style.display === "none" || dropdown.style.display === "") {
+          fetchNotifications();
+          dropdown.style.display = "block";
+        } else {
+          dropdown.style.display = "none";
+        }
+      });
+    
+      // Close dropdown when clicking outside
+      document.addEventListener("click", function (e) {
+        const dropdown = document.getElementById("bellDropdown");
+        const bellIcon = document.getElementById("bellIcon");
+        if (!bellIcon.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.style.display = "none";
+        }
+      });
+    
       function enableQuoteEdit(button) {
         const quoteBox = button.parentElement;
         const quoteText = quoteBox.querySelector(".quote-text");
@@ -2575,55 +2639,45 @@
         setTimeout(() => {
           input.style.opacity = "1";
         }, 10);
-        input.value =
-          quoteText.textContent === "Quotes" ? "" : quoteText.textContent;
+        input.value = quoteText.textContent === "Quotes" ? "" : quoteText.textContent;
         input.focus();
         button.innerHTML = '<i class="fa-solid fa-check"></i>';
         button.onclick = () => saveQuote(quoteBox);
       }
-
+    
       async function saveQuote(quoteBox) {
         const input = quoteBox.querySelector(".quote-input");
         const quoteText = quoteBox.querySelector(".quote-text");
         const button = quoteBox.querySelector(".corner-plus-btn");
-
-        console.log("Input value:", input.value); // Should show "hi"
-
-        // Update the UI and collect quotes after the update
+    
         input.style.opacity = "0";
         await new Promise((resolve) => {
           setTimeout(() => {
             input.style.display = "none";
             quoteText.textContent = input.value.trim() || "Quotes";
             quoteText.style.opacity = "1";
-
-            // Collect all quotes from the page *after* UI update
+    
             const allQuoteBoxes = document.querySelectorAll(".quote-box");
             const quotes = Array.from(allQuoteBoxes).map((box) => {
               const text = box.querySelector(".quote-text").textContent;
               return text === "Quotes" ? "" : text;
             });
-
-            console.log("Quotes array to send:", quotes); // Should now show ["hi", "", ""]
-
-            // Send quotes to the backend
-            saveQuotesToProfile(quotes).then(resolve); // Chain the promise
+    
+            saveQuotesToProfile(quotes).then(resolve);
           }, 300);
         });
-
-        // Reset button after everything
+    
         button.innerHTML = '<i class="fa-solid fa-plus"></i>';
         button.onclick = () => enableQuoteEdit(button);
       }
-
-      // New function to send quotes to the server
+    
       async function saveQuotesToProfile(quotes) {
         const token = localStorage.getItem("jwtToken");
         if (!token) {
           console.error("No JWT token found");
           return;
         }
-
+    
         try {
           const response = await fetch("http://localhost:3000/api/profile", {
             method: "POST",
@@ -2633,26 +2687,25 @@
             },
             body: JSON.stringify({ quotes: quotes }),
           });
-
+    
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || "Failed to save quotes");
           }
-
+    
           console.log("Quotes saved successfully:", quotes);
         } catch (error) {
           console.error("Error saving quotes:", error);
         }
       }
-
-      // GIF upload functionality
+    
       function triggerGifUpload(button) {
         const gifSection = document.querySelector(".gif-section");
         if (gifSection.classList.contains("disabled")) {
           console.log("GIF section is disabled");
-          return; // Exit the function if disabled
+          return;
         }
-
+    
         const gifBox = button.parentElement;
         const fileInput = gifBox.querySelector(".gif-upload");
         fileInput.click();
@@ -2685,7 +2738,7 @@
           }
         };
       }
-
+    
       function resetGifBox(gifBox) {
         const video = gifBox.querySelector(".gif-video");
         const button = gifBox.querySelector(".corner-plus-btn");
@@ -2697,22 +2750,19 @@
         button.onclick = () => triggerGifUpload(button);
         fileInput.value = "";
       }
-
-      // Photo stack upload functionality
+    
       function triggerPhotoUpload(preview) {
         const slot = preview.parentElement;
         const fileInput = slot.querySelector(".photo-upload-input");
         const removeButton = slot.querySelector(".remove-photo");
         const setProfileButton = slot.querySelector(".set-profile-btn");
-
+    
         fileInput.click();
         fileInput.onchange = function () {
           const file = this.files[0];
           if (file) {
             if (file.size > 5 * 1024 * 1024) {
-              alert(
-                "File size too large. Please upload a file smaller than 5MB."
-              );
+              alert("File size too large. Please upload a file smaller than 5MB.");
               return;
             }
             const reader = new FileReader();
@@ -2734,7 +2784,7 @@
           }
         };
       }
-
+    
       function removePhoto(slot) {
         const preview = slot.querySelector(".photo-preview");
         const fileInput = slot.querySelector(".photo-upload-input");
@@ -2746,16 +2796,15 @@
         setProfileButton.style.display = "none";
         savePhotosToStack();
       }
-
+    
       function setProfilePicture(imageSrc) {
         const profileImage = document.getElementById("profileImage");
         const accountAvatar = document.getElementById("accountAvatar");
         profileImage.src = imageSrc;
         accountAvatar.src = imageSrc;
-        // Optionally save to backend here (POST /api/profile with photo)
         alert("Profile picture updated successfully!");
       }
-
+    
       async function savePhotosToStack() {
         const slots = document.querySelectorAll(".photo-slot");
         const uploadedImages = [];
@@ -2765,339 +2814,133 @@
             uploadedImages.push(img.src);
           }
         });
-
-        // Update card stack
+    
         const cardLeft = document.querySelector(".card-left");
         const cardMiddle = document.querySelector(".card-middle");
         const cardRight = document.querySelector(".card-right");
-
-        cardLeft.style.backgroundImage = uploadedImages[0]
-          ? `url(${uploadedImages[0]})`
-          : "none";
+    
+        cardLeft.style.backgroundImage = uploadedImages[0] ? `url(${uploadedImages[0]})` : "none";
         cardLeft.style.backgroundSize = uploadedImages[0] ? "cover" : "auto";
-        cardLeft.style.backgroundPosition = uploadedImages[0]
-          ? "center"
-          : "auto";
-        cardLeft.style.backgroundColor = uploadedImages[0]
-          ? "transparent"
-          : "#f8f8f8";
-
-        cardMiddle.style.backgroundImage = uploadedImages[1]
-          ? `url(${uploadedImages[1]})`
-          : "none";
+        cardLeft.style.backgroundPosition = uploadedImages[0] ? "center" : "auto";
+        cardLeft.style.backgroundColor = uploadedImages[0] ? "transparent" : "#f8f8f8";
+    
+        cardMiddle.style.backgroundImage = uploadedImages[1] ? `url(${uploadedImages[1]})` : "none";
         cardMiddle.style.backgroundSize = uploadedImages[1] ? "cover" : "auto";
-        cardMiddle.style.backgroundPosition = uploadedImages[1]
-          ? "center"
-          : "auto";
-        cardMiddle.style.backgroundColor = uploadedImages[1]
-          ? "transparent"
-          : "white";
-
-        cardRight.style.backgroundImage = uploadedImages[2]
-          ? `url(${uploadedImages[2]})`
-          : "none";
+        cardMiddle.style.backgroundPosition = uploadedImages[1] ? "center" : "auto";
+        cardMiddle.style.backgroundColor = uploadedImages[1] ? "transparent" : "white";
+    
+        cardRight.style.backgroundImage = uploadedImages[2] ? `url(${uploadedImages[2]})` : "none";
         cardRight.style.backgroundSize = uploadedImages[2] ? "cover" : "auto";
-        cardRight.style.backgroundPosition = uploadedImages[2]
-          ? "center"
-          : "auto";
-        cardRight.style.backgroundColor = uploadedImages[2]
-          ? "transparent"
-          : "#f8f8f8";
-
+        cardRight.style.backgroundPosition = uploadedImages[2] ? "center" : "auto";
+        cardRight.style.backgroundColor = uploadedImages[2] ? "transparent" : "#f8f8f8";
+    
         console.log("Uploaded images:", uploadedImages);
-
-        // Optionally save to MongoDB
+    
         if (uploadedImages.length > 0) {
           await saveProfileData("photos", uploadedImages);
         }
       }
-
-      async function fetchLikedProfiles() {
-        const token = localStorage.getItem("jwtToken");
-        if (!token) {
-          console.error("No JWT token found");
-          return;
-        }
-
-        const dropdownList = document.querySelector(".bell-dropdown ul");
-        dropdownList.innerHTML = ""; // Clear existing content
-
-        // Show loading animation
-        showLoadingAnimation(dropdownList);
-
-        try {
-          const response = await fetch("http://localhost:3000/api/liked-profiles", {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          const result = await response.json();
-          if (response.ok) {
-            // Filter for incoming pending likes only
-            const incomingPendingLikes = result.profiles.filter(
-              (profile) => profile.status === "pending" && profile.direction === "incoming"
-            );
-            displayLikedProfiles(incomingPendingLikes);
-          } else {
-            console.error("Failed to fetch liked profiles:", result.message);
-            dropdownList.innerHTML = "<li>No likes yet</li>"; // User feedback on failure
-          }
-        } catch (error) {
-          console.error("Error fetching liked profiles:", error);
-          dropdownList.innerHTML = "<li>Error loading likes</li>"; // User feedback on error
-        }
-      }
-
-      // Function to show loading animation
-      function showLoadingAnimation(dropdownList) {
-        const loadingDiv = document.createElement("div");
-        loadingDiv.classList.add("loading-dots");
-        loadingDiv.innerHTML = `
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        `;
-        dropdownList.appendChild(loadingDiv);
-      }
-
-      // Display profiles that liked you in the bell dropdown
-      function displayLikedProfiles(profiles) {
-        const dropdownList = document.querySelector('.bell-dropdown ul');
-        dropdownList.innerHTML = '';
-
-        if (!profiles || profiles.length === 0) {
-          const li = document.createElement('li');
-          li.className = 'empty-message';
-          li.textContent = 'No likes yet';
-          dropdownList.appendChild(li);
-          return;
-        }
-
-        profiles.forEach(profile => {
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href = `profile.html?id=${profile.id}`;
-          a.style.display = 'flex';
-          a.style.alignItems = 'center';
-          a.style.textDecoration = 'none';
-
-          // Profile photo
-          if (profile.photo) {
-            const img = document.createElement('img');
-            img.src = profile.photo;
-            img.alt = `${profile.name || "Unknown"}'s photo`;
-            img.style.width = '30px';
-            img.style.height = '30px';
-            img.style.borderRadius = '50%';
-            img.style.marginRight = '10px';
-            a.appendChild(img);
-          }
-
-          // Text content with remaining days
-          const textContainer = document.createElement('div');
-          textContainer.style.flex = '1';
-          
-          const nameText = document.createTextNode(profile.name || "Unknown");
-          textContainer.appendChild(nameText);
-          
-          if (profile.direction === "incoming" && profile.remainingDays !== undefined) {
-            const daysSpan = document.createElement('span');
-            daysSpan.style.fontSize = '11px';
-            daysSpan.style.color = '#ff6b6b';
-            daysSpan.style.marginLeft = '8px';
-            daysSpan.textContent = `${profile.remainingDays} days left`;
-            textContainer.appendChild(daysSpan);
-          }
-          
-          a.appendChild(textContainer);
-
-          // Add icons (heart, cross)
-          if (profile.direction === "incoming" && profile.status === "pending") {
-            const heartIcon = document.createElement('i');
-            heartIcon.classList.add('far', 'fa-heart');
-            heartIcon.style.marginLeft = '8px';
-            heartIcon.style.cursor = 'pointer';
-            heartIcon.addEventListener('click', async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              createFloatingHearts(heartIcon);
-              await toggleLike(profile.id, true);
-              heartIcon.classList.remove('far');
-              heartIcon.classList.add('fas');
-              heartIcon.style.color = '#ff0000';
-            });
-            a.appendChild(heartIcon);
-
-            const crossIcon = document.createElement('i');
-            crossIcon.classList.add('fa-solid', 'fa-times');
-            crossIcon.style.marginLeft = '8px';
-            crossIcon.style.cursor = 'pointer';
-            crossIcon.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              removeLikedProfile(profile.id, li);
-            });
-            a.appendChild(crossIcon);
-          }
-
-          li.appendChild(a);
-          dropdownList.appendChild(li);
-        });
-      }
-
-      // Adjusted toggleLike to only send profileId (since backend handles status)
-      async function toggleLike(profileId, isLiked) {
-        const token = localStorage.getItem("jwtToken");
-        if (!token) {
-          console.error("No JWT token found");
-          return;
-        }
-
-        try {
-          const response = await fetch("http://localhost:3000/api/toggle-like", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ profileId }), // Removed isLiked as backend assumes liking
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to toggle like");
-          }
-
-          console.log(`Profile ${profileId} matched`);
-        } catch (error) {
-          console.error("Error toggling like:", error);
-          alert("Failed to match: " + error.message);
-        }
-      }
-
-      // Adjusted removeLikedProfile (unchanged, but included for context)
-      async function removeLikedProfile(profileId, listItem) {
-        const token = localStorage.getItem("jwtToken");
-        if (!token) {
-          console.error("No JWT token found");
-          return;
-        }
-
-        try {
-          const response = await fetch(
-            "http://localhost:3000/api/remove-liked-profile",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ profileId }),
-            }
-          );
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to remove liked profile");
-          }
-
-          listItem.remove();
-          console.log(`Profile ${profileId} removed from liked profiles`);
-
-          const dropdownList = document.querySelector(".bell-dropdown ul");
-          if (dropdownList.children.length === 0) {
-            const li = document.createElement("li");
-            li.className = "empty-message";
-            li.textContent = "No likes yet";
-            dropdownList.appendChild(li);
-          }
-        } catch (error) {
-          console.error("Error removing liked profile:", error);
-          alert("Failed to remove profile: " + error.message);
-        }
-      }
-
-      // Bell icon click handler
-      document
-        .getElementById("bellIcon")
-        .addEventListener("click", function (e) {
-          e.stopPropagation();
-          const dropdown = document.getElementById("bellDropdown");
-          if (
-            dropdown.style.display === "none" ||
-            dropdown.style.display === ""
-          ) {
-            fetchLikedProfiles(); // Fetch on click
-            dropdown.style.display = "block";
-          } else {
-            dropdown.style.display = "none";
-          }
-        });
-
-      // Close dropdown when clicking outside
-      document.addEventListener("click", function (e) {
-        const dropdown = document.getElementById("bellDropdown");
-        const bellIcon = document.getElementById("bellIcon");
-        if (!bellIcon.contains(e.target) && !dropdown.contains(e.target)) {
-          dropdown.style.display = "none";
-        }
-      });
-
-      // Optional: Fetch on page load
+    
       document.addEventListener("DOMContentLoaded", function () {
         storeToken();
         fetchUserProfile();
-        // fetchLikedProfiles(); // Uncomment if you want it on load
-      });
-
-      function displayNotifications(profiles) {
-        const notificationList = document.getElementById('notificationList');
-        notificationList.innerHTML = ''; // Clear existing notifications
-
-        if (!profiles || profiles.length === 0) {
-          notificationList.innerHTML = `
-            <div class="notification-item">
-              <div class="notification-content">
-                <p>No new interests yet</p>
-              </div>
-            </div>`;
-          return;
-        }
-
-        profiles.forEach(profile => {
-          // Your existing notification item creation code...
+    
+        const icons = document.querySelectorAll(".sidebar-icon");
+        icons.forEach((icon) => {
+          icon.addEventListener("mouseenter", () => {
+            icons.forEach((otherIcon) => {
+              if (otherIcon !== icon) {
+                otherIcon.style.filter = "blur(2px)";
+                otherIcon.style.opacity = "0.5";
+              } else {
+                otherIcon.style.transform = "scale(1.2)";
+              }
+            });
+          });
+          icon.addEventListener("mouseleave", () => {
+            icons.forEach((otherIcon) => {
+              otherIcon.style.filter = "none";
+              otherIcon.style.opacity = "1";
+              otherIcon.style.transform = "scale(1)";
+            });
+          });
         });
-      }
-
-      function createFloatingHearts(element) {
-        const dropdown = document.querySelector('.bell-dropdown');
-        const rect = element.getBoundingClientRect();
-        const heartCount = 5;
-
-        for (let i = 0; i < heartCount; i++) {
-          setTimeout(() => {
-            const heart = document.createElement('i');
-            heart.classList.add('fas', 'fa-heart', 'floating-heart');
-            
-            // Position the heart near the clicked element
-            heart.style.left = `${Math.random() * 40 + rect.left - dropdown.getBoundingClientRect().left}px`;
-            heart.style.bottom = '40px'; // Start above the footer
-            
-            // Add some random rotation
-            heart.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
-            
-            dropdown.appendChild(heart);
-
-            // Remove the heart element after animation completes
-            setTimeout(() => {
-              heart.remove();
-            }, 1500);
-          }, i * 100); // Stagger the hearts
-        }
-      }
+    
+        document.getElementById("signOutButton").addEventListener("click", signOut);
+    
+        document.getElementById("changeAvatarText").addEventListener("click", function () {
+          document.getElementById("avatarUpload").click();
+        });
+    
+        document.getElementById("avatarUpload").addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              document.getElementById("accountAvatar").src = e.target.result;
+              document.getElementById("profileImage").src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+    
+        const editBtn = document.getElementById("squareBoxEdit");
+        const squareBox = document.querySelector(".square-box");
+        const infoValues = squareBox.querySelectorAll(".info-value");
+        let isEditing = false;
+    
+        editBtn.addEventListener("click", function () {
+          isEditing = !isEditing;
+          editBtn.classList.toggle("active");
+    
+          if (isEditing) {
+            editBtn.textContent = "SAVE";
+            infoValues.forEach((value) => {
+              const currentText = value.textContent;
+              const field = value.dataset.field;
+              const input = document.createElement("input");
+              input.type = field === "age" ? "number" : "text";
+              input.value = currentText === "N/A" || currentText === "None" ? "" : currentText;
+              input.className = "edit-input";
+              value.innerHTML = "";
+              value.appendChild(input);
+            });
+          } else {
+            editBtn.textContent = "EDIT";
+            infoValues.forEach((value) => {
+              const input = value.querySelector("input");
+              const field = value.dataset.field;
+              let newText = input.value.trim();
+              if (field === "age") {
+                newText = newText ? parseInt(newText) : null;
+              } else {
+                newText = newText || "None";
+              }
+              value.innerHTML = newText === null ? "N/A" : newText;
+              saveProfileData(field, newText);
+            });
+          }
+        });
+    
+        document.querySelector(".add-button").addEventListener("click", function () {
+          document.getElementById("photoModal").style.display = "flex";
+        });
+    
+        document.getElementById("closeModal").addEventListener("click", function () {
+          document.getElementById("photoModal").style.display = "none";
+        });
+    
+        document.getElementById("savePhotos").addEventListener("click", function () {
+          document.getElementById("photoModal").style.display = "none";
+          savePhotosToStack();
+        });
+    
+        document.getElementById("photoModal").addEventListener("click", function (e) {
+          if (e.target === this) {
+            this.style.display = "none";
+          }
+        });
+      });
     </script>
   </body>
 </html>

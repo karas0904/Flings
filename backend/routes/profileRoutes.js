@@ -5,6 +5,7 @@ import Like from "../models/Like.js";
 import { getMatches } from "../utils/matching.js";
 import RoseInteraction from "../models/roseInteraction.js";
 import Message from "../models/Message.js";
+import Notification from "../models/Notification.js";
 
 const router = express.Router();
 
@@ -33,16 +34,122 @@ router.post("/like-profile", authenticateToken, async (req, res) => {
   try {
     const existingLike = await Like.findOne({ userId, profileId });
     if (existingLike) {
-      return res
-        .status(400)
-        .json({ message: "You already liked this profile" });
+      await Like.deleteOne({ userId, profileId });
+      await Notification.deleteOne({
+        recipient: profileId,
+        sender: userId,
+        type: "like",
+      });
+      return res.status(200).json({ message: "Profile unliked successfully" });
     }
 
     const like = new Like({ userId, profileId, status: "pending" });
     await like.save();
+
+    const sender = await User.findById(userId);
+    const notification = new Notification({
+      recipient: profileId,
+      sender: userId,
+      type: "like",
+      message: `${sender.firstName} liked you`,
+    });
+    await notification.save();
+
     res.status(201).json({ message: "Profile liked successfully", like });
   } catch (error) {
-    console.error("Error saving like:", error);
+    console.error("Error saving or removing like:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// New /like-photo endpoint (for detail-heart-button)
+router.post("/like-photo", authenticateToken, async (req, res) => {
+  const { profileId, isLiked } = req.body;
+  const userId = req.user.id;
+
+  if (!profileId) {
+    return res.status(400).json({ message: "Profile ID is required" });
+  }
+
+  try {
+    const sender = await User.findById(userId);
+    const recipient = await User.findById(profileId);
+    if (!recipient) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    if (isLiked) {
+      // Create a photo-specific notification
+      const existingPhotoLike = await Notification.findOne({
+        recipient: profileId,
+        sender: userId,
+        type: "photo_like",
+      });
+
+      if (!existingPhotoLike) {
+        const notification = new Notification({
+          recipient: profileId,
+          sender: userId,
+          type: "photo_like",
+          message: `${sender.firstName} liked your photo`,
+        });
+        await notification.save();
+      }
+    } else {
+      // Remove the photo-specific notification
+      await Notification.deleteOne({
+        recipient: profileId,
+        sender: userId,
+        type: "photo_like",
+      });
+    }
+
+    // Optionally store photo like state in User model if needed
+    // For simplicity, we’re only using notifications here
+    res
+      .status(200)
+      .json({ message: isLiked ? "Photo liked" : "Photo unliked", isLiked });
+  } catch (error) {
+    console.error("Error liking/unliking photo:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Existing /notifications (updated to handle photo_like type)
+router.get("/notifications", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const notifications = await Notification.find({ recipient: userId })
+      .populate("sender", "firstName photos")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const formattedNotifications = notifications.map((notif) => {
+      const expiresInMs = new Date(notif.expiresAt) - Date.now();
+      const remainingDays = Math.max(
+        0,
+        Math.ceil(expiresInMs / (1000 * 60 * 60 * 24))
+      );
+      return {
+        id: notif._id,
+        senderId: notif.sender._id,
+        senderName: notif.sender.firstName || "Unknown",
+        senderPhoto: notif.sender.photos[0] || "default-profile.jpg",
+        message: notif.message,
+        remainingDays,
+        read: notif.read,
+        createdAt: notif.createdAt,
+        type: notif.type, // Include type for frontend filtering
+      };
+    });
+
+    res.status(200).json({
+      message: "Your notifications",
+      notifications: formattedNotifications,
+    });
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -52,39 +159,20 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // First, clean up expired likes
-    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-    await Like.deleteMany({
-      status: "pending",
-      timestamp: { $lt: threeDaysAgo },
-    });
-
-    const incomingLikes = await Like.find({
-      profileId: userId,
-      status: "pending",
-      expiresAt: { $gt: new Date() }, // Only get non-expired likes
-    })
+    // Fetch incoming likes (profiles that liked the current user)
+    const incomingLikes = await Like.find({ profileId: userId })
       .populate("userId", "firstName photos")
       .lean();
 
-    const outgoingMatches = await Like.find({
-      userId,
-      status: "matched",
-    })
+    // Fetch all outgoing likes (profiles the current user has liked, pending or matched)
+    const outgoingLikes = await Like.find({ userId })
       .populate("profileId", "firstName photos")
       .lean();
 
     const profilesMap = new Map();
 
+    // Process incoming likes
     incomingLikes.forEach((like) => {
-      // Calculate remaining time
-      const remainingTime = Math.max(
-        0,
-        Math.floor(
-          (new Date(like.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)
-        )
-      );
-
       profilesMap.set(like.userId._id.toString(), {
         id: like.userId._id,
         name: like.userId.firstName,
@@ -92,28 +180,28 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
         status: like.status,
         timestamp: like.timestamp,
         direction: "incoming",
-        remainingDays: remainingTime, // Add remaining days
+        remainingDays: 3,
       });
     });
 
-    outgoingMatches.forEach((match) => {
-      profilesMap.set(match.profileId._id.toString(), {
-        id: match.profileId._id,
-        name: match.profileId.firstName,
-        photo: match.profileId.photos[0] || "default-profile.jpg",
-        status: match.status,
-        timestamp: match.timestamp,
-        direction: "matched",
+    // Process all outgoing likes (pending and matched)
+    outgoingLikes.forEach((like) => {
+      profilesMap.set(like.profileId._id.toString(), {
+        id: like.profileId._id,
+        name: like.profileId.firstName,
+        photo: like.profileId.photos[0] || "default-profile.jpg",
+        status: like.status,
+        timestamp: like.timestamp,
+        direction: like.status === "matched" ? "matched" : "outgoing",
       });
     });
 
     const profiles = Array.from(profilesMap.values());
 
     if (!profiles.length) {
-      return res.status(200).json({
-        message: "No one has liked your profile yet",
-        profiles: [],
-      });
+      return res
+        .status(200)
+        .json({ message: "No liked profiles yet", profiles: [] });
     }
 
     res.status(200).json({ message: "Profiles related to you", profiles });
@@ -125,39 +213,46 @@ router.get("/liked-profiles", authenticateToken, async (req, res) => {
 
 // Toggle like status to match
 router.post("/toggle-like", authenticateToken, async (req, res) => {
-  const { profileId } = req.body;
-  const userId = req.user.id;
+  const { profileId } = req.body; // Sender of the original like
+  const userId = req.user.id; // Current user (recipient)
 
   try {
-    let like = await Like.findOne({ userId: profileId, profileId: userId });
-    if (!like) {
-      return res.status(404).json({ message: "Like not found" });
+    // Find the existing incoming like
+    const existingLike = await Like.findOne({
+      userId: profileId,
+      profileId: userId,
+    });
+    if (!existingLike) {
+      return res.status(404).json({ message: "No incoming like found" });
     }
 
-    if (like.status === "pending") {
-      like.status = "matched";
-      like.timestamp = new Date();
-
-      const matches = await getMatches(userId);
-      const matchedProfile = matches.find(
-        (p) => p._id.toString() === profileId
-      );
-      like.score = matchedProfile ? matchedProfile.score : 0;
-
-      await like.save();
-
-      let reverseLike = await Like.findOne({ userId, profileId });
-      if (reverseLike && reverseLike.status === "pending") {
-        reverseLike.status = "matched";
-        reverseLike.timestamp = new Date();
-        reverseLike.score = like.score;
-        await reverseLike.save();
-      }
-
-      res.status(200).json({ message: "Match created", matchId: like._id });
-    } else {
-      res.status(400).json({ message: "Already matched" });
+    // Create or update reciprocal like (e.g., mark as matched)
+    let reciprocalLike = await Like.findOne({ userId, profileId });
+    if (!reciprocalLike) {
+      reciprocalLike = new Like({ userId, profileId, status: "matched" });
+      existingLike.status = "matched"; // Update original like to matched
+      await reciprocalLike.save();
+      await existingLike.save();
     }
+
+    // Remove the original "like" notification
+    await Notification.deleteOne({
+      recipient: userId,
+      sender: profileId,
+      type: "like",
+    });
+
+    // Optionally, create a "match" notification
+    const sender = await User.findById(profileId);
+    const matchNotification = new Notification({
+      recipient: profileId, // Notify the sender of the match
+      sender: userId,
+      type: "match",
+      message: `${req.user.firstName} matched with you`,
+    });
+    await matchNotification.save();
+
+    res.status(200).json({ message: "Like accepted and matched" });
   } catch (error) {
     console.error("Error toggling like:", error);
     res.status(500).json({ message: "Server error" });
@@ -234,7 +329,6 @@ router.get("/matches", authenticateToken, async (req, res) => {
 
         uniqueMatches.set(otherUserId, {
           matchId,
-          otherUserId,
           name: otherUser.firstName || "Unknown",
           photo:
             otherUser.photos && otherUser.photos.length > 0
@@ -476,8 +570,8 @@ router.delete("/block/:matchId", authenticateToken, async (req, res) => {
   console.log(
     `Block endpoint hit: matchId = ${req.params.matchId}, userId = ${req.user.id}`
   );
-  const { matchId } = req.params; // e.g., "67e3de94d4a875c1c79a67cf"
-  const userId = req.user.id; // e.g., "67dad23fb177154b1a2504fa"
+  const { matchId } = req.params;
+  const userId = req.user.id;
 
   try {
     const roseResult = await RoseInteraction.deleteMany({
@@ -486,7 +580,7 @@ router.delete("/block/:matchId", authenticateToken, async (req, res) => {
     });
 
     const likeResult = await Like.deleteMany({
-      _id: matchId, // Match the Like document by its _id
+      _id: matchId,
       $or: [{ userId: userId }, { profileId: userId }],
     });
 
@@ -962,8 +1056,8 @@ router.delete("/delete-account", authenticateToken, async (req, res) => {
 
 // Remove liked profile
 router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
-  const { profileId } = req.body; // "67ddecd9e2d30367593d155a" (User B)
-  const userId = req.user.id; // "67dad23fb177154b1a2504fa" (User A)
+  const { profileId } = req.body;
+  const userId = req.user.id;
 
   if (!profileId) {
     return res.status(400).json({ message: "Profile ID is required" });
@@ -972,9 +1066,9 @@ router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
   try {
     console.log(`Removing like: liker=${profileId}, target=${userId}`);
     const result = await Like.deleteOne({
-      userId: profileId, // User B (liker)
-      profileId: userId, // User A (target)
-      status: "pending", // Only remove pending likes
+      userId: profileId,
+      profileId: userId,
+      status: "pending",
     });
 
     if (result.deletedCount === 0) {
@@ -986,37 +1080,6 @@ router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
     res.status(200).json({ message: "Liked profile removed successfully" });
   } catch (error) {
     console.error("Error removing liked profile:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Check save limit
-router.post("/check-save-limit", authenticateToken, async (req, res) => {
-  const userId = req.user.id;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  try {
-    const savedToday = await User.findOne(
-      {
-        _id: userId,
-        "savedProfiles.saveDate": {
-          $gte: today,
-        },
-      },
-      { "savedProfiles.$": 1 }
-    );
-
-    const saveCount = savedToday ? savedToday.savedProfiles.length : 0;
-    const canSave = saveCount < 3; // Maximum 3 saves per day
-
-    res.json({
-      canSave,
-      remainingSaves: 3 - saveCount,
-      savedToday: saveCount,
-    });
-  } catch (error) {
-    console.error("Error checking save limit:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

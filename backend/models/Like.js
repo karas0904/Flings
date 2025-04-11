@@ -14,6 +14,7 @@ const likeSchema = new mongoose.Schema({
     type: Date,
     default: () => new Date(+new Date() + 3 * 24 * 60 * 60 * 1000),
   }, // Add 3 days to current date
+  fromDetailSection: { type: Boolean, default: false }, // New field
 });
 
 // Add index for automatic expiration

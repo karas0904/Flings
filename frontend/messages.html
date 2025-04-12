@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -335,6 +334,22 @@
       .message-item .details .name {
         font-size: 16px;
         font-weight: bold;
+        display: flex; /* Use flex to align items */
+        align-items: center; /* Center items vertically */
+        justify-content: space-between; /* Space between name and time */
+      }
+
+      .message-item .details .name-time {
+        display: flex; /* Use flexbox to align name and time */
+        justify-content: space-between; /* Space between name and time */
+        align-items: center; /* Center items vertically */
+      }
+
+      .message-item .details .time {
+        font-size: 12px; /* Adjust font size for time */
+        color: rgba(255, 255, 255, 0.6); /* Color for time */
+        margin-left: 8px; /* Space between name and time */
+        flex-shrink: 0; /* Prevent time from shrinking */
       }
 
       .message-item .details .snippet {
@@ -347,11 +362,6 @@
         font-size: 12px;
         color: rgba(255, 255, 255, 0.6);
         margin-top: 2px;
-      }
-
-      .message-item .time {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.6);
       }
 
       .message-item.simplified {
@@ -507,6 +517,8 @@
         color: rgba(255, 255, 255, 0.8);
         cursor: pointer;
         transition: color 0.3s;
+        padding-left: 8px;
+        padding-top: 6px;
       }
 
       .chat-footer .send-btn:hover {
@@ -519,8 +531,8 @@
         width: 35px;
         height: 35px;
         display: flex;
-        justify-content: center;
-        align-items: center;
+        justify-content: center; /* Center the icon horizontally */
+        align-items: center; /* Center the icon vertically */
         border: none;
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.3s ease;
@@ -567,8 +579,8 @@
         bottom: 80px;
         left: 20px;
         display: flex;
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: column; /* Change to column to stack buttons */
+        gap: 10px; /* Space between buttons */
         background: transparent;
         backdrop-filter: none;
         padding: 10px;
@@ -596,6 +608,7 @@
         cursor: pointer;
         transition: color 0.3s;
         font-weight: bold;
+        width: 100%; /* Ensure buttons take full width */
       }
 
       .options-menu button:hover {
@@ -645,11 +658,11 @@
       }
 
       .message.sent {
-        background: rgb(255, 23, 23);
-        float: right; /* Aligns right */
+        background: #26a69a; /* Soft teal for a calming, attractive look */
+        float: right;
         border-bottom-right-radius: 2px;
         text-align: left;
-        clear: both; /* Ensures stacking */
+        clear: both;
       }
 
       .message.received {
@@ -667,7 +680,7 @@
 
       .message .timestamp {
         font-size: 10px;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.8);
         display: block; /* Below message text */
         text-align: right;
         margin-top: 2px;
@@ -970,18 +983,89 @@
       }
 
       /* Add styles for message reactions */
-      .message-reaction {
-        position: absolute;
-        top: -15px;
-        right: -5px;
-        font-size: 14px;
-        background: rgba(0, 0, 0, 0.7);
+      .message .location-link {
+        display: inline-flex; /* Flex for aligning icon and text */
+        align-items: center; /* Center icon and text vertically */
+        color: #012343 !important; /* Vibrant blue */
+        text-decoration: none; /* No underline on the link itself */
+        font-weight: 500; /* Medium weight */
+        font-size: 14px; /* Compact */
+        cursor: pointer;
+        padding: 6px 12px;
         border-radius: 12px;
-        padding: 2px 6px;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        z-index: 1;
+        background: linear-gradient(
+          135deg,
+          rgba(77, 168, 255, 0.15),
+          rgba(77, 168, 255, 0.05)
+        );
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3),
+          inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .message .location-link .link-text {
+        text-decoration: underline; /* Underline only the text */
+      }
+
+      .message .location-link:hover {
+        color: #ffffff !important;
+        background: linear-gradient(
+          135deg,
+          rgba(77, 168, 255, 0.3),
+          rgba(77, 168, 255, 0.1)
+        );
+        box-shadow: 0 4px 12px rgba(77, 168, 255, 0.4),
+          inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px) scale(1.02);
+      }
+
+      .message .location-link:active {
+        transform: translateY(0) scale(0.98);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .message .location-link::before {
+        content: "📍";
+        margin-right: 6px;
+        font-size: 14px;
+        line-height: 1;
+        transition: transform 0.3s ease;
+      }
+
+      .message .location-link:hover::before {
+        transform: scale(1.2) rotate(10deg);
+      }
+
+      .message .location-link::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s ease;
+      }
+
+      .message .location-link:hover::after {
+        left: 100%;
+      }
+
+      /* Ensure parent elements don't block clicks */
+      .message p {
+        pointer-events: auto;
+      }
+
+      /* Ensure parent elements don't block clicks */
+      .message p {
+        pointer-events: auto;
       }
 
       .chat-body.blur > *:not(.active-message) {
@@ -1155,9 +1239,9 @@
         </div>
         <button class="plus-btn">+</button>
         <div class="options-menu">
-          <button onclick="selectOption('Location')">Location</button>
           <button onclick="selectOption('Photo')">Photo</button>
           <button onclick="selectOption('Video')">Video</button>
+          <button id="shareLocationBtn">Share Location</button>
         </div>
       </div>
     </div>
@@ -1259,15 +1343,26 @@
               div.dataset.matchId = item.matchId;
               div.dataset.otherUserId = item.otherUserId;
               div.dataset.score = item.score;
+
+              const messageContent = item.isLocation
+                ? "Location was shared"
+                : item.snippet;
+              const truncatedMessage =
+                messageContent.length > 15
+                  ? messageContent.substring(0, 15) + "..."
+                  : messageContent;
+
               div.innerHTML = `
                 <div class="avatar">
                   <img src="${item.photo}" alt="${item.name}'s photo">
                 </div>
                 <div class="details">
-                  <div class="name">${item.name}</div>
-                  <div class="snippet">${item.snippet}</div>
+                  <div class="name-time">
+                    <div class="name">${item.name}</div>
+                    <div class="time">${item.time}</div> <!-- Time next to the name -->
+                  </div>
+                  <div class="snippet">${truncatedMessage}</div>
                 </div>
-                <div class="time">${item.time}</div>
               `;
             } else {
               div.dataset.effortId = item.id;
@@ -1294,6 +1389,12 @@
                 const name = item.querySelector(".name").textContent;
                 const score = parseFloat(item.dataset.score);
                 currentMatchId = matchId;
+                console.log(
+                  "Loading messages for matchId:",
+                  matchId,
+                  "with score:",
+                  score
+                );
                 loadMessages(matchId, name, score);
               } else {
                 const effortId = item.dataset.effortId;
@@ -1620,11 +1721,9 @@
             }
             console.log("Block response:", result);
 
-            // Remove the user from messagesData and update the UI immediately
             messagesData = messagesData.filter((m) => m.matchId !== matchId);
             renderMessageList(messagesData, "messages");
 
-            // Clear the chat if the blocked match is currently selected
             if (currentMatchId === matchId) {
               chatBody.innerHTML = "<p>User blocked and chat cleared.</p>";
               document
@@ -1653,56 +1752,62 @@
           if (match) {
             chatHeaderAvatar.innerHTML = `<img src="${match.photo}" alt="${name}'s photo">`;
             headerUserInfo.dataset.otherUserId = match.otherUserId;
-            socket.emit(
-              "checkMuteStatus",
-              { matchId, otherUserId: match.otherUserId },
-              (response) => {
-                if (response.success) updateChatUIForMuteStatus(response);
+
+            socket.emit("loadMessages", matchId, (response) => {
+              if (response.success) {
+                chatBody.innerHTML = "";
+                const messages = response.messages;
+
+                if (messages.length === 0) {
+                  if (score >= 6.6) {
+                    let funLine, kinkLine;
+                    if (score >= 6.6 && score <= 7.5) {
+                      funLine = "Sparks are starting to fly!";
+                      kinkLine = "A little twist makes it interesting!";
+                    } else if (score > 7.5 && score <= 8.5) {
+                      funLine = "You're vibing like a perfect playlist!";
+                      kinkLine = "There's a spicy edge to this connection!";
+                    } else if (score > 8.5) {
+                      funLine = "Match made in cosmic harmony!";
+                      kinkLine = "This bond's got some wild chemistry!";
+                    }
+                    chatBody.innerHTML = `
+                      <div class="score-info" id="match-score">
+                        <p>Your match score: ${score.toFixed(1)}</p>
+                        <p class="fun-line">${funLine}</p>
+                        <p class="kink-line">${kinkLine}</p>
+                      </div>
+                    `;
+                  }
+                } else {
+                  messages.forEach(appendMessage);
+                }
+              } else {
+                console.error("Error loading messages:", response.error);
+                chatBody.innerHTML = "<p>Error loading messages</p>";
               }
-            );
+            });
           }
 
-          socket.emit("loadMessages", matchId, (response) => {
-            if (response.success) {
-              chatBody.innerHTML = "";
-              const messages = response.messages;
-
-              if (messages.length === 0 && score >= 6.6) {
-                let funLine, kinkLine;
-                if (score >= 6.6 && score <= 7.5) {
-                  funLine = "Sparks are starting to fly!";
-                  kinkLine = "A little twist makes it interesting!";
-                } else if (score > 7.5 && score <= 8.5) {
-                  funLine = "You're vibing like a perfect playlist!";
-                  kinkLine = "There's a spicy edge to this connection!";
-                } else if (score > 8.5) {
-                  funLine = "Match made in cosmic harmony!";
-                  kinkLine = "This bond's got some wild chemistry!";
-                }
-                chatBody.innerHTML = `
-                  <div class="score-info" id="match-score">
-                    <p>Your match score: ${score.toFixed(1)}</p>
-                    <p class="fun-line">${funLine}</p>
-                    <p class="kink-line">${kinkLine}</p>
-                  </div>
-                `;
-              }
-
-              messages.forEach(appendMessage);
-            } else {
-              console.error("Error loading messages:", response.error);
-              chatBody.innerHTML = "<p>Error loading messages</p>";
-            }
-          });
+          // Enable the message input and show buttons when a user is selected
+          messageInput.disabled = false; // Enable input
+          plusBtn.style.display = "block"; // Show plus button
+          sendBtn.style.display = "block"; // Show send button
         }
 
         function sendMessage() {
           const content = messageInput.value.trim();
           if (!content || !currentMatchId) return;
 
+          const isLocationMessage = content.startsWith("Location: ");
+
           socket.emit(
             "sendMessage",
-            { matchId: currentMatchId, content },
+            {
+              matchId: currentMatchId,
+              content: content,
+              isLocation: isLocationMessage,
+            },
             (response) => {
               if (response.success) {
                 messageInput.value = "";
@@ -1755,13 +1860,20 @@
             `.message-item[data-match-id="${message.matchId}"]`
           );
           if (messageItem) {
-            messageItem.querySelector(".snippet").textContent = message.content;
+            const isLocationMessage = message.isLocation;
+            const messageContent = isLocationMessage
+              ? "Location was shared"
+              : message.content;
+            const truncatedMessage =
+              messageContent.length > 15
+                ? messageContent.substring(0, 15) + "..."
+                : messageContent;
+
+            messageItem.querySelector(".snippet").textContent =
+              truncatedMessage;
             messageItem.querySelector(".time").textContent = new Date(
               message.createdAt
-            ).toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            });
+            ).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
           }
         });
 
@@ -1948,38 +2060,63 @@
           messageDiv.classList.add("message", isSender ? "sent" : "received");
           messageDiv.dataset.messageId = message._id;
 
-          const content = message.isDeleted
-            ? `<p class="deleted-message">This message was deleted</p>`
-            : `<p>${message.content}</p>`;
+          let content;
+          if (message.isDeleted) {
+            content = `<p class="deleted-message">This message was deleted</p>`;
+          } else {
+            const urlMatch = message.content.match(
+              /https:\/\/www\.google\.com\/maps\/@[-?\d.]+,[-?\d.]+(?:,\d+z)?/
+            );
+            if (message.isLocation || urlMatch) {
+              const url = urlMatch
+                ? urlMatch[0]
+                : "https://www.google.com/maps";
+              content = `<p><a href="${url}" target="_blank" rel="noopener noreferrer" class="location-link"><span class="link-text">View Location on Google Maps</span></a></p>`;
+            } else {
+              content = `<p>${message.content}</p>`;
+            }
+          }
+
           messageDiv.innerHTML = `
-            <div class="message-reaction">${message.reaction || ""}</div>
-            ${content}
-            <span class="timestamp">${new Date(
-              message.createdAt
-            ).toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            })}</span>
-          `;
+    <div class="message-reaction">${message.reaction || ""}</div>
+    ${content}
+    <span class="timestamp">${new Date(message.createdAt).toLocaleTimeString(
+      [],
+      {
+        hour: "numeric",
+        minute: "2-digit",
+      }
+    )}</span>
+  `;
 
           if (!message.isDeleted) {
             messageDiv.addEventListener("dblclick", (e) => {
               e.preventDefault();
               e.stopPropagation();
-              contextMenu.style.display === "block"
-                ? hideContextMenu()
-                : showContextMenu(messageDiv, e.pageX, e.pageY);
+              if (e.target.tagName !== "A" && !e.target.closest("a")) {
+                contextMenu.style.display === "block"
+                  ? hideContextMenu()
+                  : showContextMenu(messageDiv, e.pageX, e.pageY);
+              }
             });
+
+            const link = messageDiv.querySelector(".location-link");
+            if (link) {
+              link.addEventListener("click", (e) => {
+                console.log("Location link clicked:", link.href);
+              });
+            }
 
             let touchStartTime, touchStartX, touchStartY;
             messageDiv.addEventListener("touchstart", (e) => {
               touchStartTime = Date.now();
               touchStartX = e.touches[0].pageX;
               touchStartY = e.touches[0].pageY;
-              setTimeout(
-                () => showContextMenu(messageDiv, touchStartX, touchStartY),
-                longPressDuration
-              );
+              setTimeout(() => {
+                if (e.target.tagName !== "A" && !e.target.closest("a")) {
+                  showContextMenu(messageDiv, touchStartX, touchStartY);
+                }
+              }, longPressDuration);
             });
             messageDiv.addEventListener("touchend", () => clearTimeout());
             messageDiv.addEventListener("touchmove", () => clearTimeout());
@@ -2066,7 +2203,81 @@
               window.location.href = `profile.html?id=${otherUserId}`;
           });
 
+        function shareLocation() {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const { latitude, longitude } = position.coords;
+                const locationMessage = `Location: <a href="https://www.google.com/maps/@${latitude},${longitude}" target="_blank" rel="noopener noreferrer">View Location on Google Maps</a>`;
+
+                const blurContainer = document.querySelector(".blur-container");
+                blurContainer.classList.remove("blur");
+
+                const optionsMenu = document.querySelector(".options-menu");
+                optionsMenu.classList.remove("active");
+                optionsMenu.style.pointerEvents = "none";
+
+                const plusBtn = document.querySelector(".plus-btn");
+                plusBtn.classList.remove("active");
+
+                if (!currentMatchId) {
+                  alert("Please select a conversation to share your location.");
+                  return;
+                }
+
+                socket.emit(
+                  "sendMessage",
+                  {
+                    matchId: currentMatchId,
+                    content: locationMessage,
+                    isLocation: true,
+                  },
+                  (response) => {
+                    if (response.success) {
+                      const messageItem = document.querySelector(
+                        `.message-item[data-match-id="${currentMatchId}"]`
+                      );
+                      if (messageItem) {
+                        messageItem.querySelector(".snippet").textContent =
+                          "Location was shared";
+                        messageItem.querySelector(".time").textContent =
+                          new Date().toLocaleTimeString([], {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          });
+                      }
+                    } else {
+                      console.error("Error sending location:", response.error);
+                      alert("Failed to share location: " + response.error);
+                    }
+                  }
+                );
+
+                const messageInput = document.querySelector(".message-input");
+                messageInput.value = "";
+              },
+              (error) => {
+                console.error("Error getting location:", error);
+                alert(
+                  "Unable to retrieve your location. Please allow location access."
+                );
+              }
+            );
+          } else {
+            alert("Geolocation is not supported by this browser.");
+          }
+        }
+
+        document
+          .getElementById("shareLocationBtn")
+          .addEventListener("click", shareLocation);
+
         addStyleToHead();
+
+        // Disable the message input and hide buttons initially
+        messageInput.disabled = true; // Disable input
+        plusBtn.style.display = "none"; // Hide plus button
+        sendBtn.style.display = "none"; // Hide send button
       });
 
       function addStyleToHead() {

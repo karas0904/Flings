@@ -26,12 +26,14 @@ const authenticateToken = (req, res, next) => {
 router.post("/like-profile", authenticateToken, async (req, res) => {
   const { profileId } = req.body;
   const userId = req.user.id;
+  const io = req.io; // Ensure io is passed via middleware
 
   if (!profileId) {
     return res.status(400).json({ message: "Profile ID is required" });
   }
 
   try {
+    // Check for existing like from this user to profileId
     const existingLike = await Like.findOne({ userId, profileId });
     if (existingLike) {
       await Like.deleteOne({ userId, profileId });
@@ -43,10 +45,15 @@ router.post("/like-profile", authenticateToken, async (req, res) => {
       return res.status(200).json({ message: "Profile unliked successfully" });
     }
 
+    // Create the new like
     const like = new Like({ userId, profileId, status: "pending" });
     await like.save();
 
     const sender = await User.findById(userId);
+    if (!sender) {
+      return res.status(404).json({ message: "Sender not found" });
+    }
+
     const notification = new Notification({
       recipient: profileId,
       sender: userId,
@@ -54,6 +61,64 @@ router.post("/like-profile", authenticateToken, async (req, res) => {
       message: `${sender.firstName} liked you`,
     });
     await notification.save();
+
+    // Check for reciprocal like
+    const reciprocalLike = await Like.findOne({
+      userId: profileId,
+      profileId: userId,
+    });
+    if (reciprocalLike) {
+      like.status = "matched";
+      reciprocalLike.status = "matched";
+      await like.save();
+      await reciprocalLike.save();
+
+      const recipient = await User.findById(profileId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient not found" });
+      }
+
+      const matchId = like._id.toString();
+      const matchDataForSender = {
+        matchId,
+        otherUserId: profileId,
+        name: recipient.firstName || "Unknown",
+        photo: recipient.photos?.[0] || "default-profile.jpg",
+        snippet: "Say hi!",
+        time: new Date().toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+      };
+      const matchDataForRecipient = {
+        matchId,
+        otherUserId: userId,
+        name: sender.firstName || "Unknown",
+        photo: sender.photos?.[0] || "default-profile.jpg",
+        snippet: "Say hi!",
+        time: new Date().toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+      };
+
+      // Emit match events only if io is available and users are online
+      if (io) {
+        io.to(userId).emit("newMatch", matchDataForSender);
+        io.to(profileId).emit("newMatch", matchDataForRecipient);
+        io.to(userId).emit("joinMatchRoom", { matchId });
+        io.to(profileId).emit("joinMatchRoom", { matchId });
+      } else {
+        console.warn(
+          "Socket.IO not available, skipping real-time match emission"
+        );
+      }
+
+      return res.status(201).json({
+        message: "Profile liked and matched",
+        match: matchDataForSender,
+      });
+    }
 
     res.status(201).json({ message: "Profile liked successfully", like });
   } catch (error) {
@@ -222,26 +287,65 @@ router.post("/toggle-like", authenticateToken, async (req, res) => {
   }
 
   try {
+    // Check for incoming like from profileId
     const existingLike = await Like.findOne({
       userId: profileId,
       profileId: userId,
     });
-    if (!existingLike || !existingLike._id) {
-      return res.status(404).json({ message: "No valid incoming like found" });
+    if (!existingLike) {
+      return res.status(404).json({ message: "No incoming like found" });
     }
-    const existingLikeId = existingLike._id.toString(); // Store ID immediately
 
+    // Check if a match already exists
+    const existingReciprocalLike = await Like.findOne({
+      userId,
+      profileId,
+      status: "matched",
+    });
+    if (existingReciprocalLike) {
+      // Match already exists, just return the match data
+      const sender = await User.findById(profileId);
+      const recipient = await User.findById(userId);
+      if (!sender || !recipient) {
+        return res
+          .status(404)
+          .json({ message: "Sender or recipient not found" });
+      }
+
+      const matchId = existingReciprocalLike._id.toString();
+      const matchDataForRecipient = {
+        matchId,
+        otherUserId: profileId,
+        name: sender.firstName || "Unknown",
+        photo: sender.photos?.[0] || "default-profile.jpg",
+        snippet: "Say hi!",
+        time: new Date().toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+      };
+
+      return res.status(200).json({
+        message: "Match already exists",
+        match: matchDataForRecipient,
+      });
+    }
+
+    // Create or update reciprocal like
     let reciprocalLike = await Like.findOne({ userId, profileId });
-    let reciprocalLikeId;
+    let matchId;
     if (!reciprocalLike) {
       reciprocalLike = new Like({ userId, profileId, status: "matched" });
-      existingLike.status = "matched";
       await reciprocalLike.save();
-      reciprocalLikeId = reciprocalLike._id.toString(); // Store ID after save
-      await existingLike.save();
+      matchId = reciprocalLike._id.toString();
     } else {
-      reciprocalLikeId = reciprocalLike._id.toString(); // Store ID if found
+      reciprocalLike.status = "matched";
+      await reciprocalLike.save();
+      matchId = reciprocalLike._id.toString();
     }
+
+    existingLike.status = "matched";
+    await existingLike.save();
 
     await Notification.deleteOne({
       recipient: userId,
@@ -263,7 +367,6 @@ router.post("/toggle-like", authenticateToken, async (req, res) => {
     });
     await matchNotification.save();
 
-    const matchId = reciprocalLikeId || existingLikeId; // Use stored IDs
     const matchDataForRecipient = {
       matchId,
       otherUserId: profileId,

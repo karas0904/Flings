@@ -1415,6 +1415,11 @@
         cursor: pointer;
       }
 
+      .bell-container:hover .fa-bell {
+        color: #ff6b6b; /* Change color on hover */
+        transition: color 0.3s ease; /* Smooth transition */
+      }
+
       /* Update the bell-dropdown styles */
       .bell-dropdown {
         position: absolute;
@@ -1428,15 +1433,35 @@
         color: white;
         display: flex;
         flex-direction: column;
-        max-height: 400px;
+        max-height: 200px; /* Set a maximum height */
+        overflow-y: hidden; /* Initially disable vertical scrolling */
       }
 
-      .bell-dropdown ul {
+      .bell-dropdown ul#notificationList {
         list-style: none;
         padding: 10px;
         margin: 0;
-        overflow-y: auto;
-        flex-grow: 1;
+        overflow-y: auto; /* Enable vertical scrolling */
+        flex-grow: 1; /* Allows it to take available space */
+      }
+
+      /* Scrollbar styling */
+      .bell-dropdown ul#notificationList::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .bell-dropdown ul#notificationList::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+      }
+
+      .bell-dropdown ul#notificationList::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+      }
+
+      .bell-dropdown ul#notificationList::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
       }
 
       /* Sticky note at the bottom of dropdown */
@@ -1449,6 +1474,11 @@
         text-align: center;
         position: sticky;
         bottom: 0;
+      }
+
+      /* Ensure dropdown doesn't trigger page scroll */
+      .bell-dropdown {
+        overscroll-behavior: contain; /* Prevent scroll from affecting parent */
       }
 
       /* Heart animation styles */
@@ -2082,12 +2112,6 @@
           </div>
         </div>
       </div>
-
-      <div class="notification-dropdown" id="notificationDropdown">
-        <div class="notification-list" id="notificationList">
-          <!-- Notifications will be dynamically added here -->
-        </div>
-      </div>
     </div>
 
     <script>
@@ -2103,7 +2127,7 @@
           window.history.replaceState({}, document.title, url);
         }
       }
-    
+      
       // Function to fetch user profile from MongoDB
       async function fetchUserProfile() {
         const token = localStorage.getItem("jwtToken");
@@ -2112,7 +2136,7 @@
           window.location.href = "login.html";
           return;
         }
-    
+      
         try {
           const response = await fetch("http://localhost:3000/api/profile", {
             method: "GET",
@@ -2121,21 +2145,21 @@
               Authorization: `Bearer ${token}`,
             },
           });
-    
+      
           const userData = await response.json();
           console.log("Fetched user profile:", userData);
           console.log("Quotes specifically:", userData.quotes);
           if (!response.ok) {
             throw new Error(userData.message || "Failed to fetch profile");
           }
-    
+      
           updateProfileUI(userData);
         } catch (error) {
           console.error("Error fetching profile:", error);
           window.location.href = "login.html";
         }
       }
-    
+      
       function updateProfileUI(userData) {
         const profileImage = document.getElementById("profileImage");
         const accountAvatar = document.getElementById("accountAvatar");
@@ -2145,7 +2169,7 @@
         const ageValue = document.querySelector(".info-value[data-field='age']");
         const yearValue = document.querySelector(".info-value[data-field='year']");
         const heightValue = document.querySelector(".info-value[data-field='height']");
-    
+      
         const jobValue = document.querySelector(".info-label[data-field='job']");
         const planToValue = document.querySelector(".info-label[data-field='planTo']");
         const hometownValue = document.querySelector(".info-label[data-field='hometown']");
@@ -2156,7 +2180,7 @@
         const drinkingValue = document.querySelector(".info-label[data-field='drinking']");
         const smokingValue = document.querySelector(".info-label[data-field='smoking']");
         const partyPersonValue = document.querySelector(".info-label[data-field='partyPerson']");
-    
+      
         if (userData.photos && userData.photos.length > 0) {
           profileImage.src = userData.photos[0];
           accountAvatar.src = userData.photos[0];
@@ -2164,15 +2188,15 @@
           profileImage.src = "default-profile.jpg";
           accountAvatar.src = "default-profile.jpg";
         }
-    
+      
         accountName.textContent = userData.firstName || "Unknown";
         accountEmail.textContent = userData.email || "your.email@example.com";
         pageTitleEmail.textContent = `(${userData.email || "your.email@example.com"})`;
-    
+      
         ageValue.textContent = userData.age !== null ? userData.age : "N/A";
         yearValue.textContent = userData.year || "N/A";
         heightValue.textContent = userData.height || "None";
-    
+      
         jobValue.textContent = userData.job || "None";
         planToValue.textContent = userData.planTo || "None";
         hometownValue.textContent = userData.hometown || "None";
@@ -2183,7 +2207,7 @@
         drinkingValue.textContent = userData.drinking || "None";
         smokingValue.textContent = userData.smoking || "None";
         partyPersonValue.textContent = userData.partyPerson || "None";
-    
+      
         const quoteBoxes = document.querySelectorAll(".quote-box");
         userData.quotes.forEach((quote, index) => {
           if (quoteBoxes[index]) {
@@ -2191,16 +2215,16 @@
             quoteText.textContent = quote || "Quotes";
           }
         });
-    
+      
         populatePhotos(userData.photos || []);
       }
-    
+      
       function populatePhotos(photos) {
         const slots = document.querySelectorAll(".photo-slot");
         const cardLeft = document.querySelector(".card-left");
         const cardMiddle = document.querySelector(".card-middle");
         const cardRight = document.querySelector(".card-right");
-    
+      
         slots.forEach((slot) => {
           const preview = slot.querySelector(".photo-preview");
           const removeButton = slot.querySelector(".remove-photo");
@@ -2209,14 +2233,14 @@
           removeButton.style.display = "none";
           setProfileButton.style.display = "none";
         });
-    
+      
         photos.forEach((photoUrl, index) => {
           if (index < slots.length) {
             const slot = slots[index];
             const preview = slot.querySelector(".photo-preview");
             const removeButton = slot.querySelector(".remove-photo");
             const setProfileButton = slot.querySelector(".set-profile-btn");
-    
+      
             const img = document.createElement("img");
             img.src = photoUrl;
             preview.innerHTML = "";
@@ -2227,30 +2251,30 @@
             removeButton.onclick = () => removePhoto(slot);
           }
         });
-    
+      
         cardLeft.style.backgroundImage = photos[0] ? `url(${photos[0]})` : "none";
         cardLeft.style.backgroundSize = photos[0] ? "cover" : "auto";
         cardLeft.style.backgroundPosition = photos[0] ? "center" : "auto";
         cardLeft.style.backgroundColor = photos[0] ? "transparent" : "#f8f8f8";
-    
+      
         cardMiddle.style.backgroundImage = photos[1] ? `url(${photos[1]})` : "none";
         cardMiddle.style.backgroundSize = photos[1] ? "cover" : "auto";
         cardMiddle.style.backgroundPosition = photos[1] ? "center" : "auto";
         cardMiddle.style.backgroundColor = photos[1] ? "transparent" : "white";
-    
+      
         cardRight.style.backgroundImage = photos[2] ? `url(${photos[2]})` : "none";
         cardRight.style.backgroundSize = photos[2] ? "cover" : "auto";
         cardRight.style.backgroundPosition = photos[2] ? "center" : "auto";
         cardRight.style.backgroundColor = photos[2] ? "transparent" : "#f8f8f8";
       }
-    
+      
       async function saveProfileData(field, value) {
         const token = localStorage.getItem("jwtToken");
         if (!token) {
           console.error("No JWT token found");
           return;
         }
-    
+      
         try {
           const response = await fetch("http://localhost:3000/api/profile", {
             method: "POST",
@@ -2260,23 +2284,23 @@
             },
             body: JSON.stringify({ [field]: value }),
           });
-    
+      
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || "Failed to save profile data");
           }
-    
+      
           console.log(`Saved ${field}: ${value}`);
         } catch (error) {
           console.error("Error saving profile data:", error);
         }
       }
-    
+      
       async function signOut() {
         const button = document.getElementById("signOutButton");
         button.textContent = "Logging Out...";
         button.disabled = true;
-    
+      
         const token = localStorage.getItem("jwtToken");
         if (token) {
           try {
@@ -2287,7 +2311,7 @@
                 "Content-Type": "application/json",
               },
             });
-    
+      
             if (!response.ok) {
               console.error("Logout failed on server:", response.status);
             } else {
@@ -2297,29 +2321,29 @@
             console.error("Error during logout:", error);
           }
         }
-    
+      
         localStorage.removeItem("jwtToken");
         window.location.href = "login.html";
-    
+      
         button.textContent = "SIGN OUT";
         button.disabled = false;
       }
-    
+      
       async function deleteAccount() {
         const button = document.getElementById("deleteAccountButton");
         const confirmDelete = confirm("Are you sure you want to delete your account? This cannot be undone.");
         if (!confirmDelete) return;
-    
+      
         button.textContent = "Deleting...";
         button.disabled = true;
-    
+      
         const token = localStorage.getItem("jwtToken");
         if (!token) {
           alert("You are not logged in!");
           window.location.href = "login.html";
           return;
         }
-    
+      
         try {
           const response = await fetch("http://localhost:3000/api/delete-account", {
             method: "DELETE",
@@ -2328,12 +2352,12 @@
               "Content-Type": "application/json",
             },
           });
-    
+      
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || "Failed to delete account");
           }
-    
+      
           alert("Your account has been deleted successfully.");
           localStorage.removeItem("jwtToken");
           window.location.href = "login.html";
@@ -2345,13 +2369,13 @@
           button.disabled = false;
         }
       }
-    
+      
       function enableEdit(button) {
         const infoItem = button.closest(".info-item");
         const infoLabel = infoItem.querySelector(".info-label");
         const currentText = infoLabel.textContent;
         const field = infoLabel.dataset.field;
-    
+      
         const input = document.createElement("input");
         input.type = "text";
         input.value = currentText === "None" ? "" : currentText;
@@ -2360,24 +2384,24 @@
         infoLabel.innerHTML = "";
         infoLabel.appendChild(input);
         input.focus();
-    
+      
         button.innerHTML = '<i class="fa-solid fa-check"></i>';
         button.onclick = () => saveEdit(infoItem, field);
       }
-    
+      
       function saveEdit(infoItem, field) {
         const infoLabel = infoItem.querySelector(".info-label");
         const input = infoLabel.querySelector("input");
         const newValue = input.value.trim() || "None";
         infoLabel.textContent = newValue;
-    
+      
         const button = infoItem.querySelector(".arrow-btn");
         button.innerHTML = '<i class="fas fa-chevron-right"></i>';
         button.onclick = () => enableEdit(button);
-    
+      
         saveProfileData(field, newValue);
       }
-    
+      
       // Fetch notifications (combines like and photo_like)
       async function fetchNotifications() {
         const token = localStorage.getItem("jwtToken");
@@ -2385,10 +2409,10 @@
           console.error("No JWT token found");
           return;
         }
-    
+      
         const notificationList = document.getElementById("notificationList");
         notificationList.innerHTML = '<li>Loading...</li>';
-    
+      
         try {
           const response = await fetch("http://localhost:3000/api/notifications", {
             method: "GET",
@@ -2397,15 +2421,15 @@
               Authorization: `Bearer ${token}`,
             },
           });
-    
+      
           const result = await response.json();
           if (!response.ok) {
             throw new Error(result.message || "Failed to fetch notifications");
           }
-    
+      
           console.log("Notifications:", result.notifications); // Debug: Check notification data
           displayNotifications(result.notifications);
-    
+      
           // Calculate unread count and update badge
           const unreadCount = result.notifications.filter(notif => !notif.read).length;
           console.log("Unread count:", unreadCount); // Debug: Verify count
@@ -2415,7 +2439,7 @@
           notificationList.innerHTML = '<li class="empty-message">Error loading notifications</li>';
         }
       }
-    
+      
       // Update the notification badge (keep visible even at 0)
       function updateNotificationBadge(count) {
         const badge = document.getElementById("notificationCount");
@@ -2425,17 +2449,17 @@
         // Optional: Change background color for 0 count
         badge.style.backgroundColor = count > 0 ? "#ff0000" : "#666"; // Red for unread, gray for 0
       }
-    
+      
       // Display notifications with heart/cross for "like" type only
       function displayNotifications(notifications) {
         const notificationList = document.getElementById("notificationList");
         notificationList.innerHTML = "";
-    
+      
         if (!notifications || notifications.length === 0) {
           notificationList.innerHTML = '<li class="empty-message">No notifications yet</li>';
           return;
         }
-    
+      
         notifications.forEach((notif) => {
           const li = document.createElement("li");
           const a = document.createElement("a");
@@ -2448,7 +2472,7 @@
           if (!notif.read) {
             a.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
           }
-    
+      
           const img = document.createElement("img");
           img.src = notif.senderPhoto || "default-profile.jpg";
           img.alt = "Sender's photo";
@@ -2456,48 +2480,48 @@
           img.style.height = "30px";
           img.style.borderRadius = "50%";
           img.style.marginRight = "10px";
-    
+      
           const textContainer = document.createElement("div");
           textContainer.style.flex = "1";
           textContainer.innerHTML = `
             ${notif.message}<br>
             <small>${notif.remainingDays} day${notif.remainingDays !== 1 ? "s" : ""} left</small>
           `;
-    
+      
           a.appendChild(img);
           a.appendChild(textContainer);
-    
+      
           // Add heart/cross buttons only for "like" type
           if (notif.type === "like") {
             const iconContainer = document.createElement("div");
             iconContainer.style.display = "flex";
             iconContainer.style.alignItems = "center";
             iconContainer.style.gap = "10px";
-    
+      
             const heartIcon = document.createElement("i");
             heartIcon.classList.add("far", "fa-heart");
             heartIcon.style.cursor = "pointer";
             heartIcon.addEventListener("click", async (e) => {
               e.preventDefault();
               e.stopPropagation();
-    
+      
               heartIcon.style.transition = "color 0.3s ease";
               heartIcon.classList.remove("far");
               heartIcon.classList.add("fas");
               heartIcon.style.color = "#ff0000";
-    
+      
               setTimeout(async () => {
                 createFloatingHearts(heartIcon);
                 await toggleLike(notif.senderId, true);
               }, 300);
-    
+      
               setTimeout(() => {
                 li.remove();
                 checkEmptyNotifications();
               }, 1800);
             });
             iconContainer.appendChild(heartIcon);
-    
+      
             const crossIcon = document.createElement("i");
             crossIcon.classList.add("fa-solid", "fa-times");
             crossIcon.style.cursor = "pointer";
@@ -2507,13 +2531,13 @@
               await removeLikedProfile(notif.senderId, li);
             });
             iconContainer.appendChild(crossIcon);
-    
+      
             a.appendChild(iconContainer);
           }
-    
+      
           li.appendChild(a);
           notificationList.appendChild(li);
-    
+      
           // Mark as read on click (optional)
           a.addEventListener("click", async (e) => {
             if (!notif.read && notif.type !== "like") {
@@ -2533,7 +2557,7 @@
           });
         });
       }
-    
+      
       // Toggle like (accept incoming like)
       async function toggleLike(profileId, isLiked) {
         const token = localStorage.getItem("jwtToken");
@@ -2541,7 +2565,7 @@
           console.error("No JWT token found");
           return;
         }
-
+      
         try {
           const response = await fetch("http://localhost:3000/api/toggle-like", {
             method: "POST",
@@ -2551,15 +2575,15 @@
             },
             body: JSON.stringify({ profileId }),
           });
-
+      
           const result = await response.json();
           if (!response.ok) {
             throw new Error(result.message || "Failed to toggle like");
           }
-
+      
           if (result.match) {
             console.log("Match created:", result.match);
-            alert("You’ve matched! Check your messages.");
+            alert("You've matched! Check your messages.");
             // Optionally redirect to messages.html with matchId
             window.location.href = `messages.html?matchId=${result.match.matchId}`;
           } else {
@@ -2570,7 +2594,7 @@
           // Removed alert("Failed to match: " + error.message);
         }
       }
-    
+      
       // Remove liked profile (reject incoming like)
       async function removeLikedProfile(profileId, listItem) {
         const token = localStorage.getItem("jwtToken");
@@ -2578,7 +2602,7 @@
           console.error("No JWT token found");
           return;
         }
-    
+      
         try {
           const response = await fetch("http://localhost:3000/api/remove-liked-profile", {
             method: "POST",
@@ -2588,12 +2612,12 @@
             },
             body: JSON.stringify({ profileId }),
           });
-    
+      
           const result = await response.json();
           if (!response.ok) {
             throw new Error(result.message || "Failed to remove liked profile");
           }
-    
+      
           console.log("Remove liked profile response:", result);
           listItem.remove();
           checkEmptyNotifications();
@@ -2602,7 +2626,7 @@
           alert("Failed to remove profile: " + error.message);
         }
       }
-    
+      
       // Check if notification list is empty
       function checkEmptyNotifications() {
         const notificationList = document.getElementById("notificationList");
@@ -2610,13 +2634,13 @@
           notificationList.innerHTML = '<li class="empty-message">No notifications yet</li>';
         }
       }
-    
+      
       // Create floating hearts animation
       function createFloatingHearts(element) {
         const dropdown = document.querySelector(".bell-dropdown");
         const rect = element.getBoundingClientRect();
         const heartCount = 5;
-    
+      
         for (let i = 0; i < heartCount; i++) {
           setTimeout(() => {
             const heart = document.createElement("i");
@@ -2625,14 +2649,14 @@
             heart.style.bottom = "40px";
             heart.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
             dropdown.appendChild(heart);
-    
+      
             setTimeout(() => {
               heart.remove();
             }, 1500);
           }, i * 100);
         }
       }
-    
+      
       // Bell icon click handler
       document.getElementById("bellIcon").addEventListener("click", async function (e) {
         e.stopPropagation();
@@ -2659,7 +2683,7 @@
           dropdown.style.display = "none";
         }
       });
-    
+      
       // Close dropdown when clicking outside
       document.addEventListener("click", function (e) {
         const dropdown = document.getElementById("bellDropdown");
@@ -2668,7 +2692,24 @@
           dropdown.style.display = "none";
         }
       });
-    
+      
+      // Prevent page scrolling when scrolling inside bell dropdown
+      document.getElementById("notificationList").addEventListener("wheel", (e) => {
+        e.preventDefault(); // Prevent default page scroll
+        const ul = e.currentTarget;
+        ul.scrollTop += e.deltaY; // Manually scroll the ul element
+      }, { passive: false });
+      
+      // Optional: Handle touch scrolling for mobile devices
+      document.getElementById("notificationList").addEventListener("touchmove", (e) => {
+        // Allow scrolling within the dropdown without affecting the page
+        const ul = e.currentTarget;
+        if (ul.scrollHeight > ul.clientHeight) {
+          // Only prevent default if the dropdown is scrollable
+          e.stopPropagation();
+        }
+      });
+      
       function enableQuoteEdit(button) {
         const quoteBox = button.parentElement;
         const quoteText = quoteBox.querySelector(".quote-text");
@@ -2696,40 +2737,40 @@
         button.innerHTML = '<i class="fa-solid fa-check"></i>';
         button.onclick = () => saveQuote(quoteBox);
       }
-    
+      
       async function saveQuote(quoteBox) {
         const input = quoteBox.querySelector(".quote-input");
         const quoteText = quoteBox.querySelector(".quote-text");
         const button = quoteBox.querySelector(".corner-plus-btn");
-    
+      
         input.style.opacity = "0";
         await new Promise((resolve) => {
           setTimeout(() => {
             input.style.display = "none";
             quoteText.textContent = input.value.trim() || "Quotes";
             quoteText.style.opacity = "1";
-    
+      
             const allQuoteBoxes = document.querySelectorAll(".quote-box");
             const quotes = Array.from(allQuoteBoxes).map((box) => {
               const text = box.querySelector(".quote-text").textContent;
               return text === "Quotes" ? "" : text;
             });
-    
+      
             saveQuotesToProfile(quotes).then(resolve);
           }, 300);
         });
-    
+      
         button.innerHTML = '<i class="fa-solid fa-plus"></i>';
         button.onclick = () => enableQuoteEdit(button);
       }
-    
+      
       async function saveQuotesToProfile(quotes) {
         const token = localStorage.getItem("jwtToken");
         if (!token) {
           console.error("No JWT token found");
           return;
         }
-    
+      
         try {
           const response = await fetch("http://localhost:3000/api/profile", {
             method: "POST",
@@ -2739,25 +2780,25 @@
             },
             body: JSON.stringify({ quotes: quotes }),
           });
-    
+      
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || "Failed to save quotes");
           }
-    
+      
           console.log("Quotes saved successfully:", quotes);
         } catch (error) {
           console.error("Error saving quotes:", error);
         }
       }
-    
+      
       function triggerGifUpload(button) {
         const gifSection = document.querySelector(".gif-section");
         if (gifSection.classList.contains("disabled")) {
           console.log("GIF section is disabled");
           return;
         }
-    
+      
         const gifBox = button.parentElement;
         const fileInput = gifBox.querySelector(".gif-upload");
         fileInput.click();
@@ -2790,7 +2831,7 @@
           }
         };
       }
-    
+      
       function resetGifBox(gifBox) {
         const video = gifBox.querySelector(".gif-video");
         const button = gifBox.querySelector(".corner-plus-btn");
@@ -2802,13 +2843,13 @@
         button.onclick = () => triggerGifUpload(button);
         fileInput.value = "";
       }
-    
+      
       function triggerPhotoUpload(preview) {
         const slot = preview.parentElement;
         const fileInput = slot.querySelector(".photo-upload-input");
         const removeButton = slot.querySelector(".remove-photo");
         const setProfileButton = slot.querySelector(".set-profile-btn");
-    
+      
         fileInput.click();
         fileInput.onchange = function () {
           const file = this.files[0];
@@ -2836,7 +2877,7 @@
           }
         };
       }
-    
+      
       function removePhoto(slot) {
         const preview = slot.querySelector(".photo-preview");
         const fileInput = slot.querySelector(".photo-upload-input");
@@ -2848,7 +2889,7 @@
         setProfileButton.style.display = "none";
         savePhotosToStack();
       }
-    
+      
       function setProfilePicture(imageSrc) {
         const profileImage = document.getElementById("profileImage");
         const accountAvatar = document.getElementById("accountAvatar");
@@ -2856,7 +2897,7 @@
         accountAvatar.src = imageSrc;
         alert("Profile picture updated successfully!");
       }
-    
+      
       async function savePhotosToStack() {
         const slots = document.querySelectorAll(".photo-slot");
         const uploadedImages = [];
@@ -2866,38 +2907,38 @@
             uploadedImages.push(img.src);
           }
         });
-    
+      
         const cardLeft = document.querySelector(".card-left");
         const cardMiddle = document.querySelector(".card-middle");
         const cardRight = document.querySelector(".card-right");
-    
+      
         cardLeft.style.backgroundImage = uploadedImages[0] ? `url(${uploadedImages[0]})` : "none";
         cardLeft.style.backgroundSize = uploadedImages[0] ? "cover" : "auto";
         cardLeft.style.backgroundPosition = uploadedImages[0] ? "center" : "auto";
         cardLeft.style.backgroundColor = uploadedImages[0] ? "transparent" : "#f8f8f8";
-    
+      
         cardMiddle.style.backgroundImage = uploadedImages[1] ? `url(${uploadedImages[1]})` : "none";
         cardMiddle.style.backgroundSize = uploadedImages[1] ? "cover" : "auto";
         cardMiddle.style.backgroundPosition = uploadedImages[1] ? "center" : "auto";
         cardMiddle.style.backgroundColor = uploadedImages[1] ? "transparent" : "white";
-    
+      
         cardRight.style.backgroundImage = uploadedImages[2] ? `url(${uploadedImages[2]})` : "none";
         cardRight.style.backgroundSize = uploadedImages[2] ? "cover" : "auto";
         cardRight.style.backgroundPosition = uploadedImages[2] ? "center" : "auto";
         cardRight.style.backgroundColor = uploadedImages[2] ? "transparent" : "#f8f8f8";
-    
+      
         console.log("Uploaded images:", uploadedImages);
-    
+      
         if (uploadedImages.length > 0) {
           await saveProfileData("photos", uploadedImages);
         }
       }
-    
+      
       document.addEventListener("DOMContentLoaded", function () {
         storeToken();
         fetchUserProfile();
         fetchNotifications(); // Fetch notifications on page load to update badge
-    
+      
         const icons = document.querySelectorAll(".sidebar-icon");
         icons.forEach((icon) => {
           icon.addEventListener("mouseenter", () => {
@@ -2918,13 +2959,13 @@
             });
           });
         });
-    
+      
         document.getElementById("signOutButton").addEventListener("click", signOut);
-    
+      
         document.getElementById("changeAvatarText").addEventListener("click", function () {
           document.getElementById("avatarUpload").click();
         });
-    
+      
         document.getElementById("avatarUpload").addEventListener("change", function (event) {
           const file = event.target.files[0];
           if (file) {
@@ -2936,16 +2977,16 @@
             reader.readAsDataURL(file);
           }
         });
-    
+      
         const editBtn = document.getElementById("squareBoxEdit");
         const squareBox = document.querySelector(".square-box");
         const infoValues = squareBox.querySelectorAll(".info-value");
         let isEditing = false;
-    
+      
         editBtn.addEventListener("click", function () {
           isEditing = !isEditing;
           editBtn.classList.toggle("active");
-    
+      
           if (isEditing) {
             editBtn.textContent = "SAVE";
             infoValues.forEach((value) => {
@@ -2974,26 +3015,89 @@
             });
           }
         });
-    
+      
         document.querySelector(".add-button").addEventListener("click", function () {
           document.getElementById("photoModal").style.display = "flex";
         });
-    
+      
         document.getElementById("closeModal").addEventListener("click", function () {
           document.getElementById("photoModal").style.display = "none";
         });
-    
+      
         document.getElementById("savePhotos").addEventListener("click", function () {
           document.getElementById("photoModal").style.display = "none";
           savePhotosToStack();
         });
-    
+      
         document.getElementById("photoModal").addEventListener("click", function (e) {
           if (e.target === this) {
             this.style.display = "none";
           }
         });
       });
+
+      // Assuming you have the bell dropdown and the notification list
+      const bellDropdown = document.getElementById("bellDropdown");
+      const notificationList = document.getElementById("notificationList");
+      const dropdownFooter = document.querySelector(".dropdown-footer"); // Select the footer
+      const bellIcon = document.getElementById("bellIcon"); // Select the bell icon
+      const profileIcon = document.querySelector(".profile-icon"); // Select the profile icon
+
+      // Function to enable scrolling in the dropdown
+      function enableDropdownScroll() {
+          bellDropdown.style.overflowY = "auto"; // Allow vertical scrolling
+      }
+
+      // Function to disable scrolling in the dropdown
+      function disableDropdownScroll() {
+          bellDropdown.style.overflowY = "hidden"; // Disable vertical scrolling
+      }
+
+      // Add event listeners to the bell dropdown, notification list, dropdown footer, bell icon, and profile icon
+      bellDropdown.addEventListener("mouseenter", enableDropdownScroll);
+      bellDropdown.addEventListener("mouseleave", disableDropdownScroll);
+      notificationList.addEventListener("mouseenter", enableDropdownScroll);
+      notificationList.addEventListener("mouseleave", disableDropdownScroll);
+      dropdownFooter.addEventListener("mouseenter", enableDropdownScroll); // Enable scroll on footer
+      dropdownFooter.addEventListener("mouseleave", disableDropdownScroll); // Disable scroll on footer
+      bellIcon.addEventListener("mouseenter", enableDropdownScroll); // Enable scroll when hovering over bell icon
+      bellIcon.addEventListener("mouseleave", disableDropdownScroll); // Disable scroll when leaving bell icon
+      profileIcon.addEventListener("mouseenter", enableDropdownScroll); // Enable scroll when hovering over profile icon
+      profileIcon.addEventListener("mouseleave", disableDropdownScroll); // Disable scroll when leaving profile icon
+
+      // Function to create a ripple effect
+      function createRipple(event) {
+          const ripple = document.createElement("span");
+          const bellContainer = document.querySelector(".bell-container");
+          const rect = bellContainer.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          
+          ripple.style.width = ripple.style.height = `${size}px`;
+          ripple.style.position = "absolute";
+          ripple.style.borderRadius = "50%";
+          ripple.style.background = "rgba(255, 255, 255, 0.6)"; // Ripple color
+          ripple.style.pointerEvents = "none";
+          ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+          ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+          ripple.style.transform = "scale(0)";
+          ripple.style.transition = "transform 0.6s, opacity 0.6s";
+          
+          bellContainer.appendChild(ripple);
+          
+          // Trigger the ripple animation
+          setTimeout(() => {
+              ripple.style.transform = "scale(1)";
+              ripple.style.opacity = "0";
+          }, 10);
+          
+          // Remove the ripple element after animation
+          ripple.addEventListener("transitionend", () => {
+              ripple.remove();
+          });
+      }
+
+      // Add click event listener to the bell icon
+      document.getElementById("bellIcon").addEventListener("click", createRipple);
     </script>
   </body>
 </html>

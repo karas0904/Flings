@@ -16,6 +16,10 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
       * {
@@ -1267,9 +1271,73 @@
       .custom-alert-button:hover {
         background-color: rgba(255, 255, 255, 0.4);
       }
+
+      .profile-list.active-blur {
+        filter: blur(5px);
+        transition: filter 0.3s ease;
+      }
+
+      #match-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(20, 20, 20, 0.85);
+        border-radius: 20px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        filter: url(#film-grain);
+        will-change: opacity, filter; /* Optimize rendering */
+        transform: translateZ(0); /* Force GPU */
+        /* Fallback CSS grain if SVG fails */
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="3" /><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0" /></filter><rect width="100" height="100" filter="url(#noise)" opacity="0.3"/></svg>');
+        background-size: 100px 100px;
+      }
+      #match-overlay.active {
+        opacity: 1;
+        pointer-events: none;
+      }
+      #match-content {
+        text-align: center;
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      #match-text {
+        font-family: "Inter", system-ui, sans-serif;
+        font-size: 2.6rem;
+        font-weight: 700;
+        color: #ffffff;
+        position: relative;
+        top: 40%;
+      }
     </style>
   </head>
   <body>
+    <svg style="position: absolute; width: 0; height: 0">
+      <filter id="film-grain">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="1.3"
+          numOctaves="6"
+          stitchTiles="stitch"
+          result="noise"
+        />
+        <feColorMatrix
+          type="matrix"
+          values="0 0 0 0 0 
+                  0 0 0 0 0 
+                  0 0 0 0 0 
+                  0 0 0 0.3 0"
+        />
+        <feBlend mode="overlay" in="SourceGraphic" result="grainy" />
+      </filter>
+    </svg>
     <div class="blur-shape red-shape"></div>
     <div class="blur-shape blue-shape"></div>
 
@@ -1288,6 +1356,12 @@
             <div class="cube"></div>
             <div class="cube"></div>
           </div>
+        </div>
+      </div>
+      <!-- Match overlay -->
+      <div id="match-overlay">
+        <div id="match-content">
+          <div id="match-text">Match Made!</div>
         </div>
       </div>
       <div class="profile-details-box" id="profileDetailsBox">
@@ -1328,6 +1402,12 @@
         </div>
       </div>
     </div>
+
+    <audio
+      id="match-chime"
+      src="assets/sounds/chime.mp3"
+      preload="auto"
+    ></audio>
 
     <div class="custom-alert-overlay" id="customAlertOverlay">
       <div class="custom-alert-box" id="customAlertBox">
@@ -1386,10 +1466,18 @@
       </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="http://localhost:3000/socket.io/socket.io.js"></script>
 
     <script>
       const socket = io("http://localhost:3000");
+      socket.on("connect", () => {
+        console.log("Socket.io connected:", socket.id);
+      });
+      socket.on("connect_error", (error) => {
+        console.error("Socket.io connection error:", error);
+      });
+
       // Function to show custom alert
       function showCustomAlert(message) {
         const overlay = document.getElementById("customAlertOverlay");
@@ -1692,11 +1780,13 @@
 
         socket.on("newMatch", (matchData) => {
           console.log("New match received:", matchData);
+          console.log("Current profiles:", profiles);
           const profileIndex = profiles.findIndex(
             (p) => p._id === matchData.otherUserId
           );
+          console.log("Profile index found:", profileIndex);
           if (profileIndex !== -1) {
-            profiles[profileIndex].isLiked = true; // Update local state
+            profiles[profileIndex].isLiked = true;
             const heartButton = document.querySelector(
               `.profile-card:nth-child(${profileIndex + 1}) .heart-button`
             );
@@ -1705,7 +1795,23 @@
               console.log(
                 `Updated heart button for profile ${matchData.otherUserId} to active`
               );
+            } else {
+              console.log(
+                "Heart button not found for profile index:",
+                profileIndex
+              );
             }
+            if (!isAnimationRunning) {
+              showMatchAnimation();
+            } else {
+              console.log(
+                "Animation already running, skipping Socket.io trigger"
+              );
+            }
+          } else {
+            console.warn(
+              `Profile with ID ${matchData.otherUserId} not found in current profiles`
+            );
           }
         });
 
@@ -1845,9 +1951,10 @@
             profileList.appendChild(profileCard);
 
             // Heart button event listener
+            // Inside the heartButton event listener, replace the fetch block with:
             heartButton.addEventListener("click", async function () {
               const wasLiked = this.classList.contains("active");
-              this.classList.toggle("active"); // Immediate UI feedback
+              this.classList.toggle("active");
 
               const token = localStorage.getItem("jwtToken");
               if (!token) {
@@ -1880,6 +1987,13 @@
                     this.classList.add("active");
                   } else {
                     this.classList.remove("active");
+                  }
+                  if (
+                    result.message === "Profile liked and matched" &&
+                    !isAnimationRunning
+                  ) {
+                    console.log("Fallback: Triggering match animation");
+                    showMatchAnimation();
                   }
                 } else {
                   console.error("Like action failed:", result);
@@ -2553,6 +2667,96 @@
               );
             }
           });
+        // Animation function
+        let isAnimationRunning = false;
+
+        function showMatchAnimation() {
+          if (isAnimationRunning) {
+            console.log("Animation already running, skipping trigger");
+            return;
+          }
+          isAnimationRunning = true;
+
+          const overlay = document.getElementById("match-overlay");
+          const matchText = document.getElementById("match-text");
+          const profileList = document.getElementById("profileList");
+          const chime = document.getElementById("match-chime");
+
+          if (!overlay || !matchText || !profileList) {
+            console.error("Match animation elements missing:", {
+              overlay: !!overlay,
+              matchText: !!matchText,
+              profileList: !!profileList,
+            });
+            isAnimationRunning = false;
+            return;
+          }
+
+          console.log("Starting match animation");
+          console.log("Overlay state before:", {
+            display: overlay.style.display,
+            opacity: overlay.style.opacity,
+            classList: overlay.classList.toString(),
+            filter: window.getComputedStyle(overlay).filter, // Debug filter
+          });
+
+          overlay.classList.remove("active");
+          profileList.classList.remove("active-blur");
+          gsap.set(overlay, { opacity: 0 });
+          gsap.set(matchText, { opacity: 0, y: 20 });
+
+          overlay.classList.add("active");
+          profileList.classList.add("active-blur");
+          gsap.to(overlay, { opacity: 1, duration: 0.3, ease: "power3.out" });
+
+          try {
+            if (chime) {
+              chime.currentTime = 0;
+              chime.play().catch((e) => console.warn("Chime failed:", e));
+            }
+            if (navigator.vibrate) {
+              navigator.vibrate(50);
+            }
+          } catch (error) {
+            console.warn("Sound/vibration error:", error);
+          }
+
+          gsap.to(matchText, {
+            opacity: 1,
+            y: 0,
+            duration: 0.4,
+            ease: "power3.out",
+            delay: 0.3,
+          });
+          gsap.to(matchText, {
+            scale: 1.05,
+            duration: 0.6,
+            yoyo: true,
+            repeat: 1,
+            ease: "power3.inOut",
+            delay: 0.7,
+          });
+
+          gsap.to(overlay, {
+            opacity: 0,
+            duration: 0.5,
+            delay: 2.5,
+            ease: "power3.in",
+            onComplete: () => {
+              console.log("Match animation completed");
+              console.log("Overlay state after:", {
+                display: overlay.style.display,
+                opacity: overlay.style.opacity,
+                classList: overlay.classList.toString(),
+                filter: window.getComputedStyle(overlay).filter, // Debug filter
+              });
+              overlay.classList.remove("active");
+              profileList.classList.remove("active-blur");
+              gsap.set(overlay, { opacity: 0 });
+              isAnimationRunning = false;
+            },
+          });
+        }
       });
 
       function toggleSidebar() {

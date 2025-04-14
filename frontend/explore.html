@@ -1283,7 +1283,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(20, 20, 20, 0.85);
+        background: url('assets/images/match_overlay.png') center/cover no-repeat;
         border-radius: 20px;
         z-index: 1000;
         display: flex;
@@ -1291,30 +1291,107 @@
         justify-content: center;
         opacity: 0;
         pointer-events: none;
-        filter: url(#film-grain);
-        will-change: opacity, filter; /* Optimize rendering */
-        transform: translateZ(0); /* Force GPU */
-        /* Fallback CSS grain if SVG fails */
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="3" /><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0" /></filter><rect width="100" height="100" filter="url(#noise)" opacity="0.3"/></svg>');
-        background-size: 100px 100px;
+        will-change: transform, opacity, clip-path;
+        transform: scale(1);
+        transition: opacity 1.2s ease-out;
+        clip-path: circle(25px at calc(100% - 65px) calc(100% - 65px));
       }
       #match-overlay.active {
         opacity: 1;
         pointer-events: none;
+        clip-path: circle(150% at calc(100% - 65px) calc(100% - 65px));
+        transition: clip-path 1.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    opacity 1.2s ease-out;
+      }
+      #match-overlay.fade-out {
+        opacity: 0;
+        transition: opacity 0.8s ease-out;
+        pointer-events: none;
+      }
+      #match-overlay.fade-out #match-content {
+        opacity: 0;
+        transform: scale(1);
+        transition: opacity 0.4s ease-out;
+        transition-delay: 0s;
       }
       #match-content {
         text-align: center;
         position: relative;
         width: 100%;
         height: 100%;
+        opacity: 0;
+        transform: scale(0.95);
+        transition: all 0.4s ease-out;
+      }
+      #match-overlay.active #match-content {
+        opacity: 1;
+        transform: scale(1);
+        transition-delay: 1s;
       }
       #match-text {
-        font-family: "Inter", system-ui, sans-serif;
+        font-family: "ITC Garamond Std Light Narrow", "Garamond", serif;
         font-size: 2.6rem;
-        font-weight: 700;
+        font-weight: 300;
         color: #ffffff;
         position: relative;
         top: 40%;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        display: inline-block;
+      }
+
+      #match-text span {
+        opacity: 0.9;
+        position: relative;
+        display: inline-block;
+        transition: all 0.3s ease-out;
+      }
+
+      #match-text span.shine {
+        animation: letterShine 0.5s ease-out forwards;
+      }
+
+      #match-text::before {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.9) 50%,
+          transparent 100%
+        );
+        left: 0;
+        opacity: 0;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+      }
+
+      @keyframes letterShine {
+        0% {
+          color: #ffffff;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        100% {
+          color: #ffffff;
+          text-shadow: 0 0 10px rgba(255, 255, 255, 1),
+                     0 0 20px rgba(255, 255, 255, 0.8),
+                     2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+      }
+
+      #match-overlay.fade-out #match-text,
+      #match-overlay.fade-out #match-text span {
+        animation: none;
+        opacity: 0;
+        transition: all 0.4s ease-out;
+      }
+
+      @font-face {
+        font-family: "ITC Garamond Std Light Narrow";
+        src: url("assets/fonts/ITCGaramondStd-LtNarrow.otf") format("opentype");
+        font-weight: 300;
+        font-style: normal;
       }
     </style>
   </head>
@@ -2504,7 +2581,7 @@
                 } successfully`
               );
 
-              // No sync with heart-button since they’re separate
+              // No sync with heart-button since they're separate
             } catch (error) {
               console.error("Error liking/unliking photo:", error);
               this.classList.toggle("active"); // Revert UI on error
@@ -2693,21 +2770,12 @@
           }
 
           console.log("Starting match animation");
-          console.log("Overlay state before:", {
-            display: overlay.style.display,
-            opacity: overlay.style.opacity,
-            classList: overlay.classList.toString(),
-            filter: window.getComputedStyle(overlay).filter, // Debug filter
-          });
 
-          overlay.classList.remove("active");
+          overlay.classList.remove("active", "fade-out");
           profileList.classList.remove("active-blur");
-          gsap.set(overlay, { opacity: 0 });
-          gsap.set(matchText, { opacity: 0, y: 20 });
-
-          overlay.classList.add("active");
-          profileList.classList.add("active-blur");
-          gsap.to(overlay, { opacity: 1, duration: 0.3, ease: "power3.out" });
+          
+          // Force reflow
+          void overlay.offsetWidth;
 
           try {
             if (chime) {
@@ -2721,41 +2789,30 @@
             console.warn("Sound/vibration error:", error);
           }
 
-          gsap.to(matchText, {
-            opacity: 1,
-            y: 0,
-            duration: 0.4,
-            ease: "power3.out",
-            delay: 0.3,
-          });
-          gsap.to(matchText, {
-            scale: 1.05,
-            duration: 0.6,
-            yoyo: true,
-            repeat: 1,
-            ease: "power3.inOut",
-            delay: 0.7,
+          overlay.classList.add("active");
+          profileList.classList.add("active-blur");
+
+          // Create spans for each letter
+          matchText.innerHTML = 'Match Made!'.split('').map(char => 
+            `<span>${char}</span>`
+          ).join('');
+
+          // Animate letters sequentially
+          const letters = matchText.querySelectorAll('span');
+          letters.forEach((letter, index) => {
+            setTimeout(() => {
+              letter.classList.add('shine');
+            }, 1200 + (index * 100)); // Start at 1.2s, 100ms delay between each letter
           });
 
-          gsap.to(overlay, {
-            opacity: 0,
-            duration: 0.5,
-            delay: 2.5,
-            ease: "power3.in",
-            onComplete: () => {
-              console.log("Match animation completed");
-              console.log("Overlay state after:", {
-                display: overlay.style.display,
-                opacity: overlay.style.opacity,
-                classList: overlay.classList.toString(),
-                filter: window.getComputedStyle(overlay).filter, // Debug filter
-              });
-              overlay.classList.remove("active");
-              profileList.classList.remove("active-blur");
-              gsap.set(overlay, { opacity: 0 });
+          setTimeout(() => {
+            overlay.classList.add("fade-out");
+            profileList.classList.remove("active-blur");
+            setTimeout(() => {
+              overlay.classList.remove("active", "fade-out");
               isAnimationRunning = false;
-            },
-          });
+            }, 800);
+          }, 4000);
         }
       });
 

@@ -1283,7 +1283,8 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: url('assets/images/match_overlay.png') center/cover no-repeat;
+        background: url("assets/images/match_overlay.png") center/cover
+          no-repeat;
         border-radius: 20px;
         z-index: 1000;
         display: flex;
@@ -1294,14 +1295,14 @@
         will-change: transform, opacity, clip-path;
         transform: scale(1);
         transition: opacity 1.2s ease-out;
-        clip-path: circle(25px at calc(100% - 65px) calc(100% - 65px));
+        clip-path: circle(5px at 92% 95%);
       }
       #match-overlay.active {
         opacity: 1;
         pointer-events: none;
-        clip-path: circle(150% at calc(100% - 65px) calc(100% - 65px));
+        clip-path: circle(200% at 92% 95%);
         transition: clip-path 1.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-                    opacity 1.2s ease-out;
+          opacity 1.2s ease-out;
       }
       #match-overlay.fade-out {
         opacity: 0;
@@ -1351,7 +1352,7 @@
       }
 
       #match-text::before {
-        content: '';
+        content: "";
         position: absolute;
         width: 20px;
         height: 100%;
@@ -1375,8 +1376,7 @@
         100% {
           color: #ffffff;
           text-shadow: 0 0 10px rgba(255, 255, 255, 1),
-                     0 0 20px rgba(255, 255, 255, 0.8),
-                     2px 2px 4px rgba(0, 0, 0, 0.5);
+            0 0 20px rgba(255, 255, 255, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
       }
 
@@ -1392,6 +1392,19 @@
         src: url("assets/fonts/ITCGaramondStd-LtNarrow.otf") format("opentype");
         font-weight: 300;
         font-style: normal;
+      }
+
+      /* Add disabled style for no-named-button */
+      .no-named-button:disabled {
+        background: #666;
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .no-named-button:disabled:hover {
+        width: 50px;
+        height: 50px;
+        transform: none;
       }
     </style>
   </head>
@@ -1588,7 +1601,7 @@
       // Function to clear URL parameters
       function clearUrlParams() {
         const url = new URL(window.location);
-        url.search = ""; // Clear all query parameters
+        url.search = "";
         window.history.replaceState({}, document.title, url);
       }
 
@@ -1726,6 +1739,7 @@
               .map((like) => like.id?.toString())
               .filter(Boolean)
           );
+          console.log("Fetched likedProfileIds:", Array.from(likedProfileIds));
 
           const savedResponse = await fetch(
             "http://localhost:3000/api/saved-profiles",
@@ -1768,9 +1782,11 @@
               hasRose: false,
               comment: "",
             };
+            const isLiked = likedProfileIds.has(profileIdStr);
+            console.log(`Profile ${profileIdStr} isLiked: ${isLiked}`);
             return {
               ...profile,
-              isLiked: likedProfileIds.has(profileIdStr),
+              isLiked: isLiked,
               isSaved: savedProfileIds.has(profileIdStr),
               hasRose: roseInfo.hasRose,
               comment: roseInfo.comment,
@@ -1800,7 +1816,7 @@
         if (userData.photos && userData.photos.length > 0) {
           accountImage.src = userData.photos[0];
         } else {
-          accountImage.src = "default-profile.jpg"; // Fallback image
+          accountImage.src = "default-profile.jpg";
         }
         accountName.textContent = userData.firstName || "Unknown";
         accountDetails.textContent = `Age: ${userData.age || "N/A"} | Year: ${
@@ -1894,14 +1910,12 @@
 
         profiles = await fetchProfiles();
         console.log("Profiles loaded:", profiles);
-        loadProfiles(); // Explicitly call to load initial profiles
+        loadProfiles();
 
         function loadProfiles() {
           console.log(
-            "loadProfiles called with loadedProfiles:",
-            loadedProfiles
+            `loadProfiles called: loadedProfiles=${loadedProfiles}, totalProfiles=${profiles.length}`
           );
-          console.log("Profiles array:", profiles);
           const start = loadedProfiles;
           const end = Math.min(
             loadedProfiles + profilesPerPage,
@@ -1929,6 +1943,7 @@
             );
             const profileCard = document.createElement("div");
             profileCard.classList.add("profile-card");
+            profileCard.dataset.profileId = profile._id;
 
             const profileImage = document.createElement("img");
             profileImage.classList.add("profile-image");
@@ -1960,7 +1975,13 @@
 
             const noNamedButton = document.createElement("button");
             noNamedButton.classList.add("no-named-button");
+            noNamedButton.id = "ban-button-" + profile._id;
             noNamedButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+            if (profile.isLiked) {
+              noNamedButton.disabled = true;
+              noNamedButton.title = "Can't ban a profile you've liked";
+            }
 
             const commentInbox = document.createElement("div");
             commentInbox.classList.add("comment-inbox");
@@ -1995,7 +2016,7 @@
 
             const heartButton = document.createElement("button");
             heartButton.classList.add("heart-button");
-            // Explicitly set the active class based on profile.isLiked
+            heartButton.id = "heart-button-" + profile._id;
             if (profile.isLiked) {
               heartButton.classList.add("active");
               console.log(
@@ -2027,8 +2048,6 @@
 
             profileList.appendChild(profileCard);
 
-            // Heart button event listener
-            // Inside the heartButton event listener, replace the fetch block with:
             heartButton.addEventListener("click", async function () {
               const wasLiked = this.classList.contains("active");
               this.classList.toggle("active");
@@ -2060,10 +2079,23 @@
                   profile.isLiked =
                     result.message === "Profile liked successfully" ||
                     result.message === "Profile liked and matched";
+                  profiles[i].isLiked = profile.isLiked;
                   if (profile.isLiked) {
                     this.classList.add("active");
+                    const banButton =
+                      profileCard.querySelector(".no-named-button");
+                    if (banButton) {
+                      banButton.disabled = true;
+                      banButton.title = "Can't ban a profile you've liked";
+                    }
                   } else {
                     this.classList.remove("active");
+                    const banButton =
+                      profileCard.querySelector(".no-named-button");
+                    if (banButton) {
+                      banButton.disabled = false;
+                      banButton.removeAttribute("title");
+                    }
                   }
                   if (
                     result.message === "Profile liked and matched" &&
@@ -2088,7 +2120,6 @@
               }
             });
 
-            // Rose button event listener
             const externalRoseButton = document.querySelector(".rose-button");
             externalRoseButton.dataset.profileIndex = i;
             if (profile.hasRose) {
@@ -2257,20 +2288,57 @@
               );
             });
 
-            noNamedButton.addEventListener("click", function () {
-              currentProfileIndex++;
-              if (currentProfileIndex >= loadedProfiles) {
-                if (loadedProfiles < profiles.length) {
-                  loadProfiles();
+            noNamedButton.onclick = function (event) {
+              event.stopPropagation();
+              event.preventDefault();
+
+              console.log(
+                `No-named-button clicked: disabled=${this.disabled}, currentProfileIndex=${currentProfileIndex}, loadedProfiles=${loadedProfiles}, totalProfiles=${profiles.length}`
+              );
+
+              if (!this.disabled) {
+                currentProfileIndex++;
+                console.log(
+                  `Incremented currentProfileIndex to ${currentProfileIndex}`
+                );
+
+                if (currentProfileIndex >= loadedProfiles) {
+                  if (loadedProfiles < profiles.length) {
+                    console.log("Loading more profiles...");
+                    loadProfiles();
+                    setTimeout(() => {
+                      console.log(
+                        `After loadProfiles, scrolling to index ${currentProfileIndex}`
+                      );
+                      scrollToProfile(currentProfileIndex);
+                    }, 100);
+                  } else {
+                    currentProfileIndex = loadedProfiles - 1;
+                    console.log(
+                      `Reached end, clamped currentProfileIndex to ${currentProfileIndex}`
+                    );
+                    setTimeout(() => {
+                      scrollToProfile(currentProfileIndex);
+                    }, 10);
+                  }
                 } else {
-                  currentProfileIndex = loadedProfiles - 1;
+                  console.log(
+                    `Scrolling to existing profile at index ${currentProfileIndex}`
+                  );
+                  setTimeout(() => {
+                    scrollToProfile(currentProfileIndex);
+                  }, 10);
                 }
+              } else {
+                console.log("Button is disabled, skipping scroll");
               }
-              scrollToProfile(currentProfileIndex);
-            });
+
+              return false;
+            };
           }
 
           loadedProfiles = end;
+          console.log(`Updated loadedProfiles to ${loadedProfiles}`);
 
           if (start === 0) {
             scrollToProfile(0);
@@ -2288,8 +2356,17 @@
         function scrollToProfile(index) {
           const profileList = document.getElementById("profileList");
           const profilesElements = profileList.children;
+          console.log(
+            `scrollToProfile called: index=${index}, profilesElements.length=${profilesElements.length}`
+          );
+
           if (index >= 0 && index < profilesElements.length) {
             const profileHeight = profilesElements[index].offsetHeight;
+            console.log(
+              `Scrolling to profile at index ${index}, height=${profileHeight}, target top=${
+                index * profileHeight
+              }`
+            );
             profileList.scrollTo({
               top: index * profileHeight,
               behavior: "smooth",
@@ -2301,6 +2378,14 @@
             roseButton.dataset.profileIndex = index;
             saveButton.dataset.profileIndex = index;
 
+            if (
+              profilesElements[index].dataset.profileId !== currentProfile._id
+            ) {
+              console.warn(
+                `Profile ID mismatch at index ${index}: DOM ID ${profilesElements[index].dataset.profileId}, Expected ID ${currentProfile._id}`
+              );
+            }
+
             const currentCommentInput =
               profilesElements[index].querySelector(".comment-input");
             const currentCommentInbox =
@@ -2308,16 +2393,26 @@
             const currentHeartButton =
               profilesElements[index].querySelector(".heart-button");
 
-            // Sync heart button state
+            if (!currentHeartButton) {
+              console.error(
+                `Heart button not found for profile index ${index}`
+              );
+              return;
+            }
+
+            console.log(
+              `Updating buttons for Profile ID: ${currentProfile._id}, isLiked: ${currentProfile.isLiked}`
+            );
+
             if (currentProfile.isLiked) {
               currentHeartButton.classList.add("active");
               console.log(
-                `Profile ${currentProfile._id} heart button set to active in scrollToProfile`
+                `Profile ${currentProfile._id} heart button set to active`
               );
             } else {
               currentHeartButton.classList.remove("active");
               console.log(
-                `Profile ${currentProfile._id} heart button set to inactive in scrollToProfile`
+                `Profile ${currentProfile._id} heart button set to inactive`
               );
             }
 
@@ -2349,14 +2444,24 @@
             } else {
               saveButton.classList.remove("saved");
             }
+          } else {
+            console.warn(`Invalid index ${index} for scrollToProfile`);
           }
         }
 
         let currentProfileIndex = 0;
 
-        document
-          .getElementById("profileList")
-          .addEventListener("scroll", function () {
+        function debounce(func, wait) {
+          let timeout;
+          return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+          };
+        }
+
+        document.getElementById("profileList").addEventListener(
+          "scroll",
+          debounce(function () {
             const profileList = this;
             const profilesElements = profileList.children;
 
@@ -2376,7 +2481,8 @@
             if (isNearBottom(profileList) && loadedProfiles < profiles.length) {
               loadProfiles();
             }
-          });
+          }, 100)
+        );
 
         document
           .getElementById("profileList")
@@ -2518,7 +2624,6 @@
           const detailHeartButton = document.querySelector(
             ".detail-heart-button"
           );
-          // Initialize based on a new property, e.g., profile.isPhotoLiked (set this elsewhere if needed)
           if (profile.isPhotoLiked) {
             detailHeartButton.classList.add("active");
             console.log(
@@ -2531,13 +2636,11 @@
             );
           }
 
-          // Remove any previous event listeners
           detailHeartButton.replaceWith(detailHeartButton.cloneNode(true));
           const newDetailHeartButton = document.querySelector(
             ".detail-heart-button"
           );
 
-          // Add event listener with new endpoint
           newDetailHeartButton.addEventListener("click", async function (e) {
             e.preventDefault();
 
@@ -2548,7 +2651,7 @@
             }
 
             const isCurrentlyLiked = this.classList.contains("active");
-            this.classList.toggle("active"); // Immediate UI feedback
+            this.classList.toggle("active");
 
             try {
               const response = await fetch(
@@ -2561,7 +2664,7 @@
                   },
                   body: JSON.stringify({
                     profileId: profile._id,
-                    isLiked: !isCurrentlyLiked, // Explicitly send the new state
+                    isLiked: !isCurrentlyLiked,
                   }),
                 }
               );
@@ -2574,17 +2677,15 @@
               }
 
               const result = await response.json();
-              profile.isPhotoLiked = result.isLiked; // Track photo-specific like state
+              profile.isPhotoLiked = result.isLiked;
               console.log(
                 `Photo for profile ${profile._id} ${
                   profile.isPhotoLiked ? "liked" : "unliked"
                 } successfully`
               );
-
-              // No sync with heart-button since they're separate
             } catch (error) {
               console.error("Error liking/unliking photo:", error);
-              this.classList.toggle("active"); // Revert UI on error
+              this.classList.toggle("active");
               showCustomAlert(`Error: ${error.message}`);
             }
           });
@@ -2744,7 +2845,7 @@
               );
             }
           });
-        // Animation function
+
         let isAnimationRunning = false;
 
         function showMatchAnimation() {
@@ -2773,8 +2874,7 @@
 
           overlay.classList.remove("active", "fade-out");
           profileList.classList.remove("active-blur");
-          
-          // Force reflow
+
           void overlay.offsetWidth;
 
           try {
@@ -2792,17 +2892,16 @@
           overlay.classList.add("active");
           profileList.classList.add("active-blur");
 
-          // Create spans for each letter
-          matchText.innerHTML = 'Match Made!'.split('').map(char => 
-            `<span>${char}</span>`
-          ).join('');
+          matchText.innerHTML = "Match Made!"
+            .split("")
+            .map((char) => `<span>${char}</span>`)
+            .join("");
 
-          // Animate letters sequentially
-          const letters = matchText.querySelectorAll('span');
+          const letters = matchText.querySelectorAll("span");
           letters.forEach((letter, index) => {
             setTimeout(() => {
-              letter.classList.add('shine');
-            }, 1200 + (index * 100)); // Start at 1.2s, 100ms delay between each letter
+              letter.classList.add("shine");
+            }, 1200 + index * 100);
           });
 
           setTimeout(() => {

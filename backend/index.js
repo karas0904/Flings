@@ -178,7 +178,7 @@ io.on("connection", (socket) => {
 
   socket.on("sendMessage", async (data, callback) => {
     try {
-      const { matchId, content } = data;
+      const { matchId, content, isImage = false } = data;
       const senderId = socket.request.user.id;
 
       if (!matchId || !content) {
@@ -200,10 +200,44 @@ io.on("connection", (socket) => {
         });
       }
 
+      let mimeType = null;
+      if (isImage) {
+        // Validate Base64 format
+        if (!content.startsWith("data:image/")) {
+          return callback?.({
+            success: false,
+            error: "Invalid image format",
+          });
+        }
+
+        // Extract MIME type (e.g., image/jpeg)
+        const matches = content.match(/^data:(image\/[^;]+);base64,/);
+        if (!matches) {
+          return callback?.({
+            success: false,
+            error: "Invalid Base64 image",
+          });
+        }
+        mimeType = matches[1];
+
+        // Validate original file size (Base64 size ÷ 4/3 ≈ original size)
+        const base64String = content.split(",")[1]; // Remove data:image/...;base64, prefix
+        const decodedSize = (base64String.length * 3) / 4; // Approximate original size
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (decodedSize > maxSize) {
+          return callback?.({
+            success: false,
+            error: "Image size exceeds 5MB",
+          });
+        }
+      }
+
       const message = new Message({
         senderId,
         matchId,
         content,
+        isImage,
+        mimeType,
       });
       await message.save();
 

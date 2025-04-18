@@ -1265,6 +1265,49 @@ router.post("/remove-liked-profile", authenticateToken, async (req, res) => {
   }
 });
 
+// Clear all messages for a match
+router.delete(
+  "/messages/:matchId/clear",
+  authenticateToken,
+  async (req, res) => {
+    const { matchId } = req.params;
+    const userId = req.user.id;
+
+    try {
+      // Verify that the match exists and the user is part of it
+      const match = await Like.findOne({
+        _id: matchId,
+        $or: [{ userId }, { profileId: userId }],
+        status: "matched",
+      });
+
+      if (!match) {
+        const roseMatch = await RoseInteraction.findOne({
+          _id: matchId,
+          $or: [{ fromUser: userId }, { toUser: userId }],
+          status: "accepted",
+        });
+
+        if (!roseMatch) {
+          return res
+            .status(404)
+            .json({ message: "Match not found or unauthorized" });
+        }
+      }
+
+      // Delete all messages associated with the matchId
+      const result = await Message.deleteMany({ matchId });
+
+      res.status(200).json({
+        message: `Successfully cleared ${result.deletedCount} messages`,
+      });
+    } catch (error) {
+      console.error("Error clearing messages:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  }
+);
+
 router.post(
   "/notifications/mark-all-read",
   authenticateToken,

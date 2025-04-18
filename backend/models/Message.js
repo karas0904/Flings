@@ -26,6 +26,14 @@ const messageSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  isImage: {
+    type: Boolean,
+    default: false,
+  },
+  mimeType: {
+    type: String,
+    default: null,
+  },
 });
 
 export default mongoose.model("Message", messageSchema);

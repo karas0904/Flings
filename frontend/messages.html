@@ -8,6 +8,10 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Raleway:wght@400&display=swap"
+      rel="stylesheet"
+    />
     <script src="http://127.0.0.1:3000/socket.io/socket.io.js"></script>
 
     <style>
@@ -218,16 +222,62 @@
 
       .dropdown-header {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-direction: column;
         font-size: 20px;
         font-weight: bold;
         color: #fff;
         cursor: pointer;
         padding: 10px;
-        background: rgba(255, 255, 255, 0);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 5px;
-        transition: box-shadow 0.3s ease-in-out;
+        transition: background 0.3s ease, box-shadow 0.3s ease,
+          height 0.3s ease-in-out;
+        overflow: hidden;
+        height: 44px; /* Initial height (matches padding + content) */
+        position: relative;
+      }
+
+      .dropdown-header:hover {
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      }
+
+      .dropdown-header.active {
+        height: 88px; /* Expanded height to show one item (adjust if more items) */
+      }
+
+      .dropdown-header .top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .dropdown-items {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      }
+
+      .dropdown-header.active .dropdown-items {
+        max-height: 44px; /* Height for one item (adjust if more items) */
+        opacity: 1;
+      }
+
+      .dropdown-item:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.136);
+        border-radius: 10px;
+      }
+
+      .dropdown-item {
+        padding: 10px;
+        font-size: 16px;
+        margin-top: 5px;
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        transition: color 0.3s, background 0.3s;
       }
 
       .dropdown-header .arrow {
@@ -242,17 +292,19 @@
 
       .dropdown-menu {
         position: absolute;
-        top: 100%;
+        top: 100%; /* Align directly below the header */
         left: 0;
         width: 100%;
-        background: rgb(0, 0, 0);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.1); /* Match header background */
+        backdrop-filter: blur(10px); /* Consistent blur effect */
         -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(103, 103, 103, 0.477);
-        border-radius: 5px;
+        border: 1px solid rgba(103, 103, 103, 0.477); /* Match header border */
+        border-top: none; /* Remove top border to blend with header */
+        border-radius: 0 0 5px 5px; /* Round only bottom corners */
         overflow: hidden;
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(-10px) scaleY(0.9); /* Start slightly above and scaled */
+        transform-origin: top; /* Anchor animation at the top */
         pointer-events: none;
         transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         z-index: 10;
@@ -260,8 +312,9 @@
 
       .dropdown-menu.active {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scaleY(1); /* Slide down and scale to full size */
         pointer-events: auto;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Match header’s shadow */
       }
 
       .dropdown-menu .dropdown-item {
@@ -274,7 +327,7 @@
 
       .dropdown-menu .dropdown-item:hover {
         color: #fff;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.2);
       }
 
       .messages-list .search-bar {
@@ -301,7 +354,7 @@
       .message-item {
         display: flex;
         align-items: center;
-        padding: 10px 0;
+        padding: 10px 10px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         cursor: pointer;
         transition: background 0.3s;
@@ -309,6 +362,7 @@
 
       .message-item:hover {
         background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
       }
 
       .message-item .avatar {
@@ -471,6 +525,15 @@
 
       .chat-header .actions .icon:hover {
         color: #fff;
+      }
+
+      .chat-cleared-message {
+        font-family: "Raleway", sans-serif;
+        font-size: 16px; /* Adjust as needed */
+        color: #666; /* Subtle color for the message */
+        margin: 0;
+        padding: 20px;
+        text-align: center;
       }
 
       .chat-body {
@@ -640,7 +703,7 @@
 
       .message {
         position: relative; /* Add this to make it a positioning context */
-        display: table; /* Shrinks to content width, stacks vertically */
+        display: inline-block; /* Shrinks to content width, stacks vertically */
         max-width: 70%; /* Limits long messages */
         margin: 5px 10px; /* Reduced vertical margin, keep horizontal */
         padding: 8px 12px; /* Tight padding */
@@ -691,7 +754,7 @@
         position: absolute;
         top: 100%;
         right: 0;
-        width: 150px;
+        width: 200px;
         background: rgba(0, 0, 0, 0.9);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -1148,6 +1211,350 @@
         border-radius: 5px;
         margin: 10px 0;
       }
+
+      .image-preview-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1500;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .image-preview-overlay.visible {
+        display: flex;
+        opacity: 1;
+      }
+
+      /* Ensure outer message container supports absolute positioning */
+      .message.image-message {
+        background: rgba(
+          38,
+          166,
+          154,
+          0.7
+        ); /* Teal background like location message */
+        border-radius: 20px; /* Rounded edges */
+        padding: 8px 12px; /* Consistent padding */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Slight shadow */
+        max-width: 70%; /* Limit width like other messages */
+        margin: 5px 10px; /* Maintain spacing */
+        display: inline-block; /* Consistent with other messages */
+        overflow: hidden; /* Contain inner elements */
+      }
+
+      /* Ensure sent image messages have a distinct style */
+      .message.sent.image-message {
+        border-bottom-right-radius: 2px; /* Cut-off corner for sent messages */
+        float: right; /* Right alignment for sent */
+        text-align: left; /* Left align content */
+      }
+
+      /* Ensure received image messages have a distinct style */
+      .message.received.image-message {
+        border-bottom-left-radius: 5px; /* Cut-off corner for received */
+        float: left; /* Left alignment for received */
+        text-align: left; /* Left align content */
+      }
+
+      .message.image-message .image-bubble {
+        display: inline-flex; /* Flex for aligning icon and image */
+        align-items: center; /* Center icon and image vertically */
+        color: #012343; /* Vibrant blue text (optional, for consistency) */
+        text-decoration: none; /* No underline on the bubble itself */
+        font-weight: 500; /* Medium weight */
+        font-size: 14px; /* Compact */
+        cursor: pointer;
+        padding: 6px 12px; /* Padding inside the bubble */
+        border-radius: 12px; /* Rounded corners */
+        background: linear-gradient(
+          135deg,
+          rgba(38, 166, 154, 0.15),
+          rgba(38, 166, 154, 0.05)
+        ); /* Teal gradient */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3),
+          inset 0 1px 1px rgba(255, 255, 255, 0.1); /* Shadow */
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition */
+        position: relative; /* For icon positioning */
+        overflow: hidden; /* For gradient effect */
+        margin-bottom: 22px; /* Space before timestamp */
+      }
+
+      .message.image-message .image-bubble:hover {
+        color: #ffffff; /* White text on hover */
+        background: linear-gradient(
+          135deg,
+          rgba(38, 166, 154, 0.3),
+          rgba(38, 166, 154, 0.1)
+        ); /* Darker gradient on hover */
+        box-shadow: 0 4px 12px rgba(38, 166, 154, 0.4),
+          inset 0 1px 1px rgba(255, 255, 255, 0.2); /* Enhanced shadow */
+        transform: translateY(-1px) scale(1.02); /* Slight lift and scale */
+      }
+
+      .message.image-message .image-bubble:active {
+        transform: translateY(0) scale(0.98); /* Slight press effect */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Reduced shadow */
+      }
+
+      .message.image-message .image-bubble::before {
+        margin-right: 6px; /* Space before image */
+        font-size: 14px; /* Icon size */
+        line-height: 1; /* Align with text */
+        color: #fff; /* White icon */
+        transition: transform 0.3s ease; /* Smooth transition for icon */
+      }
+
+      .message.image-message .image-bubble:hover::before {
+        transform: scale(1.2) rotate(10deg); /* Slight rotation and scale on hover */
+      }
+
+      .message.image-message .image-bubble::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        ); /* Gradient sweep */
+        transition: left 0.5s ease; /* Smooth transition */
+      }
+
+      .message.image-message .image-bubble:hover::after {
+        left: 100%; /* Sweep effect */
+      }
+
+      .message.image-message .image-bubble .chat-image {
+        max-width: 200px; /* Smaller max-width to fit within the bubble */
+        max-height: 200px; /* Limit height */
+        border-radius: 10px; /* Rounded image corners */
+        object-fit: cover; /* Ensure image fits without distortion */
+        display: block; /* Ensure proper rendering */
+        margin: 0; /* Remove default margins */
+      }
+
+      .message.image-message .chat-image {
+        max-width: 200px; /* Smaller max-width to fit within the bubble */
+        max-height: 200px; /* Limit height */
+        border-radius: 10px; /* Rounded image corners */
+        object-fit: cover; /* Ensure image fits without distortion */
+        display: block; /* Ensure proper rendering */
+        margin: 0; /* Remove default margins */
+      }
+
+      .message.image-message .timestamp {
+        font-size: 10px;
+        color: rgb(255, 255, 255) !important;
+        display: block; /* Ensure it appears on its own line */
+        text-align: right; /* Align to the right */
+        margin-top: 8px; /* Space below the image bubble */
+        line-height: 1; /* Prevent extra height */
+        position: relative; /* Keep within the message flow */
+      }
+
+      .message.image-message p {
+        display: none; /* Hide default text content since it's an image */
+      }
+
+      .image-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 70%;
+        padding: 8px;
+        border-radius: 15px;
+        background: rgba(179, 183, 185, 0.355);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        z-index: 1600;
+        position: absolute; /* Allow JavaScript to set position */
+        margin-left: -425px;
+      }
+
+      .image-preview img {
+        max-width: 300px;
+        max-height: 300px;
+        border-radius: 10px;
+        object-fit: contain;
+      }
+
+      .image-preview.loading {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .image-preview .loading-spinner {
+        display: none;
+        font-size: 16px;
+        color: #fff;
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .image-preview.loading .loading-spinner {
+        display: block;
+      }
+
+      .image-preview.loading .preview-buttons {
+        display: none;
+      }
+
+      .image-preview .preview-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .image-preview .preview-buttons button {
+        border-radius: 20px;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+        margin-bottom: 8px;
+        font-family: "Realtime Regular";
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
+
+      .image-preview .send-preview-btn {
+        background-color: none;
+        padding: 8px 24px;
+        color: black;
+      }
+
+      .image-preview .send-preview-btn:hover {
+        background-color: #1d8376;
+        color: white;
+      }
+
+      .image-preview .cancel-preview-btn {
+        background-color: none;
+        padding: 8px 22px;
+        color: black;
+      }
+
+      .image-preview .cancel-preview-btn:hover {
+        background-color: #b02a37;
+        color: white;
+      }
+
+      .message img.chat-image {
+        max-width: 300px;
+        max-height: 300px;
+        border-radius: 10px;
+        object-fit: contain;
+        display: block; /* Ensure image is block-level for proper alignment */
+        margin: 0; /* Remove any default margins */
+      }
+
+      .full-screen-image {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        overflow: auto;
+      }
+      .full-screen-image img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+      }
+      .full-screen-image .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 30px;
+        color: #fff;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease;
+      }
+      .full-screen-image .close-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /* New modal styles */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .modal-overlay.visible {
+        display: flex;
+        opacity: 1;
+      }
+      .modal {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        background: rgba(77, 77, 77, 0.528);
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+      }
+      .modal-overlay.visible .modal {
+        transform: scale(1);
+      }
+      .modal p {
+        color: #fff;
+        font-size: 16px;
+        margin-bottom: 20px;
+      }
+      .modal button {
+        padding: 10px 20px;
+        transition: background-color 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 20px;
+        border: none;
+        text-decoration: none;
+        transition: background 0.3s;
+        font-size: 8px;
+        font-family: "Open Sans", sans-serif;
+        display: inline-block;
+        margin-top: 10px;
+        position: relative;
+        cursor: pointer;
+      }
+      .modal button:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
     </style>
   </head>
   <body>
@@ -1178,9 +1585,9 @@
           <div class="dropdown-header" id="dropdownHeader">
             <span id="dropdownSelected">Messages</span>
             <span class="arrow"><i class="fas fa-chevron-down"></i></span>
-          </div>
-          <div class="dropdown-menu" id="dropdownMenu">
-            <div class="dropdown-item" data-value="efforts">Efforts</div>
+            <div class="dropdown-items" id="dropdownItems">
+              <div class="dropdown-item" data-value="efforts">Efforts</div>
+            </div>
           </div>
         </div>
         <input type="text" class="search-bar" placeholder="Search" />
@@ -1215,6 +1622,13 @@
                       connection
                     </div>
                   </div>
+                  <div class="action-item" data-action="clear">
+                    <span class="action-text">Clear Messages</span>
+                    <i class="fas fa-info-circle info-icon"></i>
+                    <div class="tooltip">
+                      This will clear all the messages forever
+                    </div>
+                  </div>
                   <div class="action-item" data-action="block">Block</div>
                   <a href="report-account.html">
                     <div class="action-item">Report</div>
@@ -1243,6 +1657,19 @@
           <button onclick="selectOption('Video')">Video</button>
           <button id="shareLocationBtn">Share Location</button>
         </div>
+        <input
+          type="file"
+          id="photoInput"
+          accept="image/*"
+          style="display: none"
+        />
+        <div class="modal-overlay" id="errorModal">
+          <div class="modal">
+            <p id="modalMessage"></p>
+            <button onclick="closeModal()">OK</button>
+          </div>
+        </div>
+        <div class="image-preview-overlay" id="imagePreviewOverlay"></div>
       </div>
     </div>
 
@@ -1258,6 +1685,40 @@
       });
 
       document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("errorModal");
+        const modalButton = modal.querySelector("button");
+
+        // Close modal when clicking the OK button
+        modalButton.addEventListener("click", (e) => {
+          e.stopPropagation(); // Prevent the click from bubbling to the overlay
+          closeModal();
+        });
+
+        // Close modal when clicking outside the modal content
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+
+        function showModal(message) {
+          const modal = document.getElementById("errorModal");
+          const modalMessage = document.getElementById("modalMessage");
+          modalMessage.textContent = message;
+          modal.classList.add("visible");
+          setTimeout(() => {
+            modal.style.display = "flex";
+          }, 10);
+        }
+
+        function closeModal() {
+          const modal = document.getElementById("errorModal");
+          modal.classList.remove("visible");
+          setTimeout(() => {
+            modal.style.display = "none";
+          }, 300);
+        }
+
         const heartBtn = document.getElementById("heart-btn");
         if (heartBtn) {
           heartBtn.addEventListener("click", () => {
@@ -1283,11 +1744,130 @@
             );
           });
 
+          let selectedFile = null; // Store the selected file
+
           window.selectOption = function (option) {
-            alert(`Selected: ${option}`);
-            plusBtn.classList.remove("active");
-            optionsMenu.classList.remove("active");
-            blurContainer.classList.remove("blur");
+            const plusBtn = document.querySelector(".plus-btn");
+            const optionsMenu = document.querySelector(".options-menu");
+            const blurContainer = document.querySelector(".blur-container");
+            const imagePreviewOverlay = document.getElementById(
+              "imagePreviewOverlay"
+            );
+
+            if (option === "Photo") {
+              const photoInput = document.getElementById("photoInput");
+              photoInput.click();
+              photoInput.onchange = function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // Validate file size5 (1MB = 1 * 1024 * 1024 bytes)
+                const maxSize = 1 * 1024 * 1024;
+                if (file.size > maxSize) {
+                  showModal("Image too large! Please select a file under 5MB.");
+                  photoInput.value = "";
+                  return;
+                }
+
+                selectedFile = file;
+
+                const previewDiv = document.createElement("div");
+                previewDiv.classList.add("image-preview");
+                previewDiv.innerHTML = `
+    <img id="previewImage" alt="Image Preview">
+    <div class="loading-spinner">Converting image...</div>
+    <div class="preview-buttons">
+      <button class="send-preview-btn">Send</button>
+      <button class="cancel-preview-btn">Cancel</button>
+    </div>
+  `;
+                imagePreviewOverlay.appendChild(previewDiv);
+                imagePreviewOverlay.classList.add("visible");
+
+                // Center the preview in the chat-section
+                const chatSection = document.querySelector(".chat-section");
+                const chatSectionRect = chatSection.getBoundingClientRect();
+                const previewWidth = previewDiv.offsetWidth;
+
+                // Calculate the left position to center the preview in the chat-section
+                const leftPosition =
+                  chatSectionRect.left +
+                  (chatSectionRect.width - previewWidth) / 2;
+
+                previewDiv.style.position = "absolute";
+                previewDiv.style.left = `${leftPosition}px`;
+                previewDiv.style.top = "50%";
+                previewDiv.style.transform = "translateY(-50%)";
+
+                const previewImage = document.getElementById("previewImage");
+                previewImage.src = URL.createObjectURL(file);
+
+                const sendBtn = previewDiv.querySelector(".send-preview-btn");
+                const cancelBtn = previewDiv.querySelector(
+                  ".cancel-preview-btn"
+                );
+
+                sendBtn.addEventListener("click", () => {
+                  if (!selectedFile || !currentMatchId) {
+                    showModal(
+                      "Please select a conversation to send the image."
+                    );
+                    previewDiv.remove();
+                    imagePreviewOverlay.classList.remove("visible");
+                    selectedFile = null;
+                    return;
+                  }
+
+                  previewDiv.classList.add("loading");
+
+                  const reader = new FileReader();
+                  reader.onload = function (e) {
+                    const base64String = e.target.result;
+
+                    socket.emit(
+                      "sendMessage",
+                      {
+                        matchId: currentMatchId,
+                        content: base64String,
+                        isImage: true,
+                      },
+                      (response) => {
+                        if (response.success) {
+                          previewDiv.remove();
+                          imagePreviewOverlay.classList.remove("visible");
+                          selectedFile = null;
+                        } else {
+                          previewDiv.classList.remove("loading");
+                          showModal("Failed to send image: " + response.error);
+                        }
+                      }
+                    );
+                  };
+                  reader.onerror = function () {
+                    previewDiv.classList.remove("loading");
+                    showModal("Error converting image to Base64.");
+                  };
+                  reader.readAsDataURL(selectedFile);
+                });
+
+                cancelBtn.addEventListener("click", () => {
+                  previewDiv.remove();
+                  imagePreviewOverlay.classList.remove("visible");
+                  selectedFile = null;
+                  photoInput.value = "";
+                });
+
+                plusBtn.classList.remove("active");
+                optionsMenu.classList.remove("active");
+                blurContainer.classList.remove("blur");
+                photoInput.value = "";
+              };
+            } else if (option === "Video") {
+              showModal("Video sharing is not supported yet.");
+              plusBtn.classList.remove("active");
+              optionsMenu.classList.remove("active");
+              blurContainer.classList.remove("blur");
+            }
           };
         }
 
@@ -1306,8 +1886,8 @@
         const effortsContainer = document.querySelector(".efforts-container");
         const searchBar = document.querySelector(".search-bar");
 
-        function updateDropdownOptions(selectedOption) {
-          dropdownMenu.innerHTML = "";
+        function updateDropdownItems(selectedOption) {
+          dropdownItems.innerHTML = "";
           const options = ["Messages", "Efforts"].filter(
             (opt) => opt.toLowerCase() !== selectedOption.toLowerCase()
           );
@@ -1319,7 +1899,7 @@
               option.toLowerCase().replace(" ", "")
             );
             item.textContent = option;
-            dropdownMenu.appendChild(item);
+            dropdownItems.appendChild(item);
           });
         }
 
@@ -1327,12 +1907,12 @@
           messageList.innerHTML = "";
           if (data.length === 0) {
             messageList.innerHTML = `
-              <div class="message-item simplified">
-                <div class="name">No ${
-                  type === "messages" ? "matches" : "pending efforts"
-                } yet.</div>
-              </div>
-            `;
+        <div class="message-item simplified">
+          <div class="name">No ${
+            type === "messages" ? "matches" : "pending efforts"
+          } yet.</div>
+        </div>
+      `;
             return;
           }
 
@@ -1353,30 +1933,30 @@
                   : messageContent;
 
               div.innerHTML = `
-                <div class="avatar">
-                  <img src="${item.photo}" alt="${item.name}'s photo">
-                </div>
-                <div class="details">
-                  <div class="name-time">
-                    <div class="name">${item.name}</div>
-                    <div class="time">${item.time}</div> <!-- Time next to the name -->
-                  </div>
-                  <div class="snippet">${truncatedMessage}</div>
-                </div>
-              `;
+          <div class="avatar">
+            <img src="${item.photo}" alt="${item.name}'s photo">
+          </div>
+          <div class="details">
+            <div class="name-time">
+              <div class="name">${item.name}</div>
+              <div class="time">${item.time}</div>
+            </div>
+            <div class="snippet">${truncatedMessage}</div>
+          </div>
+        `;
             } else {
               div.dataset.effortId = item.id;
               div.innerHTML = `
-                <div class="avatar">
-                  <img src="${
-                    item.photo || "assets/icons/user-solid.svg"
-                  }" alt="${item.name}'s photo">
-                </div>
-                <div class="details">
-                  <div class="name">${item.name || "Unknown"}</div>
-                  <div class="comment">${item.comment || "No comment"}</div>
-                </div>
-              `;
+          <div class="avatar">
+            <img src="${item.photo || "assets/icons/user-solid.svg"}" alt="${
+                item.name
+              }'s photo">
+          </div>
+          <div class="details">
+            <div class="name">${item.name || "Unknown"}</div>
+            <div class="comment">${item.comment || "No comment"}</div>
+          </div>
+        `;
             }
             messageList.appendChild(div);
           });
@@ -1405,7 +1985,7 @@
           });
         }
 
-        async function updateMessageList(selectedOption) {
+        function updateMessageList(selectedOption) {
           messageList.innerHTML = "";
           blurContainer.style.display = "none";
           effortsContainer.style.display = "none";
@@ -1417,10 +1997,10 @@
           const token = localStorage.getItem("jwtToken");
           if (!token) {
             messageList.innerHTML = `
-              <div class="message-item simplified">
-                <div class="name">Please log in to view ${selectedOption}.</div>
-              </div>
-            `;
+        <div class="message-item simplified">
+          <div class="name">Please log in to view ${selectedOption}.</div>
+        </div>
+      `;
             window.location.href = "login.html";
             return;
           }
@@ -1430,66 +2010,102 @@
             plusBtn.style.display = "block";
             optionsMenu.style.display = "block";
             messageList.innerHTML = `
-              <div class="message-item simplified">
-                <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
-              </div>
-            `;
+        <div class="message-item simplified">
+          <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
+        </div>
+      `;
 
-            try {
-              const response = await fetch(
-                "http://localhost:3000/api/matches",
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                  credentials: "include",
-                }
-              );
-              if (!response.ok)
-                throw new Error(`HTTP error! status: ${response.status}`);
-              const result = await response.json();
-              messagesData = result.profiles || [];
-              renderMessageList(messagesData, "messages");
-            } catch (error) {
-              console.error("Error fetching matches:", error);
-              messageList.innerHTML = `
-                <div class="message-item simplified">
-                  <div class="name">Error loading matches: ${error.message}</div>
-                </div>
-              `;
-            }
+            fetch("http://localhost:3000/api/matches", {
+              headers: { Authorization: `Bearer ${token}` },
+              credentials: "include",
+            })
+              .then((response) => {
+                if (!response.ok)
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+              })
+              .then((result) => {
+                messagesData = result.profiles || [];
+                renderMessageList(messagesData, "messages");
+              })
+              .catch((error) => {
+                console.error("Error fetching matches:", error);
+                messageList.innerHTML = `
+            <div class="message-item simplified">
+              <div class="name">Error loading matches: ${error.message}</div>
+            </div>
+          `;
+              });
           } else if (selectedOption.toLowerCase() === "efforts") {
             effortsContainer.style.display = "flex";
             const effortsContent = document.querySelector(".efforts-content");
             effortsContent.innerHTML = `
-              <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
-            `;
+        <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
+      `;
             messageList.innerHTML = `
-              <div class="message-item simplified">
-                <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
-              </div>
-            `;
+        <div class="message-item simplified">
+          <div class="name loading">Loading<span>.</span><span>.</span><span>.</span></div>
+        </div>
+      `;
 
-            try {
-              const response = await fetch(
-                "http://localhost:3000/api/efforts",
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                  credentials: "include",
-                }
-              );
-              if (!response.ok)
-                throw new Error(`HTTP error! status: ${response.status}`);
-              const result = await response.json();
-              effortsData = result.efforts || [];
-              renderMessageList(effortsData, "efforts");
-            } catch (error) {
-              console.error("Error fetching efforts:", error);
-              messageList.innerHTML = `
-                <div class="message-item simplified">
-                  <div class="name">Error loading efforts: ${error.message}</div>
-                </div>
-              `;
-            }
+            fetch("http://localhost:3000/api/efforts", {
+              headers: { Authorization: `Bearer ${token}` },
+              credentials: "include",
+            })
+              .then((response) => {
+                if (!response.ok)
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+              })
+              .then((result) => {
+                effortsData = result.efforts || [];
+                renderMessageList(effortsData, "efforts");
+              })
+              .catch((error) => {
+                console.error("Error fetching efforts:", error);
+                messageList.innerHTML = `
+            <div class="message-item simplified">
+              <div class="name">Error loading efforts: ${error.message}</div>
+            </div>
+          `;
+              });
           }
+        }
+
+        if (dropdownHeader && dropdownItems) {
+          // Wrap the title and arrow in a top-row div
+          const topRow = document.createElement("div");
+          topRow.classList.add("top-row");
+          topRow.appendChild(dropdownSelected);
+          topRow.appendChild(dropdownArrow);
+          dropdownHeader.insertBefore(topRow, dropdownItems);
+
+          dropdownHeader.addEventListener("click", () => {
+            dropdownHeader.classList.toggle("active");
+            dropdownArrow.classList.toggle("active");
+          });
+
+          dropdownItems.addEventListener("click", (event) => {
+            const selectedValue = event.target.getAttribute("data-value");
+            const selectedText = event.target.textContent;
+            dropdownSelected.textContent = selectedText;
+            dropdownHeader.classList.remove("active");
+            dropdownArrow.classList.remove("active");
+            updateDropdownItems(selectedText);
+            updateMessageList(selectedValue);
+            searchBar.value = "";
+            filterMessageList("");
+          });
+
+          document.addEventListener("click", (event) => {
+            if (!dropdownHeader.contains(event.target)) {
+              dropdownHeader.classList.remove("active");
+              dropdownArrow.classList.remove("active");
+            }
+          });
+
+          updateDropdownItems("Messages");
+          updateMessageList("messages");
         }
 
         function filterMessageList(query) {
@@ -1509,19 +2125,19 @@
         function showEffortActions(effort) {
           const effortsContent = document.querySelector(".efforts-content");
           effortsContent.innerHTML = `
-            <div class="efforts-message">
-              <p class="comment-text">"${effort.comment || "No comment"}"</p>
-              <span class="timestamp">${new Date().toLocaleTimeString([], {
-                hour: "numeric",
-                minute: "2-digit",
-              })}</span>
-            </div>
-            <p>${effort.name} sent you a rose!</p>
-            <div class="efforts-actions">
-              <button class="accept-btn" data-id="${effort.id}">Accept</button>
-              <button class="reject-btn" data-id="${effort.id}">Decline</button>
-            </div>
-          `;
+      <div class="efforts-message">
+        <p class="comment-text">"${effort.comment || "No comment"}"</p>
+        <span class="timestamp">${new Date().toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        })}</span>
+      </div>
+      <p>${effort.name} sent you a rose!</p>
+      <div class="efforts-actions">
+        <button class="accept-btn" data-id="${effort.id}">Accept</button>
+        <button class="reject-btn" data-id="${effort.id}">Decline</button>
+      </div>
+    `;
 
           effortsContent
             .querySelector(".accept-btn")
@@ -1591,8 +2207,8 @@
             effortsData = effortsData.filter((e) => e.id !== effortId);
             updateMessageList("efforts");
             document.querySelector(".efforts-content").innerHTML = `
-              <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
-            `;
+        <p>Here you can see who has bestowed a rose upon you or whispered sweet nothings in a comment.</p>
+      `;
           } catch (error) {
             console.error("Error declining effort:", error);
             alert("Something went wrong while declining the effort.");
@@ -1688,6 +2304,9 @@
                 );
               }
               break;
+            case "clear":
+              clearMessages(currentMatchId);
+              break;
             case "block":
               blockUser(currentMatchId);
               break;
@@ -1695,6 +2314,110 @@
               console.log("Unknown action:", action);
           }
         }
+
+        async function clearMessages(matchId) {
+          const token = localStorage.getItem("jwtToken");
+          if (!token) {
+            alert("Please log in to clear messages.");
+            window.location.href = "login.html";
+            return;
+          }
+
+          try {
+            // Fetch the user's profile to get their first name
+            let firstName = "You"; // Fallback in case fetching fails
+            try {
+              const profileResponse = await fetch(
+                "http://localhost:3000/api/profile",
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                  credentials: "include",
+                }
+              );
+              const profileData = await profileResponse.json();
+              if (profileResponse.ok && profileData.firstName) {
+                firstName = profileData.firstName;
+              }
+            } catch (error) {
+              console.warn("Failed to fetch user profile for name:", error);
+            }
+
+            // Send DELETE request to clear messages
+            const response = await fetch(
+              `http://localhost:3000/api/messages/${matchId}/clear`,
+              {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include",
+              }
+            );
+            const result = await response.json();
+            if (!response.ok) {
+              throw new Error(
+                result.message || `Failed to clear messages: ${response.status}`
+              );
+            }
+
+            // Format the date (e.g., "April 17, 2025")
+            const now = new Date();
+            const dateString = now.toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            });
+
+            // Update the chat body with the new message
+            const chatBody = document.querySelector(".chat-body");
+            chatBody.innerHTML = `
+      <p class="chat-cleared-message">
+        Chat was cleared by ${firstName} on ${dateString}
+      </p>
+    `;
+
+            // Update the message list snippet to reflect the cleared state
+            const messageItem = document.querySelector(
+              `.message-item[data-match-id="${matchId}"]`
+            );
+            if (messageItem) {
+              messageItem.querySelector(".snippet").textContent = "No messages";
+              messageItem.querySelector(".time").textContent = "";
+            }
+          } catch (error) {
+            console.error("Error clearing messages:", error);
+            alert("Failed to clear messages: " + error.message);
+          }
+        }
+
+        socket.on("clearMessages", async ({ matchId }, callback) => {
+          try {
+            const userId = socket.userId; // Assuming userId is set during socket authentication
+            const match = await Like.findOne({
+              _id: matchId,
+              $or: [{ userId }, { profileId: userId }],
+              status: "matched",
+            });
+
+            if (!match) {
+              const roseMatch = await RoseInteraction.findOne({
+                _id: matchId,
+                $or: [{ fromUser: userId }, { toUser: userId }],
+                status: "accepted",
+              });
+              if (!roseMatch) {
+                return callback({
+                  success: false,
+                  error: "Match not found or unauthorized",
+                });
+              }
+            }
+
+            const result = await Message.deleteMany({ matchId });
+            callback({ success: true, deletedCount: result.deletedCount });
+          } catch (error) {
+            console.error("Error clearing messages via socket:", error);
+            callback({ success: false, error: "Server error" });
+          }
+        });
 
         async function blockUser(matchId) {
           const token = localStorage.getItem("jwtToken");
@@ -1772,12 +2495,12 @@
                       kinkLine = "This bond's got some wild chemistry!";
                     }
                     chatBody.innerHTML = `
-                      <div class="score-info" id="match-score">
-                        <p>Your match score: ${score.toFixed(1)}</p>
-                        <p class="fun-line">${funLine}</p>
-                        <p class="kink-line">${kinkLine}</p>
-                      </div>
-                    `;
+                <div class="score-info" id="match-score">
+                  <p>Your match score: ${score.toFixed(1)}</p>
+                  <p class="fun-line">${funLine}</p>
+                  <p class="kink-line">${kinkLine}</p>
+                </div>
+              `;
                   }
                 } else {
                   messages.forEach(appendMessage);
@@ -1800,6 +2523,12 @@
           if (!content || !currentMatchId) return;
 
           const isLocationMessage = content.startsWith("Location: ");
+
+          // Check if the chat body contains the cleared message and clear it
+          const chatBody = document.querySelector(".chat-body");
+          if (chatBody.querySelector(".chat-cleared-message")) {
+            chatBody.innerHTML = "";
+          }
 
           socket.emit(
             "sendMessage",
@@ -1852,8 +2581,14 @@
 
         socket.on("new-message", (message) => {
           if (message.matchId === currentMatchId) {
-            const scoreDiv = document.getElementById("match-score");
-            if (scoreDiv) scoreDiv.remove();
+            const chatBody = document.querySelector(".chat-body");
+            // Remove the cleared message or match score if present
+            if (
+              chatBody.querySelector(".chat-cleared-message") ||
+              chatBody.querySelector("#match-score")
+            ) {
+              chatBody.innerHTML = "";
+            }
             appendMessage(message);
           }
           const messageItem = document.querySelector(
@@ -1873,7 +2608,10 @@
               truncatedMessage;
             messageItem.querySelector(".time").textContent = new Date(
               message.createdAt
-            ).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+            ).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            });
           }
         });
 
@@ -1882,9 +2620,16 @@
             `.message[data-message-id="${messageId}"]`
           );
           if (message) {
-            const messageP = message.querySelector("p");
-            messageP.textContent = content;
-            messageP.classList.add("deleted-message");
+            // Remove existing content (image or text)
+            message.innerHTML = `
+      <div class="message-reaction"></div>
+      <p class="deleted-message">${content}</p>
+      <span class="timestamp">${new Date().toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      })}</span>
+    `;
+            message.classList.remove("image-message"); // Remove image-message class
           }
         });
 
@@ -1927,13 +2672,13 @@
         const emojiPanel = document.createElement("div");
         emojiPanel.className = "emoji-reaction-panel";
         emojiPanel.innerHTML = `
-          <div class="emoji-option">❤️</div>
-          <div class="emoji-option">😂</div>
-          <div class="emoji-option">👍</div>
-          <div class="emoji-option">😮</div>
-          <div class="emoji-option">😢</div>
-          <div class="emoji-option">🙏</div>
-        `;
+    <div class="emoji-option">❤️</div>
+    <div class="emoji-option">😂</div>
+    <div class="emoji-option">👍</div>
+    <div class="emoji-option">😮</div>
+    <div class="emoji-option">😢</div>
+    <div class="emoji-option">🙏</div>
+  `;
         document.body.appendChild(emojiPanel);
 
         let activeMessage = null;
@@ -1954,15 +2699,23 @@
           const gap = 10;
 
           const isSender = message.classList.contains("sent");
-          contextMenu.innerHTML = isSender
-            ? `
-              <div class="context-menu-option" data-action="copy"><i class="fas fa-copy"></i>Copy</div>
-              <div class="context-menu-option" data-action="delete"><i class="fas fa-trash"></i>Delete</div>
-            `
-            : `
-              <div class="context-menu-option" data-action="copy"><i class="fas fa-copy"></i>Copy</div>
-              <div class="context-menu-option" data-action="react"><i class="fas fa-smile"></i>React</div>
-            `;
+          const isImageMessage = message.classList.contains("image-message");
+          if (isSender && isImageMessage) {
+            contextMenu.innerHTML = `
+      <div class="context-menu-option" data-action="download"><i class="fas fa-download"></i>Download</div>
+      <div class="context-menu-option" data-action="delete"><i class="fas fa-trash"></i>Delete</div>
+    `;
+          } else {
+            contextMenu.innerHTML = isSender
+              ? `
+        <div class="context-menu-option" data-action="copy"><i class="fas fa-copy"></i>Copy</div>
+        <div class="context-menu-option" data-action="delete"><i class="fas fa-trash"></i>Delete</div>
+      `
+              : `
+        <div class="context-menu-option" data-action="copy"><i class="fas fa-copy"></i>Copy</div>
+        <div class="context-menu-option" data-action="react"><i class="fas fa-smile"></i>React</div>
+      `;
+          }
 
           let posX = isSender ? rect.left - menuWidth - gap : rect.right + gap;
           if (posX < gap) posX = rect.right + gap;
@@ -2018,7 +2771,8 @@
           if (!action || !activeMessage) return;
 
           const messageId = activeMessage.dataset.messageId;
-          const messageText = activeMessage.querySelector("p").textContent;
+          const messageText =
+            activeMessage.querySelector("p")?.textContent || "";
 
           switch (action) {
             case "copy":
@@ -2033,6 +2787,19 @@
                 if (!response.success)
                   alert(response.error || "Failed to delete message");
               });
+              hideContextMenu();
+              break;
+            case "download":
+              const image = activeMessage.querySelector(".chat-image");
+              if (image) {
+                const url = image.src;
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `image_${messageId}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }
               hideContextMenu();
               break;
           }
@@ -2060,9 +2827,16 @@
           messageDiv.classList.add("message", isSender ? "sent" : "received");
           messageDiv.dataset.messageId = message._id;
 
+          // Add image-message class for image messages
+          if (message.isImage) {
+            messageDiv.classList.add("image-message");
+          }
+
           let content;
           if (message.isDeleted) {
             content = `<p class="deleted-message">This message was deleted</p>`;
+          } else if (message.isImage) {
+            content = `<div class="image-bubble"><img class="chat-image" src="${message.content}" alt="Shared image"></div>`;
           } else {
             const urlMatch = message.content.match(
               /https:\/\/www\.google\.com\/maps\/@[-?\d.]+,[-?\d.]+(?:,\d+z)?/
@@ -2107,6 +2881,30 @@
               });
             }
 
+            const image = messageDiv.querySelector(".chat-image");
+            if (image) {
+              image.addEventListener("click", () => {
+                const fullScreenDiv = document.createElement("div");
+                fullScreenDiv.classList.add("full-screen-image");
+                fullScreenDiv.innerHTML = `
+            <img src="${message.content}" alt="Full-screen image">
+            <button class="close-btn">×</button>
+          `;
+                document.body.appendChild(fullScreenDiv);
+
+                const closeBtn = fullScreenDiv.querySelector(".close-btn");
+                closeBtn.addEventListener("click", () => {
+                  fullScreenDiv.remove();
+                });
+
+                fullScreenDiv.addEventListener("click", (e) => {
+                  if (e.target === fullScreenDiv) {
+                    fullScreenDiv.remove();
+                  }
+                });
+              });
+            }
+
             let touchStartTime, touchStartX, touchStartY;
             messageDiv.addEventListener("touchstart", (e) => {
               touchStartTime = Date.now();
@@ -2148,9 +2946,9 @@
             chatFooter.style.color = "rgba(255, 255, 255, 0.6)";
           } else if (chatFooter.querySelector(".muted-message")) {
             chatFooter.innerHTML = `
-              <input type="text" class="message-input" placeholder="Message" />
-              <div class="send-btn">➤</div>
-            `;
+        <input type="text" class="message-input" placeholder="Message" />
+        <div class="send-btn">➤</div>
+      `;
             const newMessageInput = chatFooter.querySelector(".message-input");
             const newSendBtn = chatFooter.querySelector(".send-btn");
             newSendBtn.addEventListener("click", sendMessage);
@@ -2283,10 +3081,10 @@
       function addStyleToHead() {
         const style = document.createElement("style");
         style.textContent = `
-          .chat-body.blur > *:not(.active-message) { filter: blur(3px); transition: filter 0.3s ease; }
-          .active-message { position: relative; z-index: 2; }
-          .deleted-message { font-style: italic; color: rgba(255, 255, 255, 0.5); }
-        `;
+    .chat-body.blur > *:not(.active-message) { filter: blur(3px); transition: filter 0.3s ease; }
+    .active-message { position: relative; z-index: 2; }
+    .deleted-message { font-style: italic; color: rgba(255, 255, 255, 0.5); }
+  `;
         document.head.appendChild(style);
       }
     </script>

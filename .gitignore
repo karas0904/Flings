@@ -49,3 +49,7 @@ pids
 # Build output
 dist/
 build/
+
+# Icons
+assets/icons/heart_red.PNG
+assets/icons/heart_white.PNG

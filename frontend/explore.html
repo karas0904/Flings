@@ -481,16 +481,13 @@
       }
 
       .heart-icon {
-        width: 24px;
-        height: 24px;
-        filter: brightness(0) invert(1); /* White by default */
-        transition: filter 0.3s ease, transform 0.3s ease;
+        width: 36px;
+        height: 36px;
+        transition: transform 0.3s ease;
       }
 
       /* Remove .heart-button.active styling and update heart icon active state */
       .heart-button.active .heart-icon {
-        filter: brightness(100%) saturate(100%) invert(23%) sepia(91%)
-          saturate(6645%) hue-rotate(355deg) brightness(106%) contrast(119%); /* Red when active */
         animation: heartIconBeat 1s ease;
       }
 
@@ -2029,11 +2026,11 @@
               );
             }
             const heartIcon = document.createElement("img");
-            heartIcon.src = "assets/icons/heart-icon.png";
+            heartIcon.src = profile.isLiked ? "assets/icons/heart_red.PNG" : "assets/icons/heart_white.PNG";
             heartIcon.alt = "Heart Icon";
             heartIcon.classList.add("heart-icon");
             heartIcon.onerror = () => {
-              console.error("Failed to load heart-icon.png, using fallback");
+              console.error("Failed to load heart icon, using fallback");
               heartButton.innerHTML = '<i class="fa-solid fa-heart"></i>';
             };
             heartButton.appendChild(heartIcon);
@@ -2082,6 +2079,10 @@
                   profiles[i].isLiked = profile.isLiked;
                   if (profile.isLiked) {
                     this.classList.add("active");
+                    const heartIcon = this.querySelector(".heart-icon");
+                    if (heartIcon) {
+                      heartIcon.src = "assets/icons/heart_red.PNG";
+                    }
                     const banButton =
                       profileCard.querySelector(".no-named-button");
                     if (banButton) {
@@ -2090,6 +2091,10 @@
                     }
                   } else {
                     this.classList.remove("active");
+                    const heartIcon = this.querySelector(".heart-icon");
+                    if (heartIcon) {
+                      heartIcon.src = "assets/icons/heart_white.PNG";
+                    }
                     const banButton =
                       profileCard.querySelector(".no-named-button");
                     if (banButton) {

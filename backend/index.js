@@ -113,6 +113,8 @@ app.get("/", (req, res) => {
 
 import jwt from "jsonwebtoken"; // Add this at the top if not already there
 
+const onlineUsers = new Map();
+
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
@@ -139,7 +141,17 @@ io.on("connection", (socket) => {
   const userId = socket.request.user.id.toString(); // Change _id to id
   console.log(`User ${userId} connected`);
 
+  // Add user to onlineUsers and notify clients
+  onlineUsers.set(userId, true);
+  io.emit("userStatusUpdate", { userId, status: "online" });
+
   socket.join(userId);
+
+  // Handle status query
+  socket.on("getUserStatus", ({ userId: targetUserId }, callback) => {
+    const status = onlineUsers.has(targetUserId) ? "online" : "offline";
+    callback({ userId: targetUserId, status });
+  });
 
   socket.on("joinMatches", async (callback) => {
     try {
@@ -422,6 +434,9 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
+    // Remove user from onlineUsers and notify clients
+    onlineUsers.delete(userId);
+    io.emit("userStatusUpdate", { userId, status: "offline" });
   });
 });
 

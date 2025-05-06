@@ -49,5 +49,3 @@ pids
 # Build output
 dist/
 build/
-
-frontend/assets

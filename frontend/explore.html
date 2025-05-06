@@ -20,6 +20,10 @@
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap"
       rel="stylesheet"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
       * {
@@ -708,7 +712,6 @@
         cursor: pointer;
         text-align: center;
         transition: color 0.3s ease, transform 0.2s ease;
-        font-family: Arial, sans-serif;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -992,6 +995,39 @@
         transition: transform 0.3s ease;
       }
 
+      /* Rose icon transition animation classes */
+      .rose-icon-container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        overflow: hidden;
+      }
+
+      .rose-icon-original,
+      .rose-icon-after {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        left: 0;
+        transition: transform 0.6s ease;
+      }
+
+      .rose-icon-original {
+        top: 0;
+      }
+
+      .rose-icon-after {
+        transform: translateY(100%);
+      }
+
+      .rose-button.animating .rose-icon-original {
+        transform: translateY(-100%);
+      }
+
+      .rose-button.animating .rose-icon-after {
+        transform: translateY(0);
+      }
+
       .rose-button:hover {
         transform: perspective(500px) translateZ(10px) scale(1.1);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),
@@ -1258,7 +1294,6 @@
         text-decoration: none;
         transition: background 0.3s;
         font-size: 8px;
-        font-family: "Open Sans", sans-serif;
         display: inline-block;
         margin-top: 10px;
         position: relative;
@@ -1403,6 +1438,20 @@
         height: 50px;
         transform: none;
       }
+
+      /* Add Plus Jakarta Sans to all buttons */
+      button,
+      .btn,
+      .custom-alert-button,
+      .rose-button,
+      .heart-button,
+      .external-buttons button,
+      .share-option,
+      input[type="button"],
+      input[type="submit"],
+      .bottom-buttons button {
+        font-family: "Plus Jakarta Sans", sans-serif !important;
+      }
     </style>
   </head>
   <body>
@@ -1505,7 +1554,18 @@
 
     <div class="external-buttons">
       <button title="Rose" class="rose-button">
-        <img src="assets/icons/rose-icon.svg" alt="Rose" class="rose-icon" />
+        <div class="rose-icon-container">
+          <img
+            src="assets/icons/rose-icon.png"
+            alt="Rose"
+            class="rose-icon-original"
+          />
+          <img
+            src="assets/icons/rose-icon-after.png"
+            alt="Rose After"
+            class="rose-icon-after"
+          />
+        </div>
       </button>
       <button title="Save">
         <i class="fa-solid fa-bookmark"></i>
@@ -2026,7 +2086,9 @@
               );
             }
             const heartIcon = document.createElement("img");
-            heartIcon.src = profile.isLiked ? "assets/icons/heart_red.PNG" : "assets/icons/heart_white.PNG";
+            heartIcon.src = profile.isLiked
+              ? "assets/icons/heart_red.PNG"
+              : "assets/icons/heart_white.PNG";
             heartIcon.alt = "Heart Icon";
             heartIcon.classList.add("heart-icon");
             heartIcon.onerror = () => {
@@ -2129,9 +2191,11 @@
             externalRoseButton.dataset.profileIndex = i;
             if (profile.hasRose) {
               externalRoseButton.classList.add("active");
+              externalRoseButton.classList.add("animating");
               externalRoseButton.disabled = true;
             } else {
               externalRoseButton.classList.remove("active");
+              externalRoseButton.classList.remove("animating");
               externalRoseButton.disabled = false;
             }
 
@@ -2256,23 +2320,32 @@
                 if (response.ok) {
                   console.log("Rose sent:", result);
                   this.classList.add("active");
+
+                  // Trigger the animation
+                  this.classList.add("animating");
+
+                  // Disable the button after animation start
                   this.disabled = true;
-                  currentCommentInput.disabled = false;
-                  currentCommentInput.placeholder = comment
-                    ? "Comment sent!"
-                    : "Add a comment...";
-                  currentCommentInput.classList.add("enabled");
-                  currentCommentInbox.classList.add("enabled");
-                  profiles[profileIndex].hasRose = true;
-                  profiles[profileIndex].comment = comment || "";
-                  if (comment) {
-                    currentCommentInput.disabled = true;
-                    currentCommentInput.classList.remove("enabled");
-                    currentCommentInbox.classList.remove("enabled");
-                  }
-                  await showCustomAlert(
-                    "Rose sent successfully! You can now add a comment."
-                  );
+
+                  // Wait for animation to complete before showing alert
+                  setTimeout(async () => {
+                    currentCommentInput.disabled = false;
+                    currentCommentInput.placeholder = comment
+                      ? "Comment sent!"
+                      : "Add a comment...";
+                    currentCommentInput.classList.add("enabled");
+                    currentCommentInbox.classList.add("enabled");
+                    profiles[profileIndex].hasRose = true;
+                    profiles[profileIndex].comment = comment || "";
+                    if (comment) {
+                      currentCommentInput.disabled = true;
+                      currentCommentInput.classList.remove("enabled");
+                      currentCommentInbox.classList.remove("enabled");
+                    }
+                    await showCustomAlert(
+                      "Rose sent successfully! You can now add a comment."
+                    );
+                  }, 1200); // Increased delay for better user experience
                 } else {
                   console.error("Failed to send Rose:", result);
                   await showCustomAlert(
@@ -2423,7 +2496,9 @@
 
             if (currentProfile.hasRose) {
               roseButton.classList.add("active");
+              roseButton.classList.add("animating");
               roseButton.disabled = true;
+
               if (currentProfile.comment && currentProfile.comment.trim()) {
                 currentCommentInput.disabled = true;
                 currentCommentInput.placeholder = "Comment sent!";
@@ -2437,7 +2512,9 @@
               }
             } else {
               roseButton.classList.remove("active");
+              roseButton.classList.remove("animating");
               roseButton.disabled = false;
+
               currentCommentInput.disabled = true;
               currentCommentInput.placeholder = "Enable when you rose someone";
               currentCommentInput.classList.remove("enabled");

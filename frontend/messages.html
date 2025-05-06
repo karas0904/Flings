@@ -12,6 +12,10 @@
       href="https://fonts.googleapis.com/css2?family=Raleway:wght@400&display=swap"
       rel="stylesheet"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="http://127.0.0.1:3000/socket.io/socket.io.js"></script>
 
     <style>
@@ -314,7 +318,7 @@
         opacity: 1;
         transform: translateY(0) scaleY(1); /* Slide down and scale to full size */
         pointer-events: auto;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Match header’s shadow */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Match header's shadow */
       }
 
       .dropdown-menu .dropdown-item {
@@ -629,6 +633,7 @@
           background-color 0.3s;
         position: absolute;
         bottom: 20px;
+        padding-bottom: 6px;
         left: 20px;
         z-index: 10;
       }
@@ -1428,7 +1433,6 @@
         border: none;
         font-size: 14px;
         margin-bottom: 8px;
-        font-family: "Realtime Regular";
         transition: background-color 0.3s ease, transform 0.2s ease;
       }
 
@@ -1551,7 +1555,6 @@
         text-decoration: none;
         transition: background 0.3s;
         font-size: 8px;
-        font-family: "Open Sans", sans-serif;
         display: inline-block;
         margin-top: 10px;
         position: relative;
@@ -1559,6 +1562,56 @@
       }
       .modal button:hover {
         background-color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Add Plus Jakarta Sans to all buttons but exclude icon buttons */
+      button:not(.icon-btn),
+      .btn:not(.icon-btn),
+      input[type="button"],
+      input[type="submit"],
+      .custom-alert-button,
+      .action-button,
+      .send-button {
+        font-family: "Plus Jakarta Sans", sans-serif !important;
+      }
+
+      /* Fix the centering of "+" in the plus button */
+      .plus-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .preview-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .send-preview-btn,
+      .cancel-preview-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .send-preview-btn {
+        background-color: #007bff;
+        color: white;
+      }
+
+      .cancel-preview-btn {
+        background-color: #dc3545;
+        color: white;
+      }
+
+      .send-preview-btn:hover {
+        background-color: #0056b3;
+      }
+
+      .cancel-preview-btn:hover {
+        background-color: #c82333;
       }
     </style>
   </head>
@@ -1659,7 +1712,6 @@
         <button class="plus-btn">+</button>
         <div class="options-menu">
           <button onclick="selectOption('Photo')">Photo</button>
-          <button onclick="selectOption('Video')">Video</button>
           <button id="shareLocationBtn">Share Location</button>
         </div>
         <input
@@ -1749,7 +1801,21 @@
             );
           });
 
-          let selectedFile = null; // Store the selected file
+          window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get("token");
+            if (token) {
+              localStorage.setItem("token", token);
+              console.log("Token stored:", token);
+              window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname
+              );
+            }
+          };
+
+          let selectedFile = null;
 
           window.selectOption = function (option) {
             const plusBtn = document.querySelector(".plus-btn");
@@ -1766,8 +1832,8 @@
                 const file = event.target.files[0];
                 if (!file) return;
 
-                // Validate file size5 (1MB = 1 * 1024 * 1024 bytes)
-                const maxSize = 1 * 1024 * 1024;
+                // Validate file size (5MB = 5 * 1024 * 1024 bytes)
+                const maxSize = 5 * 1024 * 1024;
                 if (file.size > maxSize) {
                   showModal("Image too large! Please select a file under 5MB.");
                   photoInput.value = "";
@@ -1779,13 +1845,13 @@
                 const previewDiv = document.createElement("div");
                 previewDiv.classList.add("image-preview");
                 previewDiv.innerHTML = `
-    <img id="previewImage" alt="Image Preview">
-    <div class="loading-spinner">Converting image...</div>
-    <div class="preview-buttons">
-      <button class="send-preview-btn">Send</button>
-      <button class="cancel-preview-btn">Cancel</button>
-    </div>
-  `;
+        <img id="previewImage" alt="Image Preview">
+        <div class="loading-spinner">Converting image...</div>
+        <div class="preview-buttons">
+          <button class="send-preview-btn">Send</button>
+          <button class="cancel-preview-btn">Cancel</button>
+        </div>
+      `;
                 imagePreviewOverlay.appendChild(previewDiv);
                 imagePreviewOverlay.classList.add("visible");
 
@@ -1867,11 +1933,6 @@
                 blurContainer.classList.remove("blur");
                 photoInput.value = "";
               };
-            } else if (option === "Video") {
-              showModal("Video sharing is not supported yet.");
-              plusBtn.classList.remove("active");
-              optionsMenu.classList.remove("active");
-              blurContainer.classList.remove("blur");
             }
           };
         }

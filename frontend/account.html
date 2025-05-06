@@ -14,6 +14,9 @@
       href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap"
       rel="stylesheet"
     />
+    <!-- Add this font import if it's not already there -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
       * {
         margin: 0;
@@ -286,7 +289,6 @@
         text-decoration: none;
         transition: background 0.3s;
         font-size: 12px;
-        font-family: "Raleway", sans-serif;
         cursor: pointer;
       }
 
@@ -337,7 +339,6 @@
         text-decoration: none;
         transition: background 0.3s;
         font-size: 12px;
-        font-family: "Raleway", sans-serif;
         cursor: pointer;
         margin-top: 10px;
       }
@@ -1382,7 +1383,6 @@
         border-radius: 20px;
         padding: 10px 20px;
         cursor: pointer;
-        font-family: "Raleway", sans-serif;
         transition: background-color 0.3s;
       }
 
@@ -1402,7 +1402,6 @@
         padding: 5px 10px;
         cursor: pointer;
         font-size: 12px;
-        font-family: "Raleway", sans-serif;
         transition: background 0.3s;
       }
 
@@ -1673,6 +1672,17 @@
         font-style: italic;
         text-align: center;
         width: 100%;
+      }
+
+      /* Add this to your existing CSS */
+      button, 
+      .btn, 
+      input[type="button"], 
+      input[type="submit"],
+      .icon-btn,
+      .action-button,
+      .bottom-buttons button {
+        font-family: 'Plus Jakarta Sans', sans-serif;
       }
     </style>
   </head>
@@ -2115,6 +2125,16 @@
     </div>
 
     <script>
+      window.onload = function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        if (token) {
+          localStorage.setItem("token", token);
+          console.log("Token stored:", token);
+          // Clear token from URL for security
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      };
       // Function to store JWT token from URL params (if redirected)
       function storeToken() {
         const urlParams = new URLSearchParams(window.location.search);

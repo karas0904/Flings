@@ -8,14 +8,14 @@ import session from "express-session";
 import passport from "passport";
 import fileUpload from "express-fileupload";
 import MongoStore from "connect-mongo";
-import authRoutes from "./routes/authRoutes.js"; // Named import
-import discoveryRoutes from "./routes/discoveryRoutes.js"; // Default import
-import interactionRoutes from "./routes/interactionRoutes.js"; // Default import
-import messageRoutes from "./routes/messageRoutes.js"; // Default import
-import profileRoutes from "./routes/profileRoutes.js"; // Default import
-import { createServer } from "http"; // Import HTTP server module
-import { Server } from "socket.io"; // Import Socket.IO
-import wrap from "./utils/wrap.js"; // Import a utility to wrap middleware for Socket.IO
+import authRoutes from "./routes/authRoutes.js";
+import discoveryRoutes from "./routes/discoveryRoutes.js";
+import interactionRoutes from "./routes/interactionRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import wrap from "./utils/wrap.js";
 import Message from "./models/Message.js";
 import MuteStatus from "./models/MuteStatus.js";
 
@@ -78,7 +78,12 @@ const sessionMiddleware = session({
 // Middleware
 app.use(express.json({ limit: "50mb" })); // Increase payload size limit
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(fileUpload());
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 app.use(sessionMiddleware);
 
 // Initialize Passport
@@ -98,20 +103,12 @@ app.use("/api/discover", discoveryRoutes);
 app.use("/api/interactions", interactionRoutes);
 app.use("/api/messages", messageRoutes);
 
-// Serve static files from the public directory
-//app.use(express.static("public"));
-
 // A simple test route
 app.get("/", (req, res) => {
   res.send("College Dating App API is running!");
 });
 
-// Socket.IO authentication middleware
-//io.use(wrap(sessionMiddleware));
-//io.use(wrap(passport.initialize()));
-//io.use(wrap(passport.session()));
-
-import jwt from "jsonwebtoken"; // Add this at the top if not already there
+import jwt from "jsonwebtoken"; // Ensure JWT is imported
 
 const onlineUsers = new Map();
 
@@ -190,7 +187,7 @@ io.on("connection", (socket) => {
 
   socket.on("sendMessage", async (data, callback) => {
     try {
-      const { matchId, content, isImage = false } = data;
+      const { matchId, content, isImage = false, isLocation = false } = data;
       const senderId = socket.request.user.id;
 
       if (!matchId || !content) {
@@ -249,6 +246,7 @@ io.on("connection", (socket) => {
         matchId,
         content,
         isImage,
+        isLocation,
         mimeType,
       });
       await message.save();

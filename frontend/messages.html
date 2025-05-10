@@ -1735,6 +1735,7 @@
       let effortsData = [];
       let currentMatchId = null;
       let currentUserId = null; // Store current user's ID
+      let chatMessages = []; // central state for current chat messages
       const socket = io("http://127.0.0.1:3000", {
         auth: {
           token: localStorage.getItem("jwtToken"),
@@ -2585,6 +2586,7 @@
               if (response.success) {
                 chatBody.innerHTML = "";
                 const messages = response.messages;
+                chatMessages = messages; // Update central state
 
                 if (messages.length === 0) {
                   if (score >= 6.6) {
@@ -2702,6 +2704,7 @@
               chatBody.innerHTML = "";
             }
             appendMessage(message);
+            chatMessages.push(message); // Update central state
           }
           const messageItem = document.querySelector(
             `.message-item[data-match-id="${message.matchId}"]`
